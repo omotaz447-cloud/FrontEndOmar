@@ -10,8 +10,8 @@ app.use(express.json());
 
 // MongoDB connection
 let db;
-const mongoUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017';
-const dbName = 'centerwork';
+const mongoUrl = process.env.MONGODB_URL || 'mongodb+srv://Waheed:Waheed@cluster0.nltsf0p.mongodb.net/waheed';
+const dbName = 'waheed';
 
 // Connect to MongoDB
 MongoClient.connect(mongoUrl, { useUnifiedTopology: true })
