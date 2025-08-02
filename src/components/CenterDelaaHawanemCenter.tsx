@@ -39,11 +39,11 @@ import {
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  RefreshCw, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  RefreshCw,
   X,
   Building2,
   Calendar,
@@ -111,83 +111,179 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
   const [accounts, setAccounts] = useState<AccountData[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({});
-  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(
+    null,
+  );
   const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
-  const sections = useMemo((): SectionConfig[] => [
-    {
-      id: 'main-accounts',
-      title: 'حسابات رئيسية',
-      icon: <Building2 className="w-6 h-6" />,
-      color: 'from-blue-600 to-indigo-700',
-      endpoint: '/api/center-delaa-hawanem-account',
-      fields: [
-        { name: 'fixedBeforeInventory', arabicKey: 'ثابت قبل الجرد', type: 'number' as const, required: true },
-        { name: 'fixedAfterInventory', arabicKey: 'ثابت بعد الجرد', type: 'number' as const, required: true },
-        { name: 'cashAtHome', arabicKey: 'فلوس نقدي في البيت', type: 'number' as const, required: true },
-        { name: 'withdrawal', arabicKey: 'سحب', type: 'number' as const, required: true },
-        { name: 'insurance', arabicKey: 'تامين', type: 'number' as const, required: true },
-      ],
-    },
-    {
-      id: 'mahmoud-account',
-      title: 'محمود موهوب',
-      icon: <User className="w-6 h-6" />,
-      color: 'from-green-600 to-emerald-700',
-      endpoint: '/api/mahmoud-center-delaa-hawanem-account',
-      fields: [
-        { name: 'cash', arabicKey: 'نقدي', type: 'number' as const, required: true },
-        { name: 'blessing', arabicKey: 'ربنا كرم', type: 'number' as const, required: true },
-        { name: 'withdrawal', arabicKey: 'سحب', type: 'number' as const, required: true },
-      ],
-    },
-    {
-      id: 'basem-account',
-      title: 'باسم سعيد',
-      icon: <Wallet className="w-6 h-6" />,
-      color: 'from-purple-600 to-violet-700',
-      endpoint: '/api/basem-center-delaa-hawanem-account',
-      fields: [
-        { name: 'cash', arabicKey: 'نقدي', type: 'number' as const, required: true },
-        { name: 'blessing', arabicKey: 'ربنا كرم', type: 'number' as const, required: true },
-        { name: 'withdrawal', arabicKey: 'سحب', type: 'number' as const, required: true },
-      ],
-    },
-    {
-      id: 'waheed-account',
-      title: 'وحيد سعيد',
-      icon: <Crown className="w-6 h-6" />,
-      color: 'from-orange-600 to-red-700',
-      endpoint: '/api/waheed-center-delaa-hawanem-account',
-      fields: [
-        { name: 'cash', arabicKey: 'نقدي', type: 'number' as const, required: true },
-        { name: 'blessing', arabicKey: 'ربنا كرم', type: 'number' as const, required: true },
-        { name: 'withdrawal', arabicKey: 'سحب', type: 'number' as const, required: true },
-      ],
-    },
-    {
-      id: 'emad-account',
-      title: 'عماد ناصر',
-      icon: <TrendingUp className="w-6 h-6" />,
-      color: 'from-teal-600 to-cyan-700',
-      endpoint: '/api/emad-center-delaa-hawanem-account',
-      fields: [
-        { name: 'cash', arabicKey: 'نقدي', type: 'number' as const, required: true },
-        { name: 'blessing', arabicKey: 'ربنا كرم', type: 'number' as const, required: true },
-        { name: 'withdrawal', arabicKey: 'سحب', type: 'number' as const, required: true },
-      ],
-    },
-  ], []);
+  const sections = useMemo(
+    (): SectionConfig[] => [
+      {
+        id: 'main-accounts',
+        title: 'حسابات رئيسية',
+        icon: <Building2 className="w-6 h-6" />,
+        color: 'from-blue-600 to-indigo-700',
+        endpoint: '/api/center-delaa-hawanem-account',
+        fields: [
+          {
+            name: 'fixedBeforeInventory',
+            arabicKey: 'ثابت قبل الجرد',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'fixedAfterInventory',
+            arabicKey: 'ثابت بعد الجرد',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'cashAtHome',
+            arabicKey: 'فلوس نقدي في البيت',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'withdrawal',
+            arabicKey: 'سحب',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'insurance',
+            arabicKey: 'تامين',
+            type: 'number' as const,
+            required: true,
+          },
+        ],
+      },
+      {
+        id: 'mahmoud-account',
+        title: 'محمود موهوب',
+        icon: <User className="w-6 h-6" />,
+        color: 'from-green-600 to-emerald-700',
+        endpoint: '/api/mahmoud-center-delaa-hawanem-account',
+        fields: [
+          {
+            name: 'cash',
+            arabicKey: 'نقدي',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'blessing',
+            arabicKey: 'ربنا كرم',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'withdrawal',
+            arabicKey: 'سحب',
+            type: 'number' as const,
+            required: true,
+          },
+        ],
+      },
+      {
+        id: 'basem-account',
+        title: 'باسم سعيد',
+        icon: <Wallet className="w-6 h-6" />,
+        color: 'from-purple-600 to-violet-700',
+        endpoint: '/api/basem-center-delaa-hawanem-account',
+        fields: [
+          {
+            name: 'cash',
+            arabicKey: 'نقدي',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'blessing',
+            arabicKey: 'ربنا كرم',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'withdrawal',
+            arabicKey: 'سحب',
+            type: 'number' as const,
+            required: true,
+          },
+        ],
+      },
+      {
+        id: 'waheed-account',
+        title: 'وحيد سعيد',
+        icon: <Crown className="w-6 h-6" />,
+        color: 'from-orange-600 to-red-700',
+        endpoint: '/api/waheed-center-delaa-hawanem-account',
+        fields: [
+          {
+            name: 'cash',
+            arabicKey: 'نقدي',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'blessing',
+            arabicKey: 'ربنا كرم',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'withdrawal',
+            arabicKey: 'سحب',
+            type: 'number' as const,
+            required: true,
+          },
+        ],
+      },
+      {
+        id: 'emad-account',
+        title: 'عماد ناصر',
+        icon: <TrendingUp className="w-6 h-6" />,
+        color: 'from-teal-600 to-cyan-700',
+        endpoint: '/api/emad-center-delaa-hawanem-account',
+        fields: [
+          {
+            name: 'cash',
+            arabicKey: 'نقدي',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'blessing',
+            arabicKey: 'ربنا كرم',
+            type: 'number' as const,
+            required: true,
+          },
+          {
+            name: 'withdrawal',
+            arabicKey: 'سحب',
+            type: 'number' as const,
+            required: true,
+          },
+        ],
+      },
+    ],
+    [],
+  );
 
-  const getCurrentSection = () => sections.find(s => s.id === selectedSection);
+  const getCurrentSection = () =>
+    sections.find((s) => s.id === selectedSection);
 
   const calculateTotal = (data: FormData, section: SectionConfig) => {
     if (section.id === 'main-accounts') {
       // ثابت بعد الجرد + فلوس نقدي في البيت - سحب - تامين
-      return (data.fixedAfterInventory || 0) + (data.cashAtHome || 0) - (data.withdrawal || 0) - (data.insurance || 0);
+      return (
+        (data.fixedAfterInventory || 0) +
+        (data.cashAtHome || 0) -
+        (data.withdrawal || 0) -
+        (data.insurance || 0)
+      );
     } else {
       // نقدي + ربنا كرم - سحب
       return (data.cash || 0) + (data.blessing || 0) - (data.withdrawal || 0);
@@ -196,30 +292,58 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
 
   const fetchAccounts = useCallback(async () => {
     if (!selectedSection) return;
-    
-    const section = sections.find(s => s.id === selectedSection);
+
+    const section = sections.find((s) => s.id === selectedSection);
     if (!section) return;
 
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${section.endpoint}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+
+      if (!token) {
+        throw new Error('لم يتم العثور على رمز التفويض');
+      }
+
+      console.log(
+        'Fetching accounts from:',
+        `https://backend-omar-puce.vercel.app${section.endpoint}`,
+      ); // Debug log
+
+      const response = await fetch(
+        `https://backend-omar-puce.vercel.app${section.endpoint}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         },
-      });
+      );
+
+      console.log('Fetch response status:', response.status); // Debug log
 
       if (!response.ok) {
-        console.log('Failed to fetch accounts:', response);
-        throw new Error('فشل في جلب البيانات');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch accounts:', response, errorData);
+        throw new Error(errorData.message || 'فشل في جلب البيانات');
       }
 
       const data = await response.json();
-      setAccounts(data.accounts || []);
+      console.log('Fetched data:', data); // Debug log
+
+      // Handle different response formats
+      let accountsArray = [];
+      if (data.data && Array.isArray(data.data)) {
+        accountsArray = data.data;
+      } else if (data.accounts && Array.isArray(data.accounts)) {
+        accountsArray = data.accounts;
+      } else if (Array.isArray(data)) {
+        accountsArray = data;
+      }
+
+      setAccounts(accountsArray);
     } catch (error) {
       console.error('Error fetching accounts:', error);
-      toast.error( 'فشل في جلب البيانات');
+      toast.error('فشل في جلب البيانات');
     } finally {
       setLoading(false);
     }
@@ -228,12 +352,21 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
   const handleInputChange = (name: string, value: string) => {
     const newFormData = { ...formData, [name]: value };
     setFormData(newFormData);
-    
-    // Calculate total automatically
+
+    // Calculate total automatically for numeric fields
     const section = getCurrentSection();
     if (section) {
-      const total = calculateTotal(newFormData, section);
-      setFormData(prev => ({ ...prev, total }));
+      // Convert numeric fields for calculation
+      const numericFormData = { ...newFormData };
+      section.fields.forEach((field) => {
+        if (field.type === 'number' && numericFormData[field.name]) {
+          numericFormData[field.name] =
+            Number(numericFormData[field.name]) || 0;
+        }
+      });
+
+      const total = calculateTotal(numericFormData, section);
+      setFormData((prev) => ({ ...prev, [name]: value, total }));
     }
   };
 
@@ -247,37 +380,70 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
       return;
     }
 
+    // Validate required fields
+    const missingFields = section.fields
+      .filter(
+        (field) =>
+          field.required &&
+          (!formData[field.name] || formData[field.name] === ''),
+      )
+      .map((field) => field.arabicKey);
+
+    if (missingFields.length > 0) {
+      toast.error(`يرجى ملء الحقول المطلوبة: ${missingFields.join(', ')}`);
+      return;
+    }
+
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
+
+      // Convert string values to numbers for numeric fields
+      const processedFormData = { ...formData };
+      section.fields.forEach((field) => {
+        if (field.type === 'number' && processedFormData[field.name]) {
+          processedFormData[field.name] = Number(processedFormData[field.name]);
+        }
+      });
+
       const submitData = {
-        ...formData,
+        ...processedFormData,
         date: format(date, 'yyyy-MM-dd'),
-        total: calculateTotal(formData, section),
+        total: calculateTotal(processedFormData, section),
       };
 
-      const url = editingAccount 
+      console.log('Submitting data:', submitData); // Debug log
+
+      const url = editingAccount
         ? `https://backend-omar-puce.vercel.app${section.endpoint}/${editingAccount._id}`
         : `https://backend-omar-puce.vercel.app${section.endpoint}`;
-      
+
       const method = editingAccount ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(submitData),
       });
 
+      const responseData = await response.json();
+      console.log('Response data:', responseData); // Debug log
+
       if (!response.ok) {
-        throw new Error('فشل في حفظ البيانات');
+        console.error('Server error:', responseData);
+        throw new Error(responseData.message || 'فشل في حفظ البيانات');
       }
 
       toast.success(editingAccount ? 'تم التحديث بنجاح' : 'تم الإنشاء بنجاح');
       resetForm();
-      fetchAccounts();
+
+      // Add a small delay before fetching to ensure server has processed the request
+      setTimeout(() => {
+        fetchAccounts();
+      }, 100);
     } catch (error) {
       console.error('Error saving account:', error);
       toast.error('فشل في حفظ البيانات');
@@ -297,19 +463,22 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
 
   const handleDelete = async () => {
     if (!deleteAccountId) return;
-    
+
     const section = getCurrentSection();
     if (!section) return;
 
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${section.endpoint}/${deleteAccountId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `https://backend-omar-puce.vercel.app${section.endpoint}/${deleteAccountId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error('فشل في حذف البيانات');
@@ -370,19 +539,18 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
               </motion.div>
               <div>
                 <DialogTitle className="text-xl font-bold text-white">
-                  {selectedSection ? 
-                    (showForm ? 
-                      `${editingAccount ? 'تعديل' : 'إضافة'} - ${currentSection?.title}` 
+                  {selectedSection
+                    ? showForm
+                      ? `${editingAccount ? 'تعديل' : 'إضافة'} - ${currentSection?.title}`
                       : currentSection?.title
-                    ) 
-                    : 'سنتر دلع الهوانم'
-                  }
+                    : 'سنتر دلع الهوانم'}
                 </DialogTitle>
                 <DialogDescription className="text-gray-400">
-                  {selectedSection ? 
-                    (showForm ? 'إدارة البيانات المالية' : 'عرض وإدارة الحسابات') 
-                    : 'اختر القسم المطلوب'
-                  }
+                  {selectedSection
+                    ? showForm
+                      ? 'إدارة البيانات المالية'
+                      : 'عرض وإدارة الحسابات'
+                    : 'اختر القسم المطلوب'}
                 </DialogDescription>
               </div>
             </div>
@@ -435,9 +603,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                             whileHover={{ rotate: 360 }}
                             transition={{ duration: 0.6 }}
                           >
-                            <div className="text-white">
-                              {section.icon}
-                            </div>
+                            <div className="text-white">{section.icon}</div>
                           </motion.div>
                           <div className="flex-1">
                             <h3 className="text-lg font-semibold text-white group-hover:text-pink-300 transition-colors">
@@ -468,12 +634,16 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                       <div key={field.name} className="space-y-2">
                         <Label className="text-white font-medium">
                           {field.arabicKey}
-                          {field.required && <span className="text-red-400 mr-1">*</span>}
+                          {field.required && (
+                            <span className="text-red-400 mr-1">*</span>
+                          )}
                         </Label>
                         <Input
                           type={field.type}
                           value={formData[field.name] || ''}
-                          onChange={(e) => handleInputChange(field.name, e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(field.name, e.target.value)
+                          }
                           required={field.required}
                           className="bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-pink-500/50"
                           placeholder={`أدخل ${field.arabicKey}`}
@@ -492,10 +662,15 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                             className="w-full justify-start text-right bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-700/50 hover:border-pink-500/50"
                           >
                             <Calendar className="ml-2 h-4 w-4 text-pink-400" />
-                            {date ? format(date, 'PPP', { locale: ar }) : 'اختر التاريخ'}
+                            {date
+                              ? format(date, 'PPP', { locale: ar })
+                              : 'اختر التاريخ'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700" align="start">
+                        <PopoverContent
+                          className="w-auto p-0 bg-gray-800 border-gray-700"
+                          align="start"
+                        >
                           <CalendarComponent
                             mode="single"
                             selected={date}
@@ -506,14 +681,16 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                             locale={ar}
                             className="bg-gray-800 text-white"
                             classNames={{
-                              day_selected: "bg-pink-600 text-white hover:bg-pink-700 focus:bg-pink-600",
-                              day_today: "bg-pink-100 text-pink-900 font-bold",
-                              day: "text-white hover:bg-gray-700",
-                              head_cell: "text-gray-300",
-                              nav_button: "text-white hover:bg-gray-700",
-                              nav_button_previous: "text-white hover:bg-gray-700",
-                              nav_button_next: "text-white hover:bg-gray-700",
-                              caption: "text-white",
+                              day_selected:
+                                'bg-pink-600 text-white hover:bg-pink-700 focus:bg-pink-600',
+                              day_today: 'bg-pink-100 text-pink-900 font-bold',
+                              day: 'text-white hover:bg-gray-700',
+                              head_cell: 'text-gray-300',
+                              nav_button: 'text-white hover:bg-gray-700',
+                              nav_button_previous:
+                                'text-white hover:bg-gray-700',
+                              nav_button_next: 'text-white hover:bg-gray-700',
+                              caption: 'text-white',
                             }}
                           />
                         </PopoverContent>
@@ -524,7 +701,9 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                       <Label className="text-white font-medium">ملاحظات</Label>
                       <Textarea
                         value={formData.notes || ''}
-                        onChange={(e) => handleInputChange('notes', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange('notes', e.target.value)
+                        }
                         className="bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-pink-500/50"
                         placeholder="أدخل ملاحظات إضافية..."
                         rows={3}
@@ -580,16 +759,23 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                 className="p-6 space-y-6"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-white">قائمة الحسابات</h3>
+                  <h3 className="text-xl font-semibold text-white">
+                    قائمة الحسابات
+                  </h3>
                   <div className="flex gap-2">
                     <Button
-                      onClick={fetchAccounts}
+                      onClick={() => {
+                        console.log('Manual refresh triggered');
+                        fetchAccounts();
+                      }}
                       variant="outline"
                       disabled={loading}
                       className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
                     >
-                      <RefreshCw className={`ml-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                      تحديث
+                      <RefreshCw
+                        className={`ml-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                      />
+                      تحديث ({accounts.length})
                     </Button>
                     <Button
                       onClick={() => setShowForm(true)}
@@ -606,13 +792,22 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                     <TableHeader>
                       <TableRow className="bg-gray-800/80 border-gray-700/50 hover:bg-gray-800/80">
                         {currentSection?.fields.map((field) => (
-                          <TableHead key={field.name} className="text-gray-300 font-semibold text-right">
+                          <TableHead
+                            key={field.name}
+                            className="text-gray-300 font-semibold text-right"
+                          >
                             {field.arabicKey}
                           </TableHead>
                         ))}
-                        <TableHead className="text-gray-300 font-semibold text-right">التاريخ</TableHead>
-                        <TableHead className="text-gray-300 font-semibold text-right">الإجمالي</TableHead>
-                        <TableHead className="text-gray-300 font-semibold text-center">الإجراءات</TableHead>
+                        <TableHead className="text-gray-300 font-semibold text-right">
+                          التاريخ
+                        </TableHead>
+                        <TableHead className="text-gray-300 font-semibold text-right">
+                          الإجمالي
+                        </TableHead>
+                        <TableHead className="text-gray-300 font-semibold text-center">
+                          الإجراءات
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -622,12 +817,17 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                           className="bg-gray-900/50 border-gray-700/30 hover:bg-gray-800/30 transition-colors"
                         >
                           {currentSection?.fields.map((field) => (
-                            <TableCell key={field.name} className="text-gray-300 text-right">
+                            <TableCell
+                              key={field.name}
+                              className="text-gray-300 text-right"
+                            >
                               {account[field.name as keyof AccountData] || '-'}
                             </TableCell>
                           ))}
                           <TableCell className="text-gray-300 text-right">
-                            {format(new Date(account.date), 'yyyy-MM-dd', { locale: ar })}
+                            {format(new Date(account.date), 'yyyy-MM-dd', {
+                              locale: ar,
+                            })}
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="font-semibold text-pink-300">
@@ -671,10 +871,15 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
         </div>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog
+          open={!!deleteAccountId}
+          onOpenChange={() => setDeleteAccountId(null)}
+        >
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">
+                تأكيد الحذف
+              </AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
                 هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>

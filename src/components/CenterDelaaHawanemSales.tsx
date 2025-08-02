@@ -115,6 +115,13 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
+      
+      if (!token) {
+        throw new Error('لم يتم العثور على رمز التفويض');
+      }
+
+      console.log('Fetching sales from:', 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales'); // Debug log
+
       const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -122,12 +129,28 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
         },
       });
 
+      console.log('Fetch response status:', response.status); // Debug log
+
       if (!response.ok) {
-        throw new Error('فشل في جلب البيانات');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch sales:', response, errorData);
+        throw new Error(errorData.message || 'فشل في جلب البيانات');
       }
 
       const data = await response.json();
-      setSales(data.sales || []);
+      console.log('Fetched sales data:', data); // Debug log
+      
+      // Handle different response formats
+      let salesArray = [];
+      if (data.data && Array.isArray(data.data)) {
+        salesArray = data.data;
+      } else if (data.sales && Array.isArray(data.sales)) {
+        salesArray = data.sales;
+      } else if (Array.isArray(data)) {
+        salesArray = data;
+      }
+      
+      setSales(salesArray);
     } catch (error) {
       console.error('Error fetching sales:', error);
       toast.error('فشل في جلب البيانات');
@@ -173,6 +196,8 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
         total: calculateTotal(formData),
       };
 
+      console.log('Submitting sales data:', submitData); // Debug log
+
       const url = editingSale 
         ? `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales/${editingSale._id}`
         : 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales';
@@ -188,13 +213,21 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
         body: JSON.stringify(submitData),
       });
 
+      const responseData = await response.json();
+      console.log('Sales response data:', responseData); // Debug log
+
       if (!response.ok) {
-        throw new Error('فشل في حفظ البيانات');
+        console.error('Server error:', responseData);
+        throw new Error(responseData.message || 'فشل في حفظ البيانات');
       }
 
       toast.success(editingSale ? 'تم التحديث بنجاح' : 'تم الإنشاء بنجاح');
       resetForm();
-      fetchSales();
+      
+      // Add a small delay before fetching to ensure server has processed the request
+      setTimeout(() => {
+        fetchSales();
+      }, 100);
     } catch (error) {
       console.error('Error saving sale:', error);
       toast.error('فشل في حفظ البيانات');
@@ -517,13 +550,16 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
                   <h3 className="text-xl font-semibold text-white">قائمة المبيعات</h3>
                   <div className="flex gap-2">
                     <Button
-                      onClick={fetchSales}
+                      onClick={() => {
+                        console.log('Manual refresh triggered for sales');
+                        fetchSales();
+                      }}
                       variant="outline"
                       disabled={loading}
                       className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
                     >
                       <RefreshCw className={`ml-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                      تحديث
+                      تحديث ({sales.length})
                     </Button>
                     <Button
                       onClick={() => setShowForm(true)}
