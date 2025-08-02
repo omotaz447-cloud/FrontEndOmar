@@ -22,6 +22,10 @@ import CenterDelaaHawanemWorkers from '@/components/CenterDelaaHawanemWorkers';
 import CenterDelaaHawanemMerchants from '@/components/CenterDelaaHawanemMerchants';
 import CenterDelaaHawanemCenter from '@/components/CenterDelaaHawanemCenter';
 import CenterDelaaHawanemSales from '@/components/CenterDelaaHawanemSales';
+import WorkerCenterSeimaAccount from '@/components/WorkerCenterSeimaAccount';
+import CenterSeimaMerchantAccount from '@/components/CenterSeimaMerchantAccount';
+import CenterSeimaSales from '@/components/CenterSeimaSales';
+import CenterSeimaAccounts from '@/components/CenterSeimaAccounts';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import {
@@ -67,6 +71,10 @@ const Dashboard: React.FC = () => {
   const [isCenterDelaaHawanemMerchantsOpen, setIsCenterDelaaHawanemMerchantsOpen] = useState(false);
   const [isCenterDelaaHawanemCenterOpen, setIsCenterDelaaHawanemCenterOpen] = useState(false);
   const [isCenterDelaaHawanemSalesOpen, setIsCenterDelaaHawanemSalesOpen] = useState(false);
+  const [isWorkerCenterSeimaAccountOpen, setIsWorkerCenterSeimaAccountOpen] = useState(false);
+  const [isCenterSeimaMerchantAccountOpen, setIsCenterSeimaMerchantAccountOpen] = useState(false);
+  const [isCenterSeimaSalesOpen, setIsCenterSeimaSalesOpen] = useState(false);
+  const [isCenterSeimaAccountsOpen, setIsCenterSeimaAccountsOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -286,6 +294,14 @@ const Dashboard: React.FC = () => {
       setIsCenterDelaaHawanemCenterOpen(true);
     } else if (subSectionId === 'dalaa-sales') {
       setIsCenterDelaaHawanemSalesOpen(true);
+    } else if (subSectionId === 'sima-workers') {
+      setIsWorkerCenterSeimaAccountOpen(true);
+    } else if (subSectionId === 'sima-traders') {
+      setIsCenterSeimaMerchantAccountOpen(true);
+    } else if (subSectionId === 'sima-sales') {
+      setIsCenterSeimaSalesOpen(true);
+    } else if (subSectionId === 'sima-center') {
+      setIsCenterSeimaAccountsOpen(true);
     }
     // Add more handlers for other subsections as needed
   };
@@ -813,6 +829,30 @@ const Dashboard: React.FC = () => {
       <CenterDelaaHawanemSales
         isOpen={isCenterDelaaHawanemSalesOpen}
         onClose={() => setIsCenterDelaaHawanemSalesOpen(false)}
+      />
+
+      {/* Worker Center Seima Account Modal */}
+      <WorkerCenterSeimaAccount
+        isOpen={isWorkerCenterSeimaAccountOpen}
+        onClose={() => setIsWorkerCenterSeimaAccountOpen(false)}
+      />
+
+      {/* Center Seima Merchant Account Modal */}
+      <CenterSeimaMerchantAccount
+        isOpen={isCenterSeimaMerchantAccountOpen}
+        onClose={() => setIsCenterSeimaMerchantAccountOpen(false)}
+      />
+
+      {/* Center Seima Sales Modal */}
+      <CenterSeimaSales
+        isOpen={isCenterSeimaSalesOpen}
+        onClose={() => setIsCenterSeimaSalesOpen(false)}
+      />
+
+      {/* Center Seima Accounts Modal */}
+      <CenterSeimaAccounts
+        isOpen={isCenterSeimaAccountsOpen}
+        onClose={() => setIsCenterSeimaAccountsOpen(false)}
       />
     </div>
   );
