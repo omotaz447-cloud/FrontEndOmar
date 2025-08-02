@@ -26,6 +26,10 @@ import WorkerCenterSeimaAccount from '@/components/WorkerCenterSeimaAccount';
 import CenterSeimaMerchantAccount from '@/components/CenterSeimaMerchantAccount';
 import CenterSeimaSales from '@/components/CenterSeimaSales';
 import CenterSeimaAccounts from '@/components/CenterSeimaAccounts';
+import CenterGazaAccounts from '@/components/CenterGazaAccounts';
+import CenterGazaMerchants from '@/components/CenterGazaMerchants';
+import CenterGazaWorkers from '@/components/CenterGazaWorkers';
+import NewCenterGazaSales from '@/components/NewCenterGazaSales';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import {
@@ -75,6 +79,10 @@ const Dashboard: React.FC = () => {
   const [isCenterSeimaMerchantAccountOpen, setIsCenterSeimaMerchantAccountOpen] = useState(false);
   const [isCenterSeimaSalesOpen, setIsCenterSeimaSalesOpen] = useState(false);
   const [isCenterSeimaAccountsOpen, setIsCenterSeimaAccountsOpen] = useState(false);
+  const [isCenterGazaAccountsOpen, setIsCenterGazaAccountsOpen] = useState(false);
+  const [isCenterGazaMerchantsOpen, setIsCenterGazaMerchantsOpen] = useState(false);
+  const [isCenterGazaWorkersOpen, setIsCenterGazaWorkersOpen] = useState(false);
+  const [isNewCenterGazaSalesOpen, setIsNewCenterGazaSalesOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -302,6 +310,14 @@ const Dashboard: React.FC = () => {
       setIsCenterSeimaSalesOpen(true);
     } else if (subSectionId === 'sima-center') {
       setIsCenterSeimaAccountsOpen(true);
+    } else if (subSectionId === 'gaza-sales') {
+      setIsNewCenterGazaSalesOpen(true);
+    } else if (subSectionId === 'gaza-center') {
+      setIsCenterGazaAccountsOpen(true);
+    } else if (subSectionId === 'gaza-traders') {
+      setIsCenterGazaMerchantsOpen(true);
+    } else if (subSectionId === 'gaza-workers') {
+      setIsCenterGazaWorkersOpen(true);
     }
     // Add more handlers for other subsections as needed
   };
@@ -853,6 +869,30 @@ const Dashboard: React.FC = () => {
       <CenterSeimaAccounts
         isOpen={isCenterSeimaAccountsOpen}
         onClose={() => setIsCenterSeimaAccountsOpen(false)}
+      />
+
+      {/* Center Gaza Accounts Modal */}
+      <CenterGazaAccounts
+        isOpen={isCenterGazaAccountsOpen}
+        onClose={() => setIsCenterGazaAccountsOpen(false)}
+      />
+
+      {/* Center Gaza Merchants Modal */}
+      <CenterGazaMerchants
+        isOpen={isCenterGazaMerchantsOpen}
+        onClose={() => setIsCenterGazaMerchantsOpen(false)}
+      />
+
+      {/* Center Gaza Workers Modal */}
+      <CenterGazaWorkers
+        isOpen={isCenterGazaWorkersOpen}
+        onClose={() => setIsCenterGazaWorkersOpen(false)}
+      />
+
+      {/* New Center Gaza Sales Modal */}
+      <NewCenterGazaSales
+        isOpen={isNewCenterGazaSalesOpen}
+        onClose={() => setIsNewCenterGazaSalesOpen(false)}
       />
     </div>
   );

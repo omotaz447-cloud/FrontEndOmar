@@ -455,7 +455,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                         setFormData((prev) => ({ ...prev, date }))
                       }
                       initialFocus
-                      className="text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700"
+                      className="bg-gray-800 text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700 [&_.rdp-head_cell]:text-gray-300 [&_.rdp-nav_button]:text-white [&_.rdp-nav_button:hover]:bg-gray-700"
                     />
                   </PopoverContent>
                 </Popover>
@@ -806,7 +806,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                           setEditFormData((prev) => ({ ...prev, date }))
                         }
                         initialFocus
-                        className="text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700"
+                        className="bg-gray-800 text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700 [&_.rdp-head_cell]:text-gray-300 [&_.rdp-nav_button]:text-white [&_.rdp-nav_button:hover]:bg-gray-700"
                       />
                     </PopoverContent>
                   </Popover>
