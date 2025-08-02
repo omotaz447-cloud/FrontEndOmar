@@ -80,7 +80,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
     withdrawal: '',
   });
   const [editingAccount, setEditingAccount] = useState<WorkerAccountData | null>(null);
-  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [deleteAccountName, setDeleteAccountName] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -258,12 +258,12 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!deleteAccountId) return;
+    if (!deleteAccountName) return;
 
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-x.vercel.app/api/worker-center-seima-account/${deleteAccountId}`, {
+      const response = await fetch(`https://backend-omar-x.vercel.app/api/worker-center-seima-account/${encodeURIComponent(deleteAccountName)}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -275,7 +275,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
       }
 
       toast.success('تم الحذف بنجاح');
-      setDeleteAccountId(null);
+      setDeleteAccountName(null);
       fetchAccounts();
     } catch (error) {
       console.error('Error deleting worker account:', error);
@@ -549,7 +549,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setDeleteAccountId(account._id)}
+                                onClick={() => setDeleteAccountName(account.name)}
                                 className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -573,12 +573,12 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         </div>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountName} onOpenChange={() => setDeleteAccountName(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
-                هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
+                هل أنت متأكد من حذف سجل العامل "{deleteAccountName}"؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

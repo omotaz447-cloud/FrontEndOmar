@@ -144,8 +144,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
-  const [deleteAccount, setDeleteAccount] =
-    useState<WorkerGargaAccountData | null>(null);
+  const [deleteAccountName, setDeleteAccountName] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch existing accounts
@@ -288,17 +287,17 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
   // Handle delete account
   const handleDelete = (account: WorkerGargaAccountData) => {
-    setDeleteAccount(account);
+    setDeleteAccountName(account.name);
   };
 
   // Handle actual delete after confirmation
   const handleDeleteAccount = async () => {
-    if (!deleteAccount?._id) return;
+    if (!deleteAccountName) return;
 
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${encodeURIComponent(deleteAccountName)}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -308,7 +307,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       if (response.ok) {
         toast.success('تم حذف السجل بنجاح');
         fetchAccounts();
-        setDeleteAccount(null);
+        setDeleteAccountName(null);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -1074,8 +1073,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
-        open={!!deleteAccount}
-        onOpenChange={() => setDeleteAccount(null)}
+        open={!!deleteAccountName}
+        onOpenChange={() => setDeleteAccountName(null)}
       >
         <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
           <AlertDialogHeader>
@@ -1083,14 +1082,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
               تأكيد الحذف
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300 text-right">
-              هل أنت متأكد من حذف سجل العامل "{deleteAccount?.name}"؟
+              هل أنت متأكد من حذف سجل العامل "{deleteAccountName}"؟
               <br />
               هذا الإجراء لا يمكن التراجع عنه.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex justify-start space-x-2 space-x-reverse">
             <AlertDialogCancel
-              onClick={() => setDeleteAccount(null)}
+              onClick={() => setDeleteAccountName(null)}
               className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
             >
               إلغاء
