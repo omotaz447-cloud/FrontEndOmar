@@ -125,7 +125,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsLoading(true);
     try {
       const headers = getAuthHeaders();
-      const response = await fetch('https://waheed-web.vercel.app/api/center-delaa-hawanem-worker', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker', {
         headers,
       });
       if (response.ok) {
@@ -164,8 +164,8 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
     try {
       const url = editingWorker 
-        ? `https://waheed-web.vercel.app/api/center-delaa-hawanem-worker/${editingWorker._id}`
-        : 'https://waheed-web.vercel.app/api/center-delaa-hawanem-worker';
+        ? `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${editingWorker._id}`
+        : 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker';
       
       const method = editingWorker ? 'PUT' : 'POST';
       const headers = getAuthHeaders();
@@ -206,7 +206,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     if (!editingWorker || !editingWorker.name) return;
 
     try {
-      const response = await fetch(`https://waheed-web.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(editingWorker.name)}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(editingWorker.name)}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(editFormData),
@@ -232,7 +232,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
 
     try {
       const headers = getAuthHeaders();
-      const response = await fetch(`https://waheed-web.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(deleteWorker.name)}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(deleteWorker.name)}`, {
         method: 'DELETE',
         headers,
       });

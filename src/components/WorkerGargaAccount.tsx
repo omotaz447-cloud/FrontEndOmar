@@ -153,7 +153,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/worker-garga-account',
+        'https://backend-omar-puce.vercel.app/api/worker-garga-account',
         {
           headers: getAuthHeaders(),
         },
@@ -224,7 +224,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/worker-garga-account',
+        'https://backend-omar-puce.vercel.app/api/worker-garga-account',
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -298,7 +298,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/worker-garga-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -368,7 +368,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/worker-garga-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

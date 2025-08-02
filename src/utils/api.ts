@@ -1,5 +1,5 @@
 // API configuration for the application
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://waheed-web.vercel.app';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://backend-omar-puce.vercel.app';
 
 // Helper function to create full API URLs
 export const createApiUrl = (endpoint: string): string => {

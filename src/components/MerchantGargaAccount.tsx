@@ -141,7 +141,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/merchant-garga-account',
+        'https://backend-omar-puce.vercel.app/api/merchant-garga-account',
         {
           headers: getAuthHeaders(),
         },
@@ -198,7 +198,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/merchant-garga-account',
+        'https://backend-omar-puce.vercel.app/api/merchant-garga-account',
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -275,7 +275,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/merchant-garga-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/merchant-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -330,7 +330,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/merchant-garga-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/merchant-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

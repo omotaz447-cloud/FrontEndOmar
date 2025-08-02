@@ -169,7 +169,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/exhibition-sales',
+        'https://backend-omar-puce.vercel.app/api/exhibition-sales',
         {
           headers: getAuthHeaders(),
         },
@@ -235,7 +235,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/exhibition-sales',
+        'https://backend-omar-puce.vercel.app/api/exhibition-sales',
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -321,7 +321,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/exhibition-sales/${deleteSales._id}`,
+        `https://backend-omar-puce.vercel.app/api/exhibition-sales/${deleteSales._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -386,7 +386,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/exhibition-sales/${editingSales._id}`,
+        `https://backend-omar-puce.vercel.app/api/exhibition-sales/${editingSales._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

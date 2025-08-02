@@ -107,7 +107,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/bike-storage-account',
+        'https://backend-omar-puce.vercel.app/api/bike-storage-account',
         {
           headers: getAuthHeaders(),
         }
@@ -118,7 +118,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
-        toast.error('فشل في تحميل البيانات');
+        console.error('Failed to fetch accounts:', response.statusText);
       }
     } catch (error) {
       console.error('Error fetching accounts:', error);
@@ -159,7 +159,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/bike-storage-account',
+        'https://backend-omar-puce.vercel.app/api/bike-storage-account',
         {
           method: 'POST',
           headers: getAuthHeaders(),

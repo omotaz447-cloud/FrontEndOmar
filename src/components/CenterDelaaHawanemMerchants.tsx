@@ -115,7 +115,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
   const fetchMerchants = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/center-delaa-hawanem-merchant', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant', {
         headers: getAuthHeaders(),
       });
       if (response.ok) {
@@ -171,7 +171,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/center-delaa-hawanem-merchant', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -225,7 +225,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     if (!editingMerchant || !editingMerchant.name) return;
 
     try {
-      const response = await fetch(`https://waheed-web.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant.name)}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant.name)}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -257,7 +257,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 
     try {
       const headers = getAuthHeaders();
-      const response = await fetch(`https://waheed-web.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant.name)}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant.name)}`, {
         method: 'DELETE',
         headers,
       });

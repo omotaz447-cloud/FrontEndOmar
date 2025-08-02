@@ -114,7 +114,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/garga-storage', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/garga-storage', {
         headers: getAuthHeaders(),
       });
       if (response.ok) {
@@ -171,7 +171,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/garga-storage', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/garga-storage', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -230,7 +230,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/garga-storage/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/garga-storage/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -281,7 +281,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/garga-storage/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/garga-storage/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

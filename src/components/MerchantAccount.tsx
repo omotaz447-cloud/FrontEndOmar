@@ -141,7 +141,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/merchant-account',
+        'https://backend-omar-puce.vercel.app/api/merchant-account',
         {
           headers: getAuthHeaders(),
         },
@@ -198,7 +198,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/merchant-account',
+        'https://backend-omar-puce.vercel.app/api/merchant-account',
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -275,7 +275,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/merchant-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/merchant-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -330,7 +330,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/merchant-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/merchant-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

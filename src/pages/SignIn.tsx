@@ -43,7 +43,7 @@ const SignIn: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('https://waheed-web.vercel.app/api/sample/auth/signin', {
+      const res = await fetch('https://backend-omar-puce.vercel.app/api/sample/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userName: username, password }),
@@ -117,9 +117,7 @@ const SignIn: React.FC = () => {
       console.error('Sign in error:', err);
 
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        toast.error(
-          'فشل في الاتصال بالخادم - تأكد من تشغيل الخادم على المنفذ 3000',
-        );
+        toast.error('فشل في الاتصال بالخادم');
       } else {
         const msg = err instanceof Error ? err.message : 'حدث خطأ غير متوقع';
         toast.error(msg);

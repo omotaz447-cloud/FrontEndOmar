@@ -110,7 +110,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/waheed-garga-account', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/waheed-garga-account', {
         headers: getAuthHeaders(),
       });
       if (response.ok) {
@@ -166,7 +166,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/waheed-garga-account', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/waheed-garga-account', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -241,7 +241,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/waheed-garga-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/waheed-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -290,7 +290,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/waheed-garga-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/waheed-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),

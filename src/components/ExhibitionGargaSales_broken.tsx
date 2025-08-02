@@ -129,7 +129,7 @@
 //   const fetchSales = useCallback(async () => {
 //     setIsLoading(true);
 //     try {
-//       const response = await fetch('https://waheed-web.vercel.app/api/exhibition-garga-sales', {
+//       const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
 //         headers: getAuthHeaders(),
 //       });
 //       if (response.ok) {
@@ -187,7 +187,7 @@
 //     setIsSubmitting(true);
 
 //     try {
-//       const response = await fetch('https://waheed-web.vercel.app/api/exhibition-garga-sales', {
+//       const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
 //         method: 'POST',
 //         headers: getAuthHeaders(),
 //         body: JSON.stringify({
@@ -252,7 +252,7 @@
 //     setIsDeleting(true);
 //     try {
 //       const response = await fetch(
-//         `https://waheed-web.vercel.app/api/exhibition-garga-sales/${deleteSale._id}`,
+//         `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${deleteSale._id}`,
 //         {
 //           method: 'DELETE',
 //           headers: getAuthHeaders(),
@@ -303,7 +303,7 @@
 //     setIsSubmitting(true);
 //     try {
 //       const response = await fetch(
-//         `https://waheed-web.vercel.app/api/exhibition-garga-sales/${editingSale._id}`,
+//         `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${editingSale._id}`,
 //         {
 //           method: 'PUT',
 //           headers: getAuthHeaders(),

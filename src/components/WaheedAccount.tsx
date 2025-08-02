@@ -139,7 +139,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/waheed-account',
+        'https://backend-omar-puce.vercel.app/api/waheed-account',
         {
           headers: getAuthHeaders(),
         }
@@ -194,8 +194,8 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsSubmitting(true);
     try {
       const url = editingAccount 
-        ? `https://waheed-web.vercel.app/api/waheed-account/${editingAccount._id}`
-        : 'https://waheed-web.vercel.app/api/waheed-account';
+        ? `https://backend-omar-puce.vercel.app/api/waheed-account/${editingAccount._id}`
+        : 'https://backend-omar-puce.vercel.app/api/waheed-account';
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -273,7 +273,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/waheed-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/waheed-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -338,7 +338,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/waheed-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/waheed-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

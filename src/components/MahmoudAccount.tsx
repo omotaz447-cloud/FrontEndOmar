@@ -139,7 +139,7 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://waheed-web.vercel.app/api/mahmoud-account',
+        'https://backend-omar-puce.vercel.app/api/mahmoud-account',
         {
           headers: getAuthHeaders(),
         }
@@ -194,8 +194,8 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
     setIsSubmitting(true);
     try {
       const url = editingAccount 
-        ? `https://waheed-web.vercel.app/api/mahmoud-account/${editingAccount._id}`
-        : 'https://waheed-web.vercel.app/api/mahmoud-account';
+        ? `https://backend-omar-puce.vercel.app/api/mahmoud-account/${editingAccount._id}`
+        : 'https://backend-omar-puce.vercel.app/api/mahmoud-account';
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -273,7 +273,7 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/mahmoud-account/${deleteAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/mahmoud-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -338,7 +338,7 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/mahmoud-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/mahmoud-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

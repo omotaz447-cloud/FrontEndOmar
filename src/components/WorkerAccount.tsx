@@ -145,7 +145,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
   const fetchWorkers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/worker-account', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-account', {
         headers: getAuthHeaders(),
       });
       if (response.ok) {
@@ -204,7 +204,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('https://waheed-web.vercel.app/api/worker-account', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-account', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(formData),
@@ -312,7 +312,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/worker-account/${encodeURIComponent(editingWorker.name)}`,
+        `https://backend-omar-puce.vercel.app/api/worker-account/${encodeURIComponent(editingWorker.name)}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -358,7 +358,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://waheed-web.vercel.app/api/worker-account/${encodeURIComponent(deleteWorker.name)}`,
+        `https://backend-omar-puce.vercel.app/api/worker-account/${encodeURIComponent(deleteWorker.name)}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),

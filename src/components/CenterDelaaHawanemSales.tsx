@@ -115,7 +115,7 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch('https://waheed-web.vercel.app/api/center-delaa-hawanem-sales', {
+      const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -174,8 +174,8 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
       };
 
       const url = editingSale 
-        ? `https://waheed-web.vercel.app/api/center-delaa-hawanem-sales/${editingSale._id}`
-        : 'https://waheed-web.vercel.app/api/center-delaa-hawanem-sales';
+        ? `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales/${editingSale._id}`
+        : 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales';
       
       const method = editingSale ? 'PUT' : 'POST';
 
@@ -225,7 +225,7 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://waheed-web.vercel.app/api/center-delaa-hawanem-sales/${deleteSaleId}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales/${deleteSaleId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

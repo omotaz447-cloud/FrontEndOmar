@@ -203,7 +203,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://waheed-web.vercel.app${section.endpoint}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app${section.endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -257,8 +257,8 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
       };
 
       const url = editingAccount 
-        ? `https://waheed-web.vercel.app${section.endpoint}/${editingAccount._id}`
-        : `https://waheed-web.vercel.app${section.endpoint}`;
+        ? `https://backend-omar-puce.vercel.app${section.endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${section.endpoint}`;
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -304,7 +304,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://waheed-web.vercel.app${section.endpoint}/${deleteAccountId}`, {
+      const response = await fetch(`https://backend-omar-puce.vercel.app${section.endpoint}/${deleteAccountId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
