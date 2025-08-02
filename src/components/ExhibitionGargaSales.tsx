@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+'use client';
+
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -44,7 +47,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { CalendarIcon, Building2, DollarSign, TrendingDown, TrendingUp, User, FileText, Edit, Trash2, RefreshCw, Save } from 'lucide-react';
+import {
+  CalendarIcon,
+  Building2,
+  DollarSign,
+  TrendingDown,
+  TrendingUp,
+  User,
+  FileText,
+  Edit,
+  Trash2,
+  RefreshCw,
+  Save,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -108,10 +123,13 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
   const [sales, setSales] = useState<ExhibitionGargaSalesData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingSale, setEditingSale] = useState<ExhibitionGargaSalesData | null>(null);
-  const [deleteSale, setDeleteSale] = useState<ExhibitionGargaSalesData | null>(null);
+  const [editingSale, setEditingSale] =
+    useState<ExhibitionGargaSalesData | null>(null);
+  const [deleteSale, setDeleteSale] = useState<ExhibitionGargaSalesData | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Edit dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<FormData>({
@@ -129,9 +147,12 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
   const fetchSales = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/exhibition-garga-sales',
+        {
+          headers: getAuthHeaders(),
+        },
+      );
       if (response.ok) {
         const data = await response.json();
         setSales(Array.isArray(data) ? data : []);
@@ -168,42 +189,50 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
   };
 
   const calculateTotal = () => {
-    const sold = parseFloat(formData.sold) || 0;
-    const rent = parseFloat(formData.rent) || 0;
-    const expenses = parseFloat(formData.expenses) || 0;
-    const exits = parseFloat(formData.exits) || 0;
+    const sold = Number.parseFloat(formData.sold) || 0;
+    const rent = Number.parseFloat(formData.rent) || 0;
+    const expenses = Number.parseFloat(formData.expenses) || 0;
+    const exits = Number.parseFloat(formData.exits) || 0;
     return sold - rent - expenses - exits;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.day || !formData.date || !formData.rent || !formData.expenses || 
-        !formData.sold || !formData.exitName || !formData.exits) {
+
+    if (
+      !formData.day ||
+      !formData.date ||
+      !formData.rent ||
+      !formData.expenses ||
+      !formData.sold ||
+      !formData.exitName ||
+      !formData.exits
+    ) {
       toast.error('جميع الحقول مطلوبة');
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          'اليوم': formData.day,
-          'التاريخ': formData.date?.toISOString(),
-          'الايجار': parseFloat(formData.rent),
-          'المصاريف': parseFloat(formData.expenses),
-          'المباع': parseFloat(formData.sold),
-          'اسم الخارج': formData.exitName,
-          'الخوارج': parseFloat(formData.exits),
-          'الملاحظات': formData.notes,
-        }),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/exhibition-garga-sales',
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            اليوم: formData.day,
+            التاريخ: formData.date?.toISOString(),
+            الايجار: Number.parseFloat(formData.rent),
+            المصاريف: Number.parseFloat(formData.expenses),
+            المباع: Number.parseFloat(formData.sold),
+            'اسم الخارج': formData.exitName,
+            الخوارج: Number.parseFloat(formData.exits),
+            الملاحظات: formData.notes,
+          }),
+        },
+      );
 
       const result = await response.json();
-
       if (response.ok) {
         toast.success('تم إنشاء المبيعات بنجاح');
         setFormData({
@@ -248,7 +277,6 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
   const handleDelete = async () => {
     if (!deleteSale?._id) return;
-
     setIsDeleting(true);
     try {
       const response = await fetch(
@@ -256,9 +284,8 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
-        }
+        },
       );
-
       if (response.ok) {
         toast.success('تم حذف المبيعات بنجاح');
         fetchSales(); // Refresh the table
@@ -291,15 +318,20 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
   // Handle edit form submit
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!editFormData.day || !editFormData.date || !editFormData.rent || 
-        !editFormData.expenses || !editFormData.sold || !editFormData.exitName || !editFormData.exits) {
+    if (
+      !editFormData.day ||
+      !editFormData.date ||
+      !editFormData.rent ||
+      !editFormData.expenses ||
+      !editFormData.sold ||
+      !editFormData.exitName ||
+      !editFormData.exits
+    ) {
       toast.error('جميع الحقول مطلوبة');
       return;
     }
 
     if (!editingSale?._id) return;
-
     setIsSubmitting(true);
     try {
       const response = await fetch(
@@ -308,20 +340,19 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            'اليوم': editFormData.day,
-            'التاريخ': editFormData.date?.toISOString(),
-            'الايجار': parseFloat(editFormData.rent),
-            'المصاريف': parseFloat(editFormData.expenses),
-            'المباع': parseFloat(editFormData.sold),
+            اليوم: editFormData.day,
+            التاريخ: editFormData.date?.toISOString(),
+            الايجار: Number.parseFloat(editFormData.rent),
+            المصاريف: Number.parseFloat(editFormData.expenses),
+            المباع: Number.parseFloat(editFormData.sold),
             'اسم الخارج': editFormData.exitName,
-            'الخوارج': parseFloat(editFormData.exits),
-            'الملاحظات': editFormData.notes,
+            الخوارج: Number.parseFloat(editFormData.exits),
+            الملاحظات: editFormData.notes,
           }),
-        }
+        },
       );
 
       const result = await response.json();
-
       if (response.ok) {
         toast.success('تم تحديث المبيعات بنجاح');
         setEditDialogOpen(false);
@@ -343,10 +374,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
   // Calculate total for edit form
   const calculateEditTotal = () => {
-    const sold = parseFloat(editFormData.sold) || 0;
-    const rent = parseFloat(editFormData.rent) || 0;
-    const expenses = parseFloat(editFormData.expenses) || 0;
-    const exits = parseFloat(editFormData.exits) || 0;
+    const sold = Number.parseFloat(editFormData.sold) || 0;
+    const rent = Number.parseFloat(editFormData.rent) || 0;
+    const expenses = Number.parseFloat(editFormData.expenses) || 0;
+    const exits = Number.parseFloat(editFormData.exits) || 0;
     return sold - rent - expenses - exits;
   };
 
@@ -356,50 +387,95 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
     <>
       {/* Main Dialog */}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[98vw] max-w-[98vw] sm:w-[95vw] sm:max-w-6xl lg:max-w-7xl h-[98vh] max-h-[98vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 p-0">
-          <div className="flex flex-col h-full">
-            <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 border-b border-gray-700/50 flex-shrink-0">
-              <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-white text-center">
-                <div className="flex items-center justify-center space-x-2 sm:space-x-3 space-x-reverse">
-                  <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-emerald-400" />
-                  <span>مبيعات جرجا مول العرب</span>
-                </div>
-              </DialogTitle>
-            </DialogHeader>
+        <DialogContent className="w-[98vw] max-w-[98vw] sm:w-[95vw] sm:max-w-6xl lg:max-w-7xl h-[98vh] max-h-[98vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 p-0 flex flex-col">
+          {/* Fixed Header */}
+          <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 border-b border-gray-700/50 flex-shrink-0">
+            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-white text-center">
+              <div className="flex items-center justify-center space-x-2 sm:space-x-3 space-x-reverse">
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-emerald-400" />
+                <span>مبيعات جرجا مول العرب</span>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="flex-1 min-h-0 px-3 sm:px-6 pb-3 sm:pb-6">
-              <div className="h-full flex flex-col">
+          {/* Scrollable Content */}
+          <div className="flex-1 min-h-0 px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 hover:scrollbar-thumb-gray-500">
+              <div className="pr-2">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="flex-1 flex flex-col min-h-0"
+                  className="space-y-4"
                 >
-                  <div className="flex-1 min-h-0 flex flex-col">
-                    <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-2 sm:space-y-3">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                  {/* Form Section */}
+                  <form
+                    onSubmit={handleSubmit}
+                    className="space-y-2 sm:space-y-3"
+                  >
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                       {/* Day */}
                       <div className="space-y-1">
-                        <Label htmlFor="day" className="text-white font-medium text-xs sm:text-sm">
+                        <Label
+                          htmlFor="day"
+                          className="text-white font-medium text-xs sm:text-sm"
+                        >
                           اليوم
                         </Label>
                         <div className="relative">
                           <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
                           <Select
                             value={formData.day}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, day: value }))}
+                            onValueChange={(value) =>
+                              setFormData((prev) => ({ ...prev, day: value }))
+                            }
                           >
                             <SelectTrigger className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 h-8 sm:h-10 text-xs sm:text-sm">
                               <SelectValue placeholder="اختر اليوم" />
                             </SelectTrigger>
-                            <SelectContent className="bg-gray-800 border-gray-600">
-                              <SelectItem value="الأحد" className="text-white hover:bg-gray-700 focus:bg-gray-700">الأحد</SelectItem>
-                              <SelectItem value="الاثنين" className="text-white hover:bg-gray-700 focus:bg-gray-700">الاثنين</SelectItem>
-                              <SelectItem value="الثلاثاء" className="text-white hover:bg-gray-700 focus:bg-gray-700">الثلاثاء</SelectItem>
-                              <SelectItem value="الأربعاء" className="text-white hover:bg-gray-700 focus:bg-gray-700">الأربعاء</SelectItem>
-                              <SelectItem value="الخميس" className="text-white hover:bg-gray-700 focus:bg-gray-700">الخميس</SelectItem>
-                              <SelectItem value="الجمعة" className="text-white hover:bg-gray-700 focus:bg-gray-700">الجمعة</SelectItem>
-                              <SelectItem value="السبت" className="text-white hover:bg-gray-700 focus:bg-gray-700">السبت</SelectItem>
+                            <SelectContent className="bg-gray-800 border-gray-600 max-h-60 overflow-y-auto">
+                              <SelectItem
+                                value="الأحد"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الأحد
+                              </SelectItem>
+                              <SelectItem
+                                value="الاثنين"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الاثنين
+                              </SelectItem>
+                              <SelectItem
+                                value="الثلاثاء"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الثلاثاء
+                              </SelectItem>
+                              <SelectItem
+                                value="الأربعاء"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الأربعاء
+                              </SelectItem>
+                              <SelectItem
+                                value="الخميس"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الخميس
+                              </SelectItem>
+                              <SelectItem
+                                value="الجمعة"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                الجمعة
+                              </SelectItem>
+                              <SelectItem
+                                value="السبت"
+                                className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                              >
+                                السبت
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -407,7 +483,9 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Date */}
                       <div className="space-y-2">
-                        <Label className="text-white font-medium text-sm sm:text-base">التاريخ</Label>
+                        <Label className="text-white font-medium text-sm sm:text-base">
+                          التاريخ
+                        </Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
@@ -426,7 +504,9 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                             <Calendar
                               mode="single"
                               selected={formData.date}
-                              onSelect={(date) => setFormData(prev => ({ ...prev, date }))}
+                              onSelect={(date) =>
+                                setFormData((prev) => ({ ...prev, date }))
+                              }
                               initialFocus
                               className="bg-gray-800 text-white border-0 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day]:hover:bg-emerald-600/20 [&_.rdp-day]:text-white [&_.rdp-head_cell]:text-gray-300 [&_.rdp-nav_button]:text-white [&_.rdp-nav_button]:hover:bg-gray-700 [&_.rdp-caption]:text-white"
                             />
@@ -436,7 +516,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Rent */}
                       <div className="space-y-2">
-                        <Label htmlFor="rent" className="text-white font-medium text-sm sm:text-base">
+                        <Label
+                          htmlFor="rent"
+                          className="text-white font-medium text-sm sm:text-base"
+                        >
                           الإيجار
                         </Label>
                         <div className="relative">
@@ -456,7 +539,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Expenses */}
                       <div className="space-y-2">
-                        <Label htmlFor="expenses" className="text-white font-medium text-sm sm:text-base">
+                        <Label
+                          htmlFor="expenses"
+                          className="text-white font-medium text-sm sm:text-base"
+                        >
                           المصاريف
                         </Label>
                         <div className="relative">
@@ -476,7 +562,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Sold */}
                       <div className="space-y-2">
-                        <Label htmlFor="sold" className="text-white font-medium text-sm sm:text-base">
+                        <Label
+                          htmlFor="sold"
+                          className="text-white font-medium text-sm sm:text-base"
+                        >
                           المباع
                         </Label>
                         <div className="relative">
@@ -496,7 +585,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Exit Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="exitName" className="text-white font-medium text-sm sm:text-base">
+                        <Label
+                          htmlFor="exitName"
+                          className="text-white font-medium text-sm sm:text-base"
+                        >
                           اسم الخارج
                         </Label>
                         <div className="relative">
@@ -516,7 +608,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Exits */}
                       <div className="space-y-2">
-                        <Label htmlFor="exits" className="text-white font-medium text-sm sm:text-base">
+                        <Label
+                          htmlFor="exits"
+                          className="text-white font-medium text-sm sm:text-base"
+                        >
                           الخوارج
                         </Label>
                         <div className="relative">
@@ -536,10 +631,14 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                       {/* Total Display */}
                       <div className="space-y-2">
-                        <Label className="text-white font-medium text-sm sm:text-base">الإجمالي</Label>
+                        <Label className="text-white font-medium text-sm sm:text-base">
+                          الإجمالي
+                        </Label>
                         <div className="relative">
                           <DollarSign className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                          <div className={`bg-gray-700 border border-gray-600 rounded-md pr-10 sm:pr-12 py-2 sm:py-3 text-white font-bold text-sm sm:text-base ${total >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          <div
+                            className={`bg-gray-700 border border-gray-600 rounded-md pr-10 sm:pr-12 py-2 sm:py-3 text-white font-bold text-sm sm:text-base ${total >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                          >
                             {total.toFixed(2)} جنيه
                           </div>
                         </div>
@@ -548,7 +647,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Notes */}
                     <div className="space-y-2">
-                      <Label htmlFor="notes" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="notes"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         ملاحظات (اختياري)
                       </Label>
                       <div className="relative">
@@ -558,7 +660,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                           name="notes"
                           value={formData.notes}
                           onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
+                          className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base resize-none"
                           placeholder="أدخل أي ملاحظات إضافية..."
                         />
                       </div>
@@ -574,7 +676,11 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                         {isSubmitting ? (
                           <motion.div
                             animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            transition={{
+                              duration: 1,
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: 'linear',
+                            }}
                             className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full ml-2"
                           />
                         ) : null}
@@ -589,7 +695,11 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                         {isLoading ? (
                           <motion.div
                             animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            transition={{
+                              duration: 1,
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: 'linear',
+                            }}
                             className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
                           />
                         ) : (
@@ -598,67 +708,124 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                       </Button>
                     </div>
                   </form>
-                  </div>
 
                   {/* Table Section */}
-                  <div className="mt-2">
+                  <div className="mt-4">
                     <Card className="bg-gray-800/60 border-gray-700/50">
                       <CardContent className="p-2">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
-                          <h3 className="text-sm font-bold text-white">سجلات المبيعات</h3>
+                          <h3 className="text-sm font-bold text-white">
+                            سجلات المبيعات
+                          </h3>
                           <span className="text-gray-400 text-xs">
                             إجمالي السجلات: {sales.length}
                           </span>
                         </div>
-
                         {isLoading ? (
                           <div className="flex items-center justify-center py-8">
                             <motion.div
                               animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              transition={{
+                                duration: 1,
+                                repeat: Number.POSITIVE_INFINITY,
+                                ease: 'linear',
+                              }}
                               className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-emerald-500 border-t-transparent rounded-full"
                             />
-                            <span className="text-white mr-3 text-sm sm:text-base">جاري تحميل البيانات...</span>
+                            <span className="text-white mr-3 text-sm sm:text-base">
+                              جاري تحميل البيانات...
+                            </span>
                           </div>
                         ) : sales.length === 0 ? (
                           <div className="text-center py-8">
                             <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-500 mx-auto mb-4" />
-                            <p className="text-gray-400 text-base sm:text-lg">لا توجد سجلات مبيعات</p>
-                            <p className="text-gray-500 text-xs sm:text-sm mt-2">قم بإضافة مبيعات جديدة للبدء</p>
+                            <p className="text-gray-400 text-base sm:text-lg">
+                              لا توجد سجلات مبيعات
+                            </p>
+                            <p className="text-gray-500 text-xs sm:text-sm mt-2">
+                              قم بإضافة مبيعات جديدة للبدء
+                            </p>
                           </div>
                         ) : (
                           <div className="w-full">
-                            <div className="w-full">
+                            <div className="max-h-96 overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                               <div className="rounded-lg border border-gray-700/30">
                                 <Table className="w-full">
                                   <TableHeader>
                                     <TableRow className="border-gray-700/30 hover:bg-gray-800/30">
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">اليوم</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">التاريخ</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">الإيجار</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">المصاريف</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">المباع</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">اسم الخارج</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">الخوارج</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">الإجمالي</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">ملاحظات</TableHead>
-                                      <TableHead className="text-gray-300 font-semibold text-center text-xs px-1 py-1 whitespace-nowrap">الإجراءات</TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        اليوم
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        التاريخ
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        الإيجار
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        المصاريف
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        المباع
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        اسم الخارج
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        الخوارج
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        الإجمالي
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-right text-xs px-1 py-1 whitespace-nowrap">
+                                        ملاحظات
+                                      </TableHead>
+                                      <TableHead className="text-gray-300 font-semibold text-center text-xs px-1 py-1 whitespace-nowrap">
+                                        الإجراءات
+                                      </TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
                                     {sales.map((sale, index) => (
-                                      <TableRow key={sale._id || index} className="border-gray-700/30 hover:bg-gray-800/30">
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.day}</TableCell>
+                                      <TableRow
+                                        key={sale._id || index}
+                                        className="border-gray-700/30 hover:bg-gray-800/30"
+                                      >
                                         <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
-                                          {format(new Date(sale.date), 'dd/MM/yyyy', { locale: ar })}
+                                          {sale.day}
                                         </TableCell>
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.rent} جنيه</TableCell>
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.expenses} جنيه</TableCell>
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.sold} جنيه</TableCell>
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.exitName}</TableCell>
-                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{sale.exits} جنيه</TableCell>
-                                        <TableCell className={`text-xs px-1 py-1 font-bold whitespace-nowrap ${(sale.sold - sale.rent - sale.expenses - sale.exits) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                          {(sale.sold - sale.rent - sale.expenses - sale.exits).toFixed(2)} جنيه
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {format(
+                                            new Date(sale.date),
+                                            'dd/MM/yyyy',
+                                            { locale: ar },
+                                          )}
+                                        </TableCell>
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {sale.rent} جنيه
+                                        </TableCell>
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {sale.expenses} جنيه
+                                        </TableCell>
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {sale.sold} جنيه
+                                        </TableCell>
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {sale.exitName}
+                                        </TableCell>
+                                        <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
+                                          {sale.exits} جنيه
+                                        </TableCell>
+                                        <TableCell
+                                          className={`text-xs px-1 py-1 font-bold whitespace-nowrap ${sale.sold - sale.rent - sale.expenses - sale.exits >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                                        >
+                                          {(
+                                            sale.sold -
+                                            sale.rent -
+                                            sale.expenses -
+                                            sale.exits
+                                          ).toFixed(2)}{' '}
+                                          جنيه
                                         </TableCell>
                                         <TableCell className="text-white text-xs px-1 py-1 max-w-[80px] truncate">
                                           {sale.notes || '-'}
@@ -676,7 +843,9 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                                             <Button
                                               size="sm"
                                               variant="outline"
-                                              onClick={() => setDeleteSale(sale)}
+                                              onClick={() =>
+                                                setDeleteSale(sale)
+                                              }
                                               className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 p-1 h-6 w-6"
                                             >
                                               <Trash2 className="w-3 h-3" />
@@ -695,11 +864,12 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                     </Card>
                   </div>
 
-                  <div className="flex justify-center pt-2">
+                  {/* Close Button */}
+                  <div className="flex justify-center pt-4 pb-2">
                     <Button
                       variant="outline"
                       onClick={onClose}
-                      className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 text-sm px-4 py-2 h-8"
+                      className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 text-sm px-4 py-2 h-8 bg-transparent"
                     >
                       إغلاق
                     </Button>
@@ -708,75 +878,130 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Delete Confirmation Dialog */}
-          <AlertDialog open={!!deleteSale} onOpenChange={() => setDeleteSale(null)}>
-            <AlertDialogContent className="bg-gray-900 border-gray-700 w-[90vw] max-w-md">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-white text-base sm:text-lg">تأكيد الحذف</AlertDialogTitle>
-                <AlertDialogDescription className="text-gray-300 text-sm sm:text-base">
-                  هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-4">
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base py-2 px-4"
-                >
-                  {isDeleting ? 'جاري الحذف...' : 'حذف'}
-                </AlertDialogAction>
-                <AlertDialogCancel 
-                  onClick={() => setDeleteSale(null)}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700 text-sm sm:text-base py-2 px-4"
-                >
-                  إلغاء
-                </AlertDialogCancel>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteSale} onOpenChange={() => setDeleteSale(null)}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700 w-[90vw] max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-base sm:text-lg">
+              تأكيد الحذف
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300 text-sm sm:text-base">
+              هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-4">
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base py-2 px-4"
+            >
+              {isDeleting ? 'جاري الحذف...' : 'حذف'}
+            </AlertDialogAction>
+            <AlertDialogCancel
+              onClick={() => setDeleteSale(null)}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700 text-sm sm:text-base py-2 px-4"
+            >
+              إلغاء
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-6xl h-[95vh] max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50 p-0">
-          <div className="flex flex-col h-full">
-            <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 border-b border-gray-700/50 flex-shrink-0">
-              <DialogTitle className="text-white text-right text-lg sm:text-xl">
-                تعديل مبيعات جرجا مول العرب
-              </DialogTitle>
-              <p className="text-gray-400 text-right text-sm sm:text-base">
-                تعديل بيانات المبيعات لتاريخ {editingSale?.date ? format(new Date(editingSale.date), 'dd/MM/yyyy', { locale: ar }) : ''}
-              </p>
-            </DialogHeader>
-            
-            <div className="flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6">
-              <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 pr-2">
-                <form onSubmit={handleEditSubmit} className="space-y-4 sm:space-y-6 py-4">
+        <DialogContent className="w-[95vw] max-w-6xl h-[95vh] max-h-[95vh] bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50 p-0 flex flex-col">
+          {/* Fixed Header */}
+          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 border-b border-gray-700/50 flex-shrink-0">
+            <DialogTitle className="text-white text-right text-lg sm:text-xl">
+              تعديل مبيعات جرجا مول العرب
+            </DialogTitle>
+            <p className="text-gray-400 text-right text-sm sm:text-base">
+              تعديل بيانات المبيعات لتاريخ{' '}
+              {editingSale?.date
+                ? format(new Date(editingSale.date), 'dd/MM/yyyy', {
+                    locale: ar,
+                  })
+                : ''}
+            </p>
+          </DialogHeader>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 min-h-0 px-4 sm:px-6 pb-4 sm:pb-6">
+            <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 hover:scrollbar-thumb-gray-500">
+              <div className="pr-2">
+                <form
+                  onSubmit={handleEditSubmit}
+                  className="space-y-4 sm:space-y-6 py-4"
+                >
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Day - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-day" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-day"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         اليوم
                       </Label>
                       <div className="relative">
                         <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
                         <Select
                           value={editFormData.day}
-                          onValueChange={(value) => setEditFormData((prev: FormData) => ({ ...prev, day: value }))}
+                          onValueChange={(value) =>
+                            setEditFormData((prev: FormData) => ({
+                              ...prev,
+                              day: value,
+                            }))
+                          }
                         >
                           <SelectTrigger className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 h-10 sm:h-12 text-sm sm:text-base">
                             <SelectValue placeholder="اختر اليوم" />
                           </SelectTrigger>
-                          <SelectContent className="bg-gray-800 border-gray-600">
-                            <SelectItem value="الأحد" className="text-white hover:bg-gray-700 focus:bg-gray-700">الأحد</SelectItem>
-                            <SelectItem value="الاثنين" className="text-white hover:bg-gray-700 focus:bg-gray-700">الاثنين</SelectItem>
-                            <SelectItem value="الثلاثاء" className="text-white hover:bg-gray-700 focus:bg-gray-700">الثلاثاء</SelectItem>
-                            <SelectItem value="الأربعاء" className="text-white hover:bg-gray-700 focus:bg-gray-700">الأربعاء</SelectItem>
-                            <SelectItem value="الخميس" className="text-white hover:bg-gray-700 focus:bg-gray-700">الخميس</SelectItem>
-                            <SelectItem value="الجمعة" className="text-white hover:bg-gray-700 focus:bg-gray-700">الجمعة</SelectItem>
-                            <SelectItem value="السبت" className="text-white hover:bg-gray-700 focus:bg-gray-700">السبت</SelectItem>
+                          <SelectContent className="bg-gray-800 border-gray-600 max-h-60 overflow-y-auto">
+                            <SelectItem
+                              value="الأحد"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الأحد
+                            </SelectItem>
+                            <SelectItem
+                              value="الاثنين"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الاثنين
+                            </SelectItem>
+                            <SelectItem
+                              value="الثلاثاء"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الثلاثاء
+                            </SelectItem>
+                            <SelectItem
+                              value="الأربعاء"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الأربعاء
+                            </SelectItem>
+                            <SelectItem
+                              value="الخميس"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الخميس
+                            </SelectItem>
+                            <SelectItem
+                              value="الجمعة"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              الجمعة
+                            </SelectItem>
+                            <SelectItem
+                              value="السبت"
+                              className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                            >
+                              السبت
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -784,7 +1009,9 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Date - Edit */}
                     <div className="space-y-2">
-                      <Label className="text-white font-medium text-sm sm:text-base">التاريخ</Label>
+                      <Label className="text-white font-medium text-sm sm:text-base">
+                        التاريخ
+                      </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -803,7 +1030,12 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                           <Calendar
                             mode="single"
                             selected={editFormData.date}
-                            onSelect={(date) => setEditFormData((prev: FormData) => ({ ...prev, date }))}
+                            onSelect={(date) =>
+                              setEditFormData((prev: FormData) => ({
+                                ...prev,
+                                date,
+                              }))
+                            }
                             initialFocus
                             className="bg-gray-800 text-white border-0 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day]:hover:bg-emerald-600/20 [&_.rdp-day]:text-white [&_.rdp-head_cell]:text-gray-300 [&_.rdp-nav_button]:text-white [&_.rdp-nav_button]:hover:bg-gray-700 [&_.rdp-caption]:text-white"
                           />
@@ -813,7 +1045,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Rent - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-rent" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-rent"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         الإيجار
                       </Label>
                       <div className="relative">
@@ -833,7 +1068,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Expenses - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-expenses" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-expenses"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         المصاريف
                       </Label>
                       <div className="relative">
@@ -853,7 +1091,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Sold - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-sold" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-sold"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         المباع
                       </Label>
                       <div className="relative">
@@ -873,7 +1114,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Exit Name - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-exitName" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-exitName"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         اسم الخارج
                       </Label>
                       <div className="relative">
@@ -893,7 +1137,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Exits - Edit */}
                     <div className="space-y-2">
-                      <Label htmlFor="edit-exits" className="text-white font-medium text-sm sm:text-base">
+                      <Label
+                        htmlFor="edit-exits"
+                        className="text-white font-medium text-sm sm:text-base"
+                      >
                         الخوارج
                       </Label>
                       <div className="relative">
@@ -913,10 +1160,14 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                     {/* Total Display - Edit */}
                     <div className="space-y-2">
-                      <Label className="text-white font-medium text-sm sm:text-base">الإجمالي</Label>
+                      <Label className="text-white font-medium text-sm sm:text-base">
+                        الإجمالي
+                      </Label>
                       <div className="relative">
                         <DollarSign className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                        <div className={`bg-gray-700 border border-gray-600 rounded-md pr-10 sm:pr-12 py-2 sm:py-3 text-white font-bold text-sm sm:text-base ${calculateEditTotal() >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <div
+                          className={`bg-gray-700 border border-gray-600 rounded-md pr-10 sm:pr-12 py-2 sm:py-3 text-white font-bold text-sm sm:text-base ${calculateEditTotal() >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                        >
                           {calculateEditTotal().toFixed(2)} جنيه
                         </div>
                       </div>
@@ -925,7 +1176,10 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
                   {/* Notes - Edit */}
                   <div className="space-y-2">
-                    <Label htmlFor="edit-notes" className="text-white font-medium text-sm sm:text-base">
+                    <Label
+                      htmlFor="edit-notes"
+                      className="text-white font-medium text-sm sm:text-base"
+                    >
                       ملاحظات (اختياري)
                     </Label>
                     <div className="relative">
@@ -935,14 +1189,14 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                         name="notes"
                         value={editFormData.notes}
                         onChange={handleEditInputChange}
-                        className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
+                        className="bg-gray-800 border-gray-600 text-white pr-10 sm:pr-12 focus:border-emerald-500 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base resize-none"
                         placeholder="أدخل أي ملاحظات إضافية..."
                       />
                     </div>
                   </div>
 
                   {/* Action Buttons - Edit */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent pb-2">
                     <Button
                       type="submit"
                       disabled={isSubmitting}
@@ -951,7 +1205,11 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                       {isSubmitting ? (
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: 'linear',
+                          }}
                           className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full ml-2"
                         />
                       ) : (
