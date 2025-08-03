@@ -47,6 +47,7 @@ import {
   X,
   Wallet,
   Calendar,
+  Search,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
@@ -92,6 +93,7 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const calculateTotal = (data: FormData) => {
     const invoice = parseFloat(data.invoice) || 0;
@@ -307,6 +309,11 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
 
   // Role-based access control
   const permissions = getRolePermissions('حساب تجار سنتر سيما');
+  
+  // Filter accounts based on search query
+  const filteredAccounts = accounts.filter(account =>
+    account.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   // Check if user can access this component
  
@@ -534,6 +541,55 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
                   </div>
                 </div>
 
+                {/* Search Input */}
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative max-w-md ml-auto">
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="البحث بالاسم..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-gray-700/50 border-gray-600/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 text-right pr-10 rounded-xl"
+                    />
+                    {searchQuery && (
+                      <motion.div
+                        className="absolute inset-y-0 left-0 flex items-center pl-3"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSearchQuery('')}
+                          className="h-auto p-1 text-gray-400 hover:text-gray-300"
+                        >
+                          ×
+                        </Button>
+                      </motion.div>
+                    )}
+                  </div>
+                  {searchQuery && (
+                    <motion.p
+                      className="text-sm text-gray-400 mt-2 text-right"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {filteredAccounts.length} نتيجة من أصل {accounts.length} سجل
+                    </motion.p>
+                  )}
+                </motion.div>
+
                 <div className="overflow-hidden rounded-lg border border-gray-700/50">
                   <Table>
                     <TableHeader>
@@ -547,7 +603,7 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {accounts.map((account) => (
+                      {filteredAccounts.map((account) => (
                         <TableRow
                           key={account._id}
                           className="bg-gray-900/50 border-gray-700/30 hover:bg-gray-800/30 transition-colors"
@@ -592,9 +648,9 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
                     </TableBody>
                   </Table>
 
-                  {accounts.length === 0 && !loading && (
+                  {filteredAccounts.length === 0 && !loading && (
                     <div className="text-center py-12 text-gray-400">
-                      لا توجد حسابات متاحة
+                      {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد حسابات متاحة'}
                     </div>
                   )}
                 </div>

@@ -45,6 +45,7 @@ import {
   RefreshCw, 
   Users,
   Calendar,
+  Search,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { getRolePermissions } from '@/utils/roleUtils';
@@ -103,6 +104,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const calculateTotal = (data: FormData) => {
     const invoice = parseFloat(data.invoice) || 0;
@@ -300,6 +302,11 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
     setShowForm(false);
   };
 
+  // Filter merchants based on search query
+  const filteredMerchants = merchants.filter(merchant =>
+    merchant.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   useEffect(() => {
     if (isOpen) {
       fetchMerchants();
@@ -343,6 +350,55 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
             </div>
           </div>
 
+          {/* Search Input */}
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="relative max-w-md ml-auto">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <Input
+                type="text"
+                placeholder="البحث بالاسم..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-gray-700/50 border-gray-600/50 text-white placeholder-gray-400 focus:ring-orange-500 focus:border-orange-500 text-right pr-10 rounded-xl"
+              />
+              {searchQuery && (
+                <motion.div
+                  className="absolute inset-y-0 left-0 flex items-center pl-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSearchQuery('')}
+                    className="h-auto p-1 text-gray-400 hover:text-gray-300"
+                  >
+                    ×
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+            {searchQuery && (
+              <motion.p
+                className="text-sm text-gray-400 mt-2 text-right"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {filteredMerchants.length} نتيجة من أصل {merchants.length} سجل
+              </motion.p>
+            )}
+          </motion.div>
+
           <div className="flex-1 overflow-auto">
             <Table>
               <TableHeader>
@@ -358,7 +414,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
               </TableHeader>
               <TableBody>
                 <AnimatePresence>
-                  {merchants.map((merchant, index) => (
+                  {filteredMerchants.map((merchant, index) => (
                     <motion.tr
                       key={merchant._id}
                       initial={{ opacity: 0, y: 20 }}
@@ -407,11 +463,15 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
               </TableBody>
             </Table>
 
-            {merchants.length === 0 && !loading && (
+            {filteredMerchants.length === 0 && !loading && (
               <div className="text-center py-12 text-gray-400">
                 <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">لا توجد بيانات تجار</p>
-                <p className="text-sm">اضغط على "إضافة تاجر جديد" لبدء الإدخال</p>
+                <p className="text-lg">
+                  {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد بيانات تجار'}
+                </p>
+                <p className="text-sm">
+                  {searchQuery ? 'جرب كلمة بحث أخرى' : 'اضغط على "إضافة تاجر جديد" لبدء الإدخال'}
+                </p>
               </div>
             )}
           </div>

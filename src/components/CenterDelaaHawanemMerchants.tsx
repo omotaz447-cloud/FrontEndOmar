@@ -50,7 +50,8 @@ import {
   User,
   Receipt,
   DollarSign,
-  FileText
+  FileText,
+  Search
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { getRolePermissions } from '@/utils/roleUtils';
@@ -123,6 +124,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
   const [deleteMerchant, setDeleteMerchant] = useState<MerchantRecord | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch existing merchants
   const fetchMerchants = useCallback(async () => {
@@ -297,6 +299,11 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
       toast.error('حدث خطأ في حذف التاجر');
     }
   };
+
+  // Filter merchants based on search query
+  const filteredMerchants = merchants.filter(merchant =>
+    merchant.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!isOpen) return null;
 
@@ -563,6 +570,55 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                       </span>
                     </div>
 
+                    {/* Search Input */}
+                    <motion.div
+                      className="mb-3"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="relative max-w-md ml-auto">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <Search className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <Input
+                          type="text"
+                          placeholder="البحث بالاسم..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full bg-gray-700/50 border-gray-600/50 text-white placeholder-gray-400 focus:ring-pink-500 focus:border-pink-500 text-right pr-10 rounded-xl h-8 text-xs"
+                        />
+                        {searchQuery && (
+                          <motion.div
+                            className="absolute inset-y-0 left-0 flex items-center pl-3"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSearchQuery('')}
+                              className="h-auto p-1 text-gray-400 hover:text-gray-300"
+                            >
+                              ×
+                            </Button>
+                          </motion.div>
+                        )}
+                      </div>
+                      {searchQuery && (
+                        <motion.p
+                          className="text-xs text-gray-400 mt-1 text-right"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {filteredMerchants.length} نتيجة من أصل {merchants.length} سجل
+                        </motion.p>
+                      )}
+                    </motion.div>
+
                     {isLoading ? (
                       <div className="flex items-center justify-center py-8">
                         <motion.div
@@ -572,11 +628,15 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                         />
                         <span className="text-white mr-3 text-sm">جاري تحميل البيانات...</span>
                       </div>
-                    ) : merchants.length === 0 ? (
+                    ) : filteredMerchants.length === 0 ? (
                       <div className="text-center py-8">
                         <Building2 className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-400 text-base">لا توجد سجلات تجار</p>
-                        <p className="text-gray-500 text-xs mt-2">قم بإضافة تجار جدد للبدء</p>
+                        <p className="text-gray-400 text-base">
+                          {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات تجار'}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-2">
+                          {searchQuery ? 'جرب كلمة بحث أخرى' : 'قم بإضافة تجار جدد للبدء'}
+                        </p>
                       </div>
                     ) : (
                       <div className="w-full">
@@ -595,7 +655,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {merchants.map((merchant, index) => (
+                                {filteredMerchants.map((merchant, index) => (
                                   <TableRow key={merchant._id || index} className="border-gray-700/30 hover:bg-gray-800/30">
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{merchant.name}</TableCell>
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{merchant.invoice} جنيه</TableCell>

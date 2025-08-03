@@ -57,6 +57,7 @@ import {
   UserCircle,
   Edit,
   Trash2,
+  Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -135,6 +136,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
   const [deleteAccount, setDeleteAccount] =
     useState<MerchantGargaAccountData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
@@ -408,6 +410,11 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
   const calculateRemaining = () => {
     return toNumber(formData.invoice) - toNumber(formData.payment);
   };
+
+  // Filter accounts based on search query
+  const filteredAccounts = accounts.filter(account =>
+    account.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -826,6 +833,55 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
               <CardDescription className="text-gray-400 text-right">
                 جميع سجلات حسابات تجار جرجا معرض مول العرب
               </CardDescription>
+
+              {/* Search Input */}
+              <motion.div
+                className="mt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative max-w-md ml-auto">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="البحث بالاسم..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-gray-700/50 border-gray-600/50 text-white placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500 text-right pr-10 rounded-xl"
+                  />
+                  {searchQuery && (
+                    <motion.div
+                      className="absolute inset-y-0 left-0 flex items-center pl-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchQuery('')}
+                        className="h-auto p-1 text-gray-400 hover:text-gray-300"
+                      >
+                        ×
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+                {searchQuery && (
+                  <motion.p
+                    className="text-sm text-gray-400 mt-2 text-right"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {filteredAccounts.length} نتيجة من أصل {accounts.length} سجل
+                  </motion.p>
+                )}
+              </motion.div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -870,17 +926,17 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : accounts.length === 0 ? (
+                    ) : filteredAccounts.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={isAdminRole() ? 7 : 6}
                           className="text-center py-8 text-gray-400"
                         >
-                          لا توجد سجلات متاحة
+                          {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات متاحة'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      accounts.map((account, index) => (
+                      filteredAccounts.map((account, index) => (
                         <motion.tr
                           key={account._id || index}
                           className="border-gray-700/30 hover:bg-gray-800/50 transition-colors duration-200"
