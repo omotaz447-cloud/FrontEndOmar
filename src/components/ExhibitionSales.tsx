@@ -85,6 +85,17 @@ interface ExhibitionSalesData {
   total?: number;
 }
 
+interface FormDataType {
+  day: string;
+  date: string;
+  rent: string | number;
+  expenses: string | number;
+  sold: string | number;
+  exitName: string;
+  exits: string | number;
+  notes?: string;
+}
+
 interface ExhibitionSalesProps {
   isOpen: boolean;
   onClose: () => void;
@@ -119,14 +130,14 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     return userRole === 'admin';
   };
 
-  const [formData, setFormData] = useState<ExhibitionSalesData>({
+  const [formData, setFormData] = useState<FormDataType>({
     day: '',
     date: '',
-    rent: 0,
-    expenses: 0,
-    sold: 0,
+    rent: '',
+    expenses: '',
+    sold: '',
     exitName: '',
-    exits: 0,
+    exits: '',
     notes: '',
   });
   const [salesData, setSalesData] = useState<ExhibitionSalesData[]>([]);
@@ -138,14 +149,14 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
   // Edit/Delete dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState<ExhibitionSalesData>({
+  const [editFormData, setEditFormData] = useState<FormDataType>({
     day: '',
     date: '',
-    rent: 0,
-    expenses: 0,
-    sold: 0,
+    rent: '',
+    expenses: '',
+    sold: '',
     exitName: '',
-    exits: 0,
+    exits: '',
     notes: '',
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
@@ -203,11 +214,8 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    const numericValue = ['rent', 'expenses', 'sold', 'exits'].includes(name)
-      ? parseFloat(value) || 0
-      : value;
-
-    setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    // Keep numeric fields as strings to allow empty values and proper validation
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -234,6 +242,16 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const response = await fetch(
         'https://backend-omar-puce.vercel.app/api/exhibition-sales',
         {
@@ -242,11 +260,11 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
           body: JSON.stringify({
             day: formData.day,
             date: formData.date,
-            rent: formData.rent,
-            expenses: formData.expenses,
-            sold: formData.sold,
+            rent: convertToNumber(formData.rent),
+            expenses: convertToNumber(formData.expenses),
+            sold: convertToNumber(formData.sold),
             exitName: formData.exitName,
-            exits: formData.exits,
+            exits: convertToNumber(formData.exits),
             notes: formData.notes,
           }),
         },
@@ -258,11 +276,11 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
         setFormData({
           day: '',
           date: '',
-          rent: 0,
-          expenses: 0,
-          sold: 0,
+          rent: '',
+          expenses: '',
+          sold: '',
           exitName: '',
-          exits: 0,
+          exits: '',
           notes: '',
         });
         setSelectedDate(undefined);
@@ -296,11 +314,11 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setEditFormData({
       day: sales.day,
       date: sales.date,
-      rent: sales.rent,
-      expenses: sales.expenses,
-      sold: sales.sold,
+      rent: sales.rent?.toString() || '',
+      expenses: sales.expenses?.toString() || '',
+      sold: sales.sold?.toString() || '',
       exitName: sales.exitName,
-      exits: sales.exits,
+      exits: sales.exits?.toString() || '',
       notes: sales.notes || '',
     });
     if (sales.date) {
@@ -350,11 +368,8 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    const numericValue = ['rent', 'expenses', 'sold', 'exits'].includes(name)
-      ? parseFloat(value) || 0
-      : value;
-
-    setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
+    // Keep numeric fields as strings to allow empty values and proper validation
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle edit select change
@@ -385,6 +400,16 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const response = await fetch(
         `https://backend-omar-puce.vercel.app/api/exhibition-sales/${editingSales._id}`,
         {
@@ -393,11 +418,11 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
           body: JSON.stringify({
             day: editFormData.day,
             date: editFormData.date,
-            rent: editFormData.rent,
-            expenses: editFormData.expenses,
-            sold: editFormData.sold,
+            rent: convertToNumber(editFormData.rent),
+            expenses: convertToNumber(editFormData.expenses),
+            sold: convertToNumber(editFormData.sold),
             exitName: editFormData.exitName,
-            exits: editFormData.exits,
+            exits: convertToNumber(editFormData.exits),
             notes: editFormData.notes,
           }),
         },
@@ -427,7 +452,12 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
   // Calculate total for edit form
   const calculateEditTotal = () => {
-    return editFormData.sold - editFormData.rent - editFormData.expenses - editFormData.exits;
+    const sold = typeof editFormData.sold === 'string' ? parseFloat(editFormData.sold) || 0 : editFormData.sold;
+    const rent = typeof editFormData.rent === 'string' ? parseFloat(editFormData.rent) || 0 : editFormData.rent;
+    const expenses = typeof editFormData.expenses === 'string' ? parseFloat(editFormData.expenses) || 0 : editFormData.expenses;
+    const exits = typeof editFormData.exits === 'string' ? parseFloat(editFormData.exits) || 0 : editFormData.exits;
+    
+    return sold - rent - expenses - exits;
   };
 
   // Format date from ISO string to DD/MM/YYYY
@@ -445,7 +475,12 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
   // Calculate total (sold - rent - expenses - exits)
   const calculateTotal = () => {
-    return formData.sold - formData.rent - formData.expenses - formData.exits;
+    const sold = typeof formData.sold === 'string' ? parseFloat(formData.sold) || 0 : formData.sold;
+    const rent = typeof formData.rent === 'string' ? parseFloat(formData.rent) || 0 : formData.rent;
+    const expenses = typeof formData.expenses === 'string' ? parseFloat(formData.expenses) || 0 : formData.expenses;
+    const exits = typeof formData.exits === 'string' ? parseFloat(formData.exits) || 0 : formData.exits;
+    
+    return sold - rent - expenses - exits;
   };
 
   // Get Arabic day name
@@ -738,7 +773,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ الإيجار"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-purple-500 focus:border-purple-500 text-right"
-                      required
                     />
                   </motion.div>
 
@@ -766,7 +800,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                       onChange={handleInputChange}
                       placeholder="أدخل المصاريف"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-purple-500 focus:border-purple-500 text-right"
-                      required
                     />
                   </motion.div>
 
@@ -794,7 +827,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                       onChange={handleInputChange}
                       placeholder="أدخل قيمة المباع"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-purple-500 focus:border-purple-500 text-right"
-                      required
                     />
                   </motion.div>
 
@@ -848,7 +880,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ الخوارج"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-purple-500 focus:border-purple-500 text-right"
-                      required
                     />
                   </motion.div>
 
@@ -1221,7 +1252,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                   value={editFormData.rent}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
-                  required
                 />
               </div>
 
@@ -1242,7 +1272,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                   value={editFormData.expenses}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
-                  required
                 />
               </div>
 
@@ -1260,7 +1289,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                   value={editFormData.sold}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
-                  required
                 />
               </div>
 
@@ -1297,7 +1325,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                   value={editFormData.exits}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
-                  required
                 />
               </div>
 
