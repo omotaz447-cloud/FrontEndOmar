@@ -201,8 +201,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
         headers: getAuthHeaders(),
         body: JSON.stringify({
           الاسم: formData.name,
-          الفاتوره: formData.invoice,
-          دفعه: formData.payment,
+          الفاتوره: String(formData.invoice),
+          دفعه: String(formData.payment),
           التاريخ: formData.date,
           ملاحظات: formData.notes,
         }),
@@ -255,8 +255,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
         headers: getAuthHeaders(),
         body: JSON.stringify({
           الاسم: editFormData.name,
-          الفاتوره: editFormData.invoice,
-          دفعه: editFormData.payment,
+          الفاتوره: String(editFormData.invoice),
+          دفعه: String(editFormData.payment),
           التاريخ: editFormData.date,
           ملاحظات: editFormData.notes,
         }),
@@ -269,6 +269,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
         setEditSelectedDate(undefined);
         fetchMerchants();
       } else {
+        console.error('Failed to update merchant:', response.statusText);
         toast.error('فشل في تحديث البيانات');
       }
     } catch (error) {
@@ -295,6 +296,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
         toast.error('فشل في حذف التاجر');
       }
     } catch (error) {
+
       console.error('Error deleting merchant:', error);
       toast.error('حدث خطأ في حذف التاجر');
     }

@@ -87,7 +87,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     withdrawal: '',
   });
   const [editingWorker, setEditingWorker] = useState<WorkerData | null>(null);
-  const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
+  const [deleteWorkerName, setDeleteWorkerName] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -332,7 +332,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!deleteWorkerId) return;
+    if (!deleteWorkerName) return;
 
     setLoading(true);
     try {
@@ -344,9 +344,10 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         return;
       }
 
-      const deleteUrl = `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${deleteWorkerId}`;
+      const deleteUrl = `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${encodeURIComponent(deleteWorkerName)}`;
       console.log('Delete URL:', deleteUrl);
-      console.log('Delete worker ID:', deleteWorkerId);
+      console.log('Delete worker name:', deleteWorkerName);
+      console.log('Encoded worker name:', encodeURIComponent(deleteWorkerName));
       
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -357,24 +358,43 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       });
 
       console.log('Delete response status:', response.status);
+      console.log('Delete response ok:', response.ok);
+
+      // Get response text first to see what the server is actually returning
+      const responseText = await response.text();
+      console.log('Delete response text:', responseText);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        let errorData: { message?: string } = {};
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse error response as JSON:', e);
+          errorData = { message: responseText || `HTTP ${response.status}` };
+        }
+        
         console.error('Delete Error Details:', {
           status: response.status,
           statusText: response.statusText,
           errorData,
           deleteUrl,
-          workerId: deleteWorkerId
+          workerName: deleteWorkerName,
+          responseText
         });
-        throw new Error(errorData.message || 'فشل في حذف البيانات');
+        throw new Error(errorData.message || `فشل في حذف البيانات - HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const responseData = await response.json();
+      let responseData = {};
+      try {
+        responseData = JSON.parse(responseText);
+      } catch {
+        console.log('Response is not JSON, treating as success');
+        responseData = { message: 'تم الحذف بنجاح' };
+      }
       console.log('Delete success response:', responseData);
 
       toast.success('تم حذف العامل بنجاح');
-      setDeleteWorkerId(null);
+      setDeleteWorkerName(null);
       fetchWorkers();
     } catch (error) {
       console.error('Error deleting worker:', error);
@@ -489,7 +509,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                           )}
                           {permissions.canDelete && (
                             <Button
-                              onClick={() => setDeleteWorkerId(worker._id)}
+                              onClick={() => setDeleteWorkerName(worker.name)}
                               size="sm"
                               variant="destructive"
                             >
@@ -617,12 +637,12 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteWorkerId} onOpenChange={() => setDeleteWorkerId(null)}>
+        <AlertDialog open={!!deleteWorkerName} onOpenChange={() => setDeleteWorkerName(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
-                هل أنت متأكد من حذف هذا العامل؟ لا يمكن التراجع عن هذا الإجراء.
+                هل أنت متأكد من حذف العامل "{deleteWorkerName}"؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
