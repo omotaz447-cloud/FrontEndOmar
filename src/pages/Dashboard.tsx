@@ -30,6 +30,7 @@ import CenterGazaAccounts from '@/components/CenterGazaAccounts';
 import CenterGazaMerchants from '@/components/CenterGazaMerchants';
 import CenterGazaWorkers from '@/components/CenterGazaWorkers';
 import NewCenterGazaSales from '@/components/NewCenterGazaSales';
+import Attendance from '@/components/Attendance';
 import { getUserRole } from '@/utils/roleUtils';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
@@ -44,6 +45,7 @@ import {
   BarChart3,
   Wallet,
   Crown,
+  Clock,
 } from 'lucide-react';
 
 interface SubSection {
@@ -84,6 +86,7 @@ const Dashboard: React.FC = () => {
   const [isCenterGazaMerchantsOpen, setIsCenterGazaMerchantsOpen] = useState(false);
   const [isCenterGazaWorkersOpen, setIsCenterGazaWorkersOpen] = useState(false);
   const [isNewCenterGazaSalesOpen, setIsNewCenterGazaSalesOpen] = useState(false);
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -496,7 +499,21 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex items-center space-x-3 space-x-reverse"
           >
+            {/* Attendance Button - Admin Only */}
+            {userRole === 'admin' && (
+              <Button
+                onClick={() => setIsAttendanceOpen(true)}
+                variant="outline"
+                className="bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30 hover:border-blue-400 transition-all duration-300 backdrop-blur-sm shadow-lg hover:shadow-blue-500/25 px-6 py-3"
+              >
+                <Clock className="w-5 h-5 ml-2" />
+                الحضور والانصراف
+              </Button>
+            )}
+            
+            {/* Logout Button */}
             <Button
               onClick={handleLogout}
               variant="outline"
@@ -919,6 +936,14 @@ const Dashboard: React.FC = () => {
         isOpen={isNewCenterGazaSalesOpen}
         onClose={() => setIsNewCenterGazaSalesOpen(false)}
       />
+
+      {/* Attendance Modal - Admin Only */}
+      {userRole === 'admin' && (
+        <Attendance
+          isOpen={isAttendanceOpen}
+          onClose={() => setIsAttendanceOpen(false)}
+        />
+      )}
     </div>
   );
 };
