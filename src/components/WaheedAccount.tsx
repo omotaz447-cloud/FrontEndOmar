@@ -64,9 +64,9 @@ import { ar } from 'date-fns/locale';
 
 interface WaheedAccountData {
   _id?: string;
-  cash: number;
-  blessing: number;
-  withdrawal: number;
+  cash: number | string;
+  blessing: number | string;
+  withdrawal: number | string;
   date: string;
   notes?: string;
   total?: number;
@@ -107,9 +107,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
   };
 
   const [formData, setFormData] = useState<WaheedAccountData>({
-    cash: 0,
-    blessing: 0,
-    withdrawal: 0,
+    cash: '',
+    blessing: '',
+    withdrawal: '',
     date: '',
     notes: '',
   });
@@ -123,9 +123,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
   // Edit/Delete dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<WaheedAccountData>({
-    cash: 0,
-    blessing: 0,
-    withdrawal: 0,
+    cash: '',
+    blessing: '',
+    withdrawal: '',
     date: '',
     notes: '',
   });
@@ -169,12 +169,32 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     }
   }, [isOpen, fetchAccounts]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    if (value === '' || value === undefined || value === null) {
+      return '';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
+  // Helper function to convert string|number to number for calculations
+  const toNumber = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (value === '0') return 0;
+    if (value === '' || value === undefined || value === null) return 0;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     const numericValue = ['cash', 'blessing', 'withdrawal'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
     
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -189,7 +209,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     }
 
     // Calculate remaining (total)
-    const remaining = formData.cash + formData.blessing - formData.withdrawal;
+    const remaining = toNumber(formData.cash) + toNumber(formData.blessing) - toNumber(formData.withdrawal);
 
     setIsSubmitting(true);
     try {
@@ -203,9 +223,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
         method,
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          cash: formData.cash,
-          blessing: formData.blessing,
-          withdrawal: formData.withdrawal,
+          cash: formData.cash === '0' ? '0' : toNumber(formData.cash),
+          blessing: formData.blessing === '0' ? '0' : toNumber(formData.blessing),
+          withdrawal: formData.withdrawal === '0' ? '0' : toNumber(formData.withdrawal),
           remaining: remaining,
           notes: formData.notes,
           date: formData.date,
@@ -216,9 +236,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
         await response.json();
         toast.success(editingAccount ? 'تم تحديث السجل بنجاح' : 'تم إضافة السجل بنجاح');
         setFormData({
-          cash: 0,
-          blessing: 0,
-          withdrawal: 0,
+          cash: '',
+          blessing: '',
+          withdrawal: '',
           date: '',
           notes: '',
         });
@@ -303,9 +323,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
   const handleCancelEdit = () => {
     setEditingAccount(null);
     setFormData({
-      cash: 0,
-      blessing: 0,
-      withdrawal: 0,
+      cash: '',
+      blessing: '',
+      withdrawal: '',
       date: '',
       notes: '',
     });
@@ -318,7 +338,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
   ) => {
     const { name, value } = e.target;
     const numericValue = ['cash', 'blessing', 'withdrawal'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
     
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -343,9 +363,9 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            cash: editFormData.cash,
-            blessing: editFormData.blessing,
-            withdrawal: editFormData.withdrawal,
+            cash: editFormData.cash === '0' ? '0' : toNumber(editFormData.cash),
+            blessing: editFormData.blessing === '0' ? '0' : toNumber(editFormData.blessing),
+            withdrawal: editFormData.withdrawal === '0' ? '0' : toNumber(editFormData.withdrawal),
             notes: editFormData.notes,
             date: editFormData.date,
           }),
@@ -376,7 +396,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
 
   // Calculate total for edit form
   const calculateEditTotal = () => {
-    return editFormData.cash + editFormData.blessing - editFormData.withdrawal;
+    return toNumber(editFormData.cash) + toNumber(editFormData.blessing) - toNumber(editFormData.withdrawal);
   };
 
   const formatCurrency = (amount: number) => {
@@ -401,7 +421,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
 
   // Calculate total amount
   const calculateTotal = () => {
-    return formData.cash + formData.blessing - formData.withdrawal;
+    return toNumber(formData.cash) + toNumber(formData.blessing) - toNumber(formData.withdrawal);
   };
 
   return (
@@ -484,7 +504,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
               <CardContent>
                 <div className="text-2xl font-bold text-green-400 text-right">
                   {formatCurrency(
-                    accounts.reduce((total, account) => total + (account.cash || 0), 0)
+                    accounts.reduce((total, account) => total + toNumber(account.cash || 0), 0)
                   )}
                 </div>
               </CardContent>
@@ -500,7 +520,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
               <CardContent>
                 <div className="text-2xl font-bold text-pink-400 text-right">
                   {formatCurrency(
-                    accounts.reduce((total, account) => total + (account.blessing || 0), 0)
+                    accounts.reduce((total, account) => total + toNumber(account.blessing || 0), 0)
                   )}
                 </div>
               </CardContent>
@@ -562,7 +582,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.cash}
+                      value={formData.cash === '' ? '' : formData.cash}
                       onChange={handleInputChange}
                       placeholder="أدخل المبلغ النقدي"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-orange-500 focus:border-orange-500 text-right"
@@ -590,7 +610,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.blessing}
+                      value={formData.blessing === '' ? '' : formData.blessing}
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ ربنا كرم"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-orange-500 focus:border-orange-500 text-right"
@@ -618,7 +638,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.withdrawal}
+                      value={formData.withdrawal === '' ? '' : formData.withdrawal}
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ السحب"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-orange-500 focus:border-orange-500 text-right"
@@ -857,13 +877,13 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                         >
                           <TableCell className="text-gray-300 text-right">
-                            {formatCurrency(account.cash)}
+                            {formatCurrency(toNumber(account.cash))}
                           </TableCell>
                           <TableCell className="text-pink-400 text-right">
-                            {formatCurrency(account.blessing)}
+                            {formatCurrency(toNumber(account.blessing))}
                           </TableCell>
                           <TableCell className="text-red-400 text-right">
-                            {formatCurrency(account.withdrawal)}
+                            {formatCurrency(toNumber(account.withdrawal))}
                           </TableCell>
                           <TableCell className="text-gray-300 text-right">
                             {formatDate(account.date)}
@@ -935,7 +955,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editFormData.cash}
+                  value={editFormData.cash === '' ? '' : editFormData.cash}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                   required
@@ -953,7 +973,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editFormData.blessing}
+                  value={editFormData.blessing === '' ? '' : editFormData.blessing}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                   required
@@ -971,7 +991,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editFormData.withdrawal}
+                  value={editFormData.withdrawal === '' ? '' : editFormData.withdrawal}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                   required

@@ -216,11 +216,21 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
 
       const convertedDay = convertDayToNumber(formData.day);
       
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+      
       const submitData = {
         "الاسم": formData.name,
         "اليوم": convertedDay,
         "التاريخ": format(date, 'yyyy-MM-dd'),
-        "السحب": parseFloat(formData.withdrawal),
+        "السحب": convertToNumber(formData.withdrawal),
       };
 
       // Additional validation for converted day
@@ -231,13 +241,14 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       }
 
       // Validate all fields are present and valid
-      if (!submitData["الاسم"] || !submitData["اليوم"] || !submitData["التاريخ"] || !submitData["السحب"]) {
+      if (!submitData["الاسم"] || !submitData["اليوم"] || !submitData["التاريخ"] || 
+          (submitData["السحب"] !== "0" && !submitData["السحب"])) {
         console.error('Missing required fields:', submitData);
         toast.error('جميع الحقول مطلوبة');
         return;
       }
 
-      if (isNaN(submitData["السحب"])) {
+      if (typeof submitData["السحب"] === 'number' && isNaN(submitData["السحب"])) {
         console.error('Invalid withdrawal amount:', formData.withdrawal);
         toast.error('مبلغ السحب غير صحيح');
         return;

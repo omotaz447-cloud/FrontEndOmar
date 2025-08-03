@@ -57,8 +57,8 @@ import Cookies from 'js-cookie';
 interface MerchantRecord {
   _id?: string;
   name: string;
-  invoice: number;
-  payment: number;
+  invoice: number | string;
+  payment: number | string;
   date: string;
   notes?: string;
   total?: number;
@@ -85,8 +85,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const [formData, setFormData] = useState<MerchantRecord>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -102,8 +102,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<MerchantRecord>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -143,6 +143,14 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, fetchMerchants]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
   const handleInputChange = (field: keyof MerchantRecord, value: string | number) => {
     if (editDialogOpen) {
       setEditFormData((prev) => ({
@@ -157,14 +165,16 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   };
 
-  const calculateTotal = (invoice: number, payment: number) => {
-    return invoice - payment;
+  const calculateTotal = (invoice: number | string, payment: number | string) => {
+    const invoiceNum = typeof invoice === 'string' ? (invoice === '0' ? 0 : parseFloat(invoice) || 0) : invoice;
+    const paymentNum = typeof payment === 'string' ? (payment === '0' ? 0 : parseFloat(payment) || 0) : payment;
+    return invoiceNum - paymentNum;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.invoice || !formData.payment || !formData.date) {
+    if (!formData.name || formData.invoice === '' || formData.payment === '' || !formData.date) {
       toast.error('يرجى ملء جميع الحقول المطلوبة');
       return;
     }
@@ -201,8 +211,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
   const resetForm = () => {
     setFormData({
       name: '',
-      invoice: 0,
-      payment: 0,
+      invoice: '',
+      payment: '',
       date: '',
       notes: '',
     });
@@ -385,9 +395,9 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                           id="invoice"
                           type="number"
                           value={formData.invoice}
-                          onChange={(e) => handleInputChange('invoice', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => handleInputChange('invoice', convertToNumber(e.target.value))}
                           className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 h-8 text-xs backdrop-blur-sm pr-8"
-                          placeholder="0"
+                          placeholder="أدخل المبلغ"
                           min="0"
                           step="0.01"
                           required
@@ -406,9 +416,9 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                           id="payment"
                           type="number"
                           value={formData.payment}
-                          onChange={(e) => handleInputChange('payment', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => handleInputChange('payment', convertToNumber(e.target.value))}
                           className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 h-8 text-xs backdrop-blur-sm pr-8"
-                          placeholder="0"
+                          placeholder="أدخل المبلغ"
                           min="0"
                           step="0.01"
                           required
@@ -577,8 +587,8 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{merchant.name}</TableCell>
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{merchant.invoice} جنيه</TableCell>
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{merchant.payment} جنيه</TableCell>
-                                    <TableCell className={`text-xs px-1 py-1 whitespace-nowrap font-bold ${(merchant.invoice - merchant.payment) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                      {(merchant.invoice - merchant.payment).toFixed(2)} جنيه
+                                    <TableCell className={`text-xs px-1 py-1 whitespace-nowrap font-bold ${calculateTotal(merchant.invoice, merchant.payment) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                      {calculateTotal(merchant.invoice, merchant.payment).toFixed(2)} جنيه
                                     </TableCell>
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">
                                       {format(new Date(merchant.date), 'dd/MM/yyyy', { locale: ar })}
@@ -668,9 +678,9 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                     id="edit-invoice"
                     type="number"
                     value={editFormData.invoice}
-                    onChange={(e) => handleInputChange('invoice', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange('invoice', convertToNumber(e.target.value))}
                     className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 backdrop-blur-sm"
-                    placeholder="0"
+                    placeholder="أدخل المبلغ"
                     min="0"
                     step="0.01"
                     required
@@ -686,9 +696,9 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                     id="edit-payment"
                     type="number"
                     value={editFormData.payment}
-                    onChange={(e) => handleInputChange('payment', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange('payment', convertToNumber(e.target.value))}
                     className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 backdrop-blur-sm"
-                    placeholder="0"
+                    placeholder="أدخل المبلغ"
                     min="0"
                     step="0.01"
                     required

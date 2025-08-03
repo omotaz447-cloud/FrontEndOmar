@@ -195,6 +195,16 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
       // Convert day name to number before sending
       const dayNumber = convertDayToNumber(formData.day);
       
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+      
       const submitData = {
         الاسم: formData.name,
         name: formData.name,
@@ -202,8 +212,8 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         day: dayNumber,   // Send the number instead of day name
         التاريخ: format(date, 'yyyy-MM-dd'),
         date: format(date, 'yyyy-MM-dd'),
-        السحب: parseFloat(formData.withdrawal),
-        withdrawal: parseFloat(formData.withdrawal),
+        السحب: convertToNumber(formData.withdrawal),
+        withdrawal: convertToNumber(formData.withdrawal),
       };
 
       console.log('Submitting worker account data:', submitData); // Debug log

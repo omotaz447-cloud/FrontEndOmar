@@ -106,6 +106,14 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     date: undefined,
   });
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value) || 0;
+    return num;
+  };
+
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
@@ -170,9 +178,9 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          'نقدي': parseFloat(formData.cash),
-          'ربنا كرم': parseFloat(formData.blessing),
-          'سحب': parseFloat(formData.withdrawal),
+          'نقدي': convertToNumber(formData.cash),
+          'ربنا كرم': convertToNumber(formData.blessing),
+          'سحب': convertToNumber(formData.withdrawal),
           'ملاحظات': formData.notes,
           'التاريخ': formData.date?.toISOString(),
         }),
@@ -246,9 +254,9 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            'نقدي': parseFloat(editFormData.cash),
-            'ربنا كرم': parseFloat(editFormData.blessing),
-            'سحب': parseFloat(editFormData.withdrawal),
+            'نقدي': convertToNumber(editFormData.cash),
+            'ربنا كرم': convertToNumber(editFormData.blessing),
+            'سحب': convertToNumber(editFormData.withdrawal),
             'ملاحظات': editFormData.notes,
             'التاريخ': editFormData.date?.toISOString(),
           }),
@@ -424,7 +432,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
                         setFormData((prev) => ({ ...prev, date }))
                       }
                       initialFocus
-                      className="text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700"
+                      className="text-white bg-gray-800 [&_table]:text-white [&_th]:text-gray-300 [&_td]:text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_button:hover]:text-white [&_.rdp-day_selected]:bg-purple-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_selected:hover]:bg-purple-700 [&_.rdp-day_today]:bg-gray-700 [&_.rdp-day_today]:text-white [&_.rdp-nav_button]:text-white [&_.rdp-nav_button:hover]:bg-gray-700 [&_.rdp-head_cell]:text-gray-300 [&_.rdp-caption]:text-white [&_.rdp-dropdown]:bg-gray-800 [&_.rdp-dropdown]:text-white [&_.rdp-dropdown]:border-gray-600"
                     />
                   </PopoverContent>
                 </Popover>
@@ -748,7 +756,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
                           setEditFormData((prev) => ({ ...prev, date }))
                         }
                         initialFocus
-                        className="text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_.rdp-day_selected]:bg-emerald-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_today]:bg-gray-700"
+                        className="text-white bg-gray-800 [&_table]:text-white [&_th]:text-gray-300 [&_td]:text-white [&_button]:text-white [&_button:hover]:bg-gray-700 [&_button:hover]:text-white [&_.rdp-day_selected]:bg-purple-600 [&_.rdp-day_selected]:text-white [&_.rdp-day_selected:hover]:bg-purple-700 [&_.rdp-day_today]:bg-gray-700 [&_.rdp-day_today]:text-white [&_.rdp-nav_button]:text-white [&_.rdp-nav_button:hover]:bg-gray-700 [&_.rdp-head_cell]:text-gray-300 [&_.rdp-caption]:text-white [&_.rdp-dropdown]:bg-gray-800 [&_.rdp-dropdown]:text-white [&_.rdp-dropdown]:border-gray-600"
                       />
                     </PopoverContent>
                   </Popover>

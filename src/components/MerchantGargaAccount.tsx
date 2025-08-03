@@ -65,11 +65,11 @@ import { ar } from 'date-fns/locale';
 interface MerchantGargaAccountData {
   _id?: string;
   name: string;
-  invoice: number;
-  payment: number;
+  invoice: number | string;
+  payment: number | string;
   date: string;
   notes?: string;
-  total?: number;
+  total?: number | string;
 }
 
 interface MerchantGargaAccountProps {
@@ -108,8 +108,8 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
 
   const [formData, setFormData] = useState<MerchantGargaAccountData>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -125,8 +125,8 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<MerchantGargaAccountData>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -171,12 +171,32 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     }
   }, [isOpen, fetchAccounts]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    if (value === '' || value === undefined || value === null) {
+      return '';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
+  // Helper function to convert string|number to number for calculations
+  const toNumber = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (value === '0') return 0;
+    if (value === '' || value === undefined || value === null) return 0;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     const numericValue = ['invoice', 'payment'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -204,8 +224,8 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
           headers: getAuthHeaders(),
           body: JSON.stringify({
             الاسم: formData.name,
-            الفاتوره: formData.invoice,
-            دفعه: formData.payment,
+            الفاتوره: formData.invoice === '0' ? '0' : Number(formData.invoice),
+            دفعه: formData.payment === '0' ? '0' : Number(formData.payment),
             ملاحظات: formData.notes,
             التاريخ: formData.date,
           }),
@@ -217,8 +237,8 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
         toast.success('تم إضافة السجل بنجاح');
         setFormData({
           name: '',
-          invoice: 0,
-          payment: 0,
+          invoice: '',
+          payment: '',
           date: '',
           notes: '',
         });
@@ -305,7 +325,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
   ) => {
     const { name, value } = e.target;
     const numericValue = ['invoice', 'payment'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -336,8 +356,8 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
           headers: getAuthHeaders(),
           body: JSON.stringify({
             الاسم: editFormData.name,
-            الفاتوره: editFormData.invoice,
-            دفعه: editFormData.payment,
+            الفاتوره: editFormData.invoice === '0' ? '0' : Number(editFormData.invoice),
+            دفعه: editFormData.payment === '0' ? '0' : Number(editFormData.payment),
             ملاحظات: editFormData.notes,
             التاريخ: editFormData.date,
           }),
@@ -368,7 +388,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
 
   // Calculate remaining amount for edit form
   const calculateEditRemaining = () => {
-    return editFormData.invoice - editFormData.payment;
+    return toNumber(editFormData.invoice) - toNumber(editFormData.payment);
   };
 
   // Format date from ISO string to DD/MM/YYYY
@@ -386,7 +406,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
 
   // Calculate remaining amount (invoice - payment)
   const calculateRemaining = () => {
-    return formData.invoice - formData.payment;
+    return toNumber(formData.invoice) - toNumber(formData.payment);
   };
 
   return (
@@ -470,7 +490,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                 <div className="text-2xl font-bold text-green-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.invoice || 0),
+                      (total, account) => total + toNumber(account.invoice),
                       0,
                     ),
                   )}
@@ -489,7 +509,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                 <div className="text-2xl font-bold text-blue-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.payment || 0),
+                      (total, account) => total + toNumber(account.payment),
                       0,
                     ),
                   )}
@@ -508,7 +528,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                 <div className="text-2xl font-bold text-emerald-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.total || 0),
+                      (total, account) => total + toNumber(account.total || 0),
                       0,
                     ),
                   )}
@@ -872,14 +892,14 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                             {account.name}
                           </TableCell>
                           <TableCell className="text-green-400 text-right">
-                            {formatCurrency(account.invoice)}
+                            {formatCurrency(toNumber(account.invoice))}
                           </TableCell>
                           <TableCell className="text-blue-400 text-right">
-                            {formatCurrency(account.payment)}
+                            {formatCurrency(toNumber(account.payment))}
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="text-emerald-400 font-semibold">
-                              {formatCurrency(account.total || 0)}
+                              {formatCurrency(toNumber(account.total || 0))}
                             </span>
                           </TableCell>
                           <TableCell className="text-gray-300 text-right">

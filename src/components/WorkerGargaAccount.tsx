@@ -72,7 +72,7 @@ interface WorkerGargaAccountData {
   name: string;
   day: string;
   date: string;
-  withdrawal: number;
+  withdrawal: number | string;
 }
 
 interface WorkerGargaAccountProps {
@@ -124,7 +124,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     name: '',
     day: '',
     date: '',
-    withdrawal: 0,
+    withdrawal: '',
   });
   const [accounts, setAccounts] = useState<WorkerGargaAccountData[]>([]);
   const [editingAccount, setEditingAccount] =
@@ -140,7 +140,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     name: '',
     day: '',
     date: '',
-    withdrawal: 0,
+    withdrawal: '',
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
@@ -182,12 +182,29 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     }
   }, [isOpen, fetchAccounts]);
 
+  const convertToNumber = (value: string | number): number | string => {
+    if (value === '0' || value === 0) {
+      return '0';
+    }
+    if (typeof value === 'string') {
+      const num = parseFloat(value) || 0;
+      return num;
+    }
+    return value;
+  };
+
+  // Helper function to safely convert to number for calculations
+  const toNumber = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    return parseFloat(value) || 0;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const { name, value } = e.target;
     const numericValue = name === 'withdrawal'
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -215,7 +232,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (formData.withdrawal <= 0) {
+    if (!formData.withdrawal || toNumber(formData.withdrawal) <= 0) {
       toast.error('يرجى إدخال مبلغ السحب');
       return;
     }
@@ -231,7 +248,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
             الاسم: formData.name,
             اليوم: formData.day,
             التاريخ: formData.date,
-            السحب: formData.withdrawal,
+            السحب: formData.withdrawal === '0' ? '0' : Number(formData.withdrawal),
           }),
         },
       );
@@ -243,7 +260,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
           name: '',
           day: '',
           date: '',
-          withdrawal: 0,
+          withdrawal: '',
         });
         setSelectedDate(undefined);
         fetchAccounts(); // Refresh the table
@@ -327,7 +344,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   ) => {
     const { name, value } = e.target;
     const numericValue = name === 'withdrawal'
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -357,7 +374,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (editFormData.withdrawal <= 0) {
+    if (!editFormData.withdrawal || toNumber(editFormData.withdrawal) <= 0) {
       toast.error('يرجى إدخال مبلغ السحب');
       return;
     }
@@ -375,7 +392,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
             الاسم: editFormData.name,
             اليوم: editFormData.day,
             التاريخ: editFormData.date,
-            السحب: editFormData.withdrawal,
+            السحب: editFormData.withdrawal === '0' ? '0' : Number(editFormData.withdrawal),
           }),
         },
       );
@@ -502,7 +519,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                 <div className="text-2xl font-bold text-emerald-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.withdrawal || 0),
+                      (total, account) => total + toNumber(account.withdrawal),
                       0,
                     ),
                   )}
@@ -522,7 +539,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                   {formatCurrency(
                     accounts.length > 0
                       ? accounts.reduce(
-                          (total, account) => total + (account.withdrawal || 0),
+                          (total, account) => total + toNumber(account.withdrawal),
                           0,
                         ) / accounts.length
                       : 0,
@@ -848,7 +865,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="text-emerald-400 font-semibold">
-                              {formatCurrency(account.withdrawal)}
+                              {formatCurrency(toNumber(account.withdrawal))}
                             </span>
                           </TableCell>
                           {isAdminRole() && (

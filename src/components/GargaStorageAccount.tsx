@@ -110,6 +110,14 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     date: undefined,
   });
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value) || 0;
+    return num;
+  };
+
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
@@ -175,10 +183,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          'ثابت قبل الجرد': parseFloat(formData.fixedBeforeInventory),
-          'ثابت بعد الجرد': parseFloat(formData.fixedAfterInventory),
-          'فلوس نقدي في البيت': parseFloat(formData.cashAtHome),
-          'سحب': parseFloat(formData.withdrawal),
+          'ثابت قبل الجرد': convertToNumber(formData.fixedBeforeInventory),
+          'ثابت بعد الجرد': convertToNumber(formData.fixedAfterInventory),
+          'فلوس نقدي في البيت': convertToNumber(formData.cashAtHome),
+          'سحب': convertToNumber(formData.withdrawal),
           'التاريخ': formData.date?.toISOString(),
           'Notes': formData.notes,
         }),
@@ -286,10 +294,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            'ثابت قبل الجرد': parseFloat(editFormData.fixedBeforeInventory),
-            'ثابت بعد الجرد': parseFloat(editFormData.fixedAfterInventory),
-            'فلوس نقدي في البيت': parseFloat(editFormData.cashAtHome),
-            'سحب': parseFloat(editFormData.withdrawal),
+            'ثابت قبل الجرد': convertToNumber(editFormData.fixedBeforeInventory),
+            'ثابت بعد الجرد': convertToNumber(editFormData.fixedAfterInventory),
+            'فلوس نقدي في البيت': convertToNumber(editFormData.cashAtHome),
+            'سحب': convertToNumber(editFormData.withdrawal),
             'التاريخ': editFormData.date?.toISOString(),
             'Notes': editFormData.notes,
           }),

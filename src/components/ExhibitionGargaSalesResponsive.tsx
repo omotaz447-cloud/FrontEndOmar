@@ -187,17 +187,27 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           'اليوم': formData.day,
           'التاريخ': formData.date?.toISOString(),
-          'الايجار': parseFloat(formData.rent),
-          'المصاريف': parseFloat(formData.expenses),
-          'المباع': parseFloat(formData.sold),
+          'الايجار': convertToNumber(formData.rent),
+          'المصاريف': convertToNumber(formData.expenses),
+          'المباع': convertToNumber(formData.sold),
           'اسم الخارج': formData.exitName,
-          'الخوارج': parseFloat(formData.exits),
+          'الخوارج': convertToNumber(formData.exits),
           'الملاحظات': formData.notes,
         }),
       });
@@ -302,6 +312,16 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const response = await fetch(
         `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${editingSale._id}`,
         {
@@ -310,11 +330,11 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
           body: JSON.stringify({
             'اليوم': editFormData.day,
             'التاريخ': editFormData.date?.toISOString(),
-            'الايجار': parseFloat(editFormData.rent),
-            'المصاريف': parseFloat(editFormData.expenses),
-            'المباع': parseFloat(editFormData.sold),
+            'الايجار': convertToNumber(editFormData.rent),
+            'المصاريف': convertToNumber(editFormData.expenses),
+            'المباع': convertToNumber(editFormData.sold),
             'اسم الخارج': editFormData.exitName,
-            'الخوارج': parseFloat(editFormData.exits),
+            'الخوارج': convertToNumber(editFormData.exits),
             'الملاحظات': editFormData.notes,
           }),
         }

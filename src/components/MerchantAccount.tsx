@@ -65,8 +65,8 @@ import { ar } from 'date-fns/locale';
 interface MerchantAccountData {
   _id?: string;
   name: string;
-  invoice: number;
-  payment: number;
+  invoice: number | string;
+  payment: number | string;
   date: string;
   notes?: string;
   total?: number;
@@ -108,8 +108,8 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
 
   const [formData, setFormData] = useState<MerchantAccountData>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -125,8 +125,8 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<MerchantAccountData>({
     name: '',
-    invoice: 0,
-    payment: 0,
+    invoice: '',
+    payment: '',
     date: '',
     notes: '',
   });
@@ -171,12 +171,32 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     }
   }, [isOpen, fetchAccounts]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    if (value === '' || value === undefined || value === null) {
+      return '';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
+  // Helper function to convert string|number to number for calculations
+  const toNumber = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (value === '0') return 0;
+    if (value === '' || value === undefined || value === null) return 0;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     const numericValue = ['invoice', 'payment'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -204,8 +224,8 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
           headers: getAuthHeaders(),
           body: JSON.stringify({
             name: formData.name,
-            invoice: formData.invoice,
-            payment: formData.payment,
+            invoice: formData.invoice === '0' ? '0' : toNumber(formData.invoice),
+            payment: formData.payment === '0' ? '0' : toNumber(formData.payment),
             notes: formData.notes,
             date: formData.date,
           }),
@@ -217,8 +237,8 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
         toast.success('تم إضافة السجل بنجاح');
         setFormData({
           name: '',
-          invoice: 0,
-          payment: 0,
+          invoice: '',
+          payment: '',
           date: '',
           notes: '',
         });
@@ -305,7 +325,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
   ) => {
     const { name, value } = e.target;
     const numericValue = ['invoice', 'payment'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
 
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -336,8 +356,8 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
           headers: getAuthHeaders(),
           body: JSON.stringify({
             name: editFormData.name,
-            invoice: editFormData.invoice,
-            payment: editFormData.payment,
+            invoice: editFormData.invoice === '0' ? '0' : toNumber(editFormData.invoice),
+            payment: editFormData.payment === '0' ? '0' : toNumber(editFormData.payment),
             notes: editFormData.notes,
             date: editFormData.date,
           }),
@@ -368,7 +388,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
 
   // Calculate remaining amount for edit form
   const calculateEditRemaining = () => {
-    return editFormData.invoice - editFormData.payment;
+    return toNumber(editFormData.invoice) - toNumber(editFormData.payment);
   };
 
   // Format date from ISO string to DD/MM/YYYY
@@ -386,7 +406,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
 
   // Calculate remaining amount (invoice - payment)
   const calculateRemaining = () => {
-    return formData.invoice - formData.payment;
+    return toNumber(formData.invoice) - toNumber(formData.payment);
   };
 
   return (
@@ -470,7 +490,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                 <div className="text-2xl font-bold text-green-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.invoice || 0),
+                      (total, account) => total + toNumber(account.invoice || 0),
                       0,
                     ),
                   )}
@@ -489,7 +509,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                 <div className="text-2xl font-bold text-blue-400 text-right">
                   {formatCurrency(
                     accounts.reduce(
-                      (total, account) => total + (account.payment || 0),
+                      (total, account) => total + toNumber(account.payment || 0),
                       0,
                     ),
                   )}
@@ -582,7 +602,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.invoice}
+                      value={formData.invoice === '' ? '' : formData.invoice}
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ الفاتورة"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-teal-500 focus:border-teal-500 text-right"
@@ -610,7 +630,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.payment}
+                      value={formData.payment === '' ? '' : formData.payment}
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ الدفعة"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-teal-500 focus:border-teal-500 text-right"
@@ -879,10 +899,10 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                             {account.name}
                           </TableCell>
                           <TableCell className="text-green-400 text-right">
-                            {formatCurrency(account.invoice)}
+                            {formatCurrency(toNumber(account.invoice))}
                           </TableCell>
                           <TableCell className="text-blue-400 text-right">
-                            {formatCurrency(account.payment)}
+                            {formatCurrency(toNumber(account.payment))}
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="text-teal-400 font-semibold">
@@ -976,7 +996,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editFormData.invoice}
+                  value={editFormData.invoice === '' ? '' : editFormData.invoice}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                   required
@@ -997,7 +1017,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={editFormData.payment}
+                  value={editFormData.payment === '' ? '' : editFormData.payment}
                   onChange={handleEditInputChange}
                   className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                   required

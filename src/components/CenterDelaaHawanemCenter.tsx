@@ -119,6 +119,14 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value) || 0;
+    return num;
+  };
+
   const sections = useMemo(
     (): SectionConfig[] => [
       {
@@ -361,7 +369,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
       section.fields.forEach((field) => {
         if (field.type === 'number' && numericFormData[field.name]) {
           numericFormData[field.name] =
-            Number(numericFormData[field.name]) || 0;
+            convertToNumber(numericFormData[field.name] as string);
         }
       });
 
@@ -402,7 +410,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
       const processedFormData = { ...formData };
       section.fields.forEach((field) => {
         if (field.type === 'number' && processedFormData[field.name]) {
-          processedFormData[field.name] = Number(processedFormData[field.name]);
+          processedFormData[field.name] = convertToNumber(processedFormData[field.name] as string);
         }
       });
 

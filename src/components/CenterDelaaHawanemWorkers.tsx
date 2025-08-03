@@ -62,7 +62,7 @@ interface WorkerRecord {
   name: string;
   day: string;
   date: string;
-  withdrawal: number;
+  withdrawal: number | string;
 }
 
 interface Props {
@@ -75,7 +75,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     name: '',
     day: '',
     date: '',
-    withdrawal: 0,
+    withdrawal: '',
   });
   const [workers, setWorkers] = useState<WorkerRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +90,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     name: '',
     day: '',
     date: '',
-    withdrawal: 0,
+    withdrawal: '',
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
@@ -147,6 +147,14 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchWorkers();
@@ -156,7 +164,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.day || !formData.date || formData.withdrawal < 0) {
+    if (!formData.name || !formData.day || !formData.date || formData.withdrawal === '') {
       toast.error('يرجى ملء جميع الحقول المطلوبة');
       return;
     }
@@ -255,7 +263,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       name: '',
       day: '',
       date: '',
-      withdrawal: 0,
+      withdrawal: '',
     });
     setEditingWorker(null);
     setSelectedDate(undefined);
@@ -487,9 +495,9 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
                         id="withdrawal"
                         type="number"
                         value={formData.withdrawal}
-                        onChange={(e) => handleInputChange('withdrawal', parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleInputChange('withdrawal', convertToNumber(e.target.value))}
                         className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 h-8 text-xs backdrop-blur-sm"
-                        placeholder="0"
+                        placeholder="أدخل المبلغ"
                         min="0"
                         step="0.01"
                         required
@@ -749,9 +757,9 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
                     id="edit-withdrawal"
                     type="number"
                     value={editFormData.withdrawal}
-                    onChange={(e) => handleInputChange('withdrawal', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange('withdrawal', convertToNumber(e.target.value))}
                     className="bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:border-pink-500 focus:ring-pink-500/20 backdrop-blur-sm"
-                    placeholder="0"
+                    placeholder="أدخل المبلغ"
                     min="0"
                     step="0.01"
                     required

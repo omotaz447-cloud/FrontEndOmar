@@ -166,11 +166,22 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
+      
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const submitData = {
         name: formData.name,
         date: format(date, 'yyyy-MM-dd'),
-        invoice: parseFloat(formData.invoice),
-        payment: parseFloat(formData.payment),
+        invoice: convertToNumber(formData.invoice),
+        payment: convertToNumber(formData.payment),
         notes: formData.notes,
         total: calculateTotal(formData),
       };

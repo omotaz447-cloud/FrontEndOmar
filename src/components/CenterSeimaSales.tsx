@@ -211,21 +211,32 @@ const CenterSeimaSales: React.FC<CenterSeimaSalesProps> = ({
     try {
       const token = Cookies.get('accessToken');
       const dayNumber = convertDayToNumber(formData.day);
+      
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const submitData = {
         اليوم: dayNumber,
         day: dayNumber,
         التاريخ: format(date, 'yyyy-MM-dd'),
         date: format(date, 'yyyy-MM-dd'),
-        الايجار: parseFloat(formData.rent),
-        rent: parseFloat(formData.rent),
-        المصاريف: parseFloat(formData.expenses),
-        expenses: parseFloat(formData.expenses),
-        المباع: parseFloat(formData.sold),
-        sold: parseFloat(formData.sold),
+        الايجار: convertToNumber(formData.rent),
+        rent: convertToNumber(formData.rent),
+        المصاريف: convertToNumber(formData.expenses),
+        expenses: convertToNumber(formData.expenses),
+        المباع: convertToNumber(formData.sold),
+        sold: convertToNumber(formData.sold),
         'اسم الخارج': formData.exitName,
         exitName: formData.exitName,
-        الخوارج: parseFloat(formData.exits),
-        exits: parseFloat(formData.exits),
+        الخوارج: convertToNumber(formData.exits),
+        exits: convertToNumber(formData.exits),
         الملاحظات: formData.notes,
         notes: formData.notes,
         total: calculateTotal(formData),

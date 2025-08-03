@@ -247,13 +247,21 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: FormData) => {
-    const fixedAfter = parseFloat(data.fixedAfterInventory) || 0;
-    const cash = parseFloat(data.cashAtHome) || 0;
-    const withdrawal = parseFloat(data.withdrawal) || 0;
-    const insurance = parseFloat(data.insurance) || 0;
+    const fixedAfter = convertToNumber(data.fixedAfterInventory);
+    const cash = convertToNumber(data.cashAtHome);
+    const withdrawal = convertToNumber(data.withdrawal);
+    const insurance = convertToNumber(data.insurance);
     
-    return fixedAfter + cash - withdrawal - insurance;
+    return Number(fixedAfter) + Number(cash) - Number(withdrawal) - Number(insurance);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -307,11 +315,11 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
       const submitData = {
         ...formData,
         date: format(date, 'yyyy-MM-dd'),
-        fixedBeforeInventory: parseFloat(formData.fixedBeforeInventory),
-        fixedAfterInventory: parseFloat(formData.fixedAfterInventory),
-        cashAtHome: parseFloat(formData.cashAtHome),
-        withdrawal: parseFloat(formData.withdrawal),
-        insurance: parseFloat(formData.insurance),
+        fixedBeforeInventory: convertToNumber(formData.fixedBeforeInventory),
+        fixedAfterInventory: convertToNumber(formData.fixedAfterInventory),
+        cashAtHome: convertToNumber(formData.cashAtHome),
+        withdrawal: convertToNumber(formData.withdrawal),
+        insurance: convertToNumber(formData.insurance),
         total: calculateTotal(formData),
       };
 
@@ -687,13 +695,21 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: typeof formData) => {
-    const cash = parseFloat(data.cash) || 0;
-    const blessing = parseFloat(data.blessing) || 0;
-    const withdrawal = parseFloat(data.withdrawal) || 0;
-    const insurance = parseFloat(data.insurance) || 0;
+    const cash = convertToNumber(data.cash);
+    const blessing = convertToNumber(data.blessing);
+    const withdrawal = convertToNumber(data.withdrawal);
+    const insurance = convertToNumber(data.insurance);
     
-    return cash + blessing - withdrawal - insurance;
+    return Number(cash) + Number(blessing) - Number(withdrawal) - Number(insurance);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -745,10 +761,10 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
     try {
       const token = Cookies.get('accessToken');
       const submitData = {
-        cash: parseFloat(formData.cash),
-        blessing: parseFloat(formData.blessing),
-        withdrawal: parseFloat(formData.withdrawal),
-        insurance: parseFloat(formData.insurance),
+        cash: convertToNumber(formData.cash),
+        blessing: convertToNumber(formData.blessing),
+        withdrawal: convertToNumber(formData.withdrawal),
+        insurance: convertToNumber(formData.insurance),
         date: format(date, 'yyyy-MM-dd'),
         total: calculateTotal(formData),
       };
@@ -1095,13 +1111,21 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: typeof formData) => {
-    const cash = parseFloat(data.cash) || 0;
-    const blessing = parseFloat(data.blessing) || 0;
-    const withdrawal = parseFloat(data.withdrawal) || 0;
-    const insurance = parseFloat(data.insurance) || 0;
+    const cash = convertToNumber(data.cash);
+    const blessing = convertToNumber(data.blessing);
+    const withdrawal = convertToNumber(data.withdrawal);
+    const insurance = convertToNumber(data.insurance);
     
-    return cash + blessing - withdrawal - insurance;
+    return Number(cash) + Number(blessing) - Number(withdrawal) - Number(insurance);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -1153,10 +1177,10 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
     try {
       const token = Cookies.get('accessToken');
       const submitData = {
-        cash: parseFloat(formData.cash),
-        blessing: parseFloat(formData.blessing),
-        withdrawal: parseFloat(formData.withdrawal),
-        insurance: parseFloat(formData.insurance),
+        cash: convertToNumber(formData.cash),
+        blessing: convertToNumber(formData.blessing),
+        withdrawal: convertToNumber(formData.withdrawal),
+        insurance: convertToNumber(formData.insurance),
         date: format(date, 'yyyy-MM-dd'),
         total: calculateTotal(formData),
       };
@@ -1503,11 +1527,19 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: typeof formData) => {
-    const cash = parseFloat(data.cash) || 0;
-    const withdrawal = parseFloat(data.withdrawal) || 0;
+    const cash = convertToNumber(data.cash);
+    const withdrawal = convertToNumber(data.withdrawal);
     
-    return cash - withdrawal;
+    return Number(cash) - Number(withdrawal);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -1559,8 +1591,8 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     try {
       const token = Cookies.get('accessToken');
       const submitData = {
-        cash: parseFloat(formData.cash),
-        withdrawal: parseFloat(formData.withdrawal),
+        cash: convertToNumber(formData.cash),
+        withdrawal: convertToNumber(formData.withdrawal),
         date: format(date, 'yyyy-MM-dd'),
         notes: formData.notes,
         total: calculateTotal(formData),
@@ -1889,11 +1921,19 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: typeof formData) => {
-    const cash = parseFloat(data.cash) || 0;
-    const withdrawal = parseFloat(data.withdrawal) || 0;
+    const cash = convertToNumber(data.cash);
+    const withdrawal = convertToNumber(data.withdrawal);
     
-    return cash - withdrawal;
+    return Number(cash) - Number(withdrawal);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -1945,8 +1985,8 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
     try {
       const token = Cookies.get('accessToken');
       const submitData = {
-        cash: parseFloat(formData.cash),
-        withdrawal: parseFloat(formData.withdrawal),
+        cash: convertToNumber(formData.cash),
+        withdrawal: convertToNumber(formData.withdrawal),
         date: format(date, 'yyyy-MM-dd'),
         notes: formData.notes,
         total: calculateTotal(formData),
@@ -2276,13 +2316,21 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
   const [inventoryDate, setInventoryDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value);
+    return num;
+  };
+
   const calculateTotal = (data: typeof formData) => {
-    const fixedBefore = parseFloat(data.fixedBeforeInventory) || 0;
-    const fixedAfter = parseFloat(data.fixedAfterInventory) || 0;
-    const withdrawalFromBike = parseFloat(data.withdrawalFromBike) || 0;
-    const cashAtHome = parseFloat(data.cashAtHome) || 0;
+    const fixedBefore = convertToNumber(data.fixedBeforeInventory);
+    const fixedAfter = convertToNumber(data.fixedAfterInventory);
+    const withdrawalFromBike = convertToNumber(data.withdrawalFromBike);
+    const cashAtHome = convertToNumber(data.cashAtHome);
     
-    return fixedBefore + fixedAfter + cashAtHome - withdrawalFromBike;
+    return Number(fixedBefore) + Number(fixedAfter) + Number(cashAtHome) - Number(withdrawalFromBike);
   };
 
   const fetchAccounts = useCallback(async () => {
@@ -2334,10 +2382,10 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     try {
       const token = Cookies.get('accessToken');
       const submitData = {
-        fixedBeforeInventory: parseFloat(formData.fixedBeforeInventory),
-        fixedAfterInventory: parseFloat(formData.fixedAfterInventory),
-        withdrawalFromBike: parseFloat(formData.withdrawalFromBike),
-        cashAtHome: parseFloat(formData.cashAtHome),
+        fixedBeforeInventory: convertToNumber(formData.fixedBeforeInventory),
+        fixedAfterInventory: convertToNumber(formData.fixedAfterInventory),
+        withdrawalFromBike: convertToNumber(formData.withdrawalFromBike),
+        cashAtHome: convertToNumber(formData.cashAtHome),
         inventoryDate: format(inventoryDate, 'yyyy-MM-dd'),
         total: calculateTotal(formData),
       };

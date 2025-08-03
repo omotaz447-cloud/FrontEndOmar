@@ -177,14 +177,25 @@ const CenterGazaSales: React.FC<CenterGazaSalesProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
+      
+      // Convert string values to numbers or keep "0" as string
+      const convertToNumber = (value: string | number): number | string => {
+        if (typeof value === 'number') return value;
+        if (value === '' || value === null || value === undefined) return 0;
+        // Keep explicit "0" input as string
+        if (value === '0') return "0";
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
       const submitData = {
         day: formData.day,
         date: format(date, 'yyyy-MM-dd'),
-        rent: parseFloat(formData.rent),
-        expenses: parseFloat(formData.expenses),
-        sold: parseFloat(formData.sold),
+        rent: convertToNumber(formData.rent),
+        expenses: convertToNumber(formData.expenses),
+        sold: convertToNumber(formData.sold),
         exitName: formData.exitName,
-        exits: parseFloat(formData.exits),
+        exits: convertToNumber(formData.exits),
         notes: formData.notes,
         total: calculateTotal(formData),
       };

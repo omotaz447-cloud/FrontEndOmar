@@ -64,10 +64,10 @@ import { ar } from 'date-fns/locale';
 
 interface BikeStorageAccountData {
   _id?: string;
-  fixedBeforeInventory: number;
-  fixedAfterInventory: number;
-  cashAtHome: number;
-  withdrawal: number;
+  fixedBeforeInventory: number | string;
+  fixedAfterInventory: number | string;
+  cashAtHome: number | string;
+  withdrawal: number | string;
   date: string;
   notes?: string;
   total?: number;
@@ -102,10 +102,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
   };
 
   const [formData, setFormData] = useState<BikeStorageAccountData>({
-    fixedBeforeInventory: 0,
-    fixedAfterInventory: 0,
-    cashAtHome: 0,
-    withdrawal: 0,
+    fixedBeforeInventory: '',
+    fixedAfterInventory: '',
+    cashAtHome: '',
+    withdrawal: '',
     date: '',
     notes: '',
   });
@@ -121,10 +121,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<BikeStorageAccountData>({
-    fixedBeforeInventory: 0,
-    fixedAfterInventory: 0,
-    cashAtHome: 0,
-    withdrawal: 0,
+    fixedBeforeInventory: '',
+    fixedAfterInventory: '',
+    cashAtHome: '',
+    withdrawal: '',
     date: '',
     notes: '',
   });
@@ -166,12 +166,32 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     }
   }, [isOpen, fetchAccounts]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    if (value === '' || value === undefined || value === null) {
+      return '';
+    }
+    const num = parseFloat(value);
+    return isNaN(num) ? '' : num;
+  };
+
+  // Helper function to convert string|number to number for calculations
+  const toNumber = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (value === '0') return 0;
+    if (value === '' || value === undefined || value === null) return 0;
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     const numericValue = ['fixedBeforeInventory', 'fixedAfterInventory', 'cashAtHome', 'withdrawal'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
     
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -193,10 +213,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            fixedBeforeInventory: formData.fixedBeforeInventory,
-            fixedAfterInventory: formData.fixedAfterInventory,
-            cashAtHome: formData.cashAtHome,
-            withdrawal: formData.withdrawal,
+            fixedBeforeInventory: formData.fixedBeforeInventory === '0' ? '0' : toNumber(formData.fixedBeforeInventory),
+            fixedAfterInventory: formData.fixedAfterInventory === '0' ? '0' : toNumber(formData.fixedAfterInventory),
+            cashAtHome: formData.cashAtHome === '0' ? '0' : toNumber(formData.cashAtHome),
+            withdrawal: formData.withdrawal === '0' ? '0' : toNumber(formData.withdrawal),
             date: formData.date,
             notes: formData.notes,
           }),
@@ -207,10 +227,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
         await response.json();
         toast.success('تم إضافة السجل بنجاح');
         setFormData({
-          fixedBeforeInventory: 0,
-          fixedAfterInventory: 0,
-          cashAtHome: 0,
-          withdrawal: 0,
+          fixedBeforeInventory: '',
+          fixedAfterInventory: '',
+          cashAtHome: '',
+          withdrawal: '',
           date: '',
           notes: '',
         });
@@ -302,10 +322,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setEditingId(null);
     setIsEditDialogOpen(false);
     setEditFormData({
-      fixedBeforeInventory: 0,
-      fixedAfterInventory: 0,
-      cashAtHome: 0,
-      withdrawal: 0,
+      fixedBeforeInventory: '',
+      fixedAfterInventory: '',
+      cashAtHome: '',
+      withdrawal: '',
       date: '',
       notes: '',
     });
@@ -330,10 +350,10 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            fixedBeforeInventory: editFormData.fixedBeforeInventory,
-            fixedAfterInventory: editFormData.fixedAfterInventory,
-            cashAtHome: editFormData.cashAtHome,
-            withdrawal: editFormData.withdrawal,
+            fixedBeforeInventory: editFormData.fixedBeforeInventory === '0' ? '0' : toNumber(editFormData.fixedBeforeInventory),
+            fixedAfterInventory: editFormData.fixedAfterInventory === '0' ? '0' : toNumber(editFormData.fixedAfterInventory),
+            cashAtHome: editFormData.cashAtHome === '0' ? '0' : toNumber(editFormData.cashAtHome),
+            withdrawal: editFormData.withdrawal === '0' ? '0' : toNumber(editFormData.withdrawal),
             date: editFormData.date,
             notes: editFormData.notes,
           }),
@@ -367,7 +387,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
   ) => {
     const { name, value } = e.target;
     const numericValue = ['fixedBeforeInventory', 'fixedAfterInventory', 'cashAtHome', 'withdrawal'].includes(name)
-      ? parseFloat(value) || 0
+      ? convertToNumber(value)
       : value;
     
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
@@ -375,7 +395,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
 
   // Calculate total amount for edit form
   const calculateEditTotal = () => {
-    return editFormData.fixedBeforeInventory + editFormData.fixedAfterInventory + editFormData.cashAtHome - editFormData.withdrawal;
+    return toNumber(editFormData.fixedBeforeInventory) + toNumber(editFormData.fixedAfterInventory) + toNumber(editFormData.cashAtHome) - toNumber(editFormData.withdrawal);
   };
 
   const formatCurrency = (amount: number) => {
@@ -400,7 +420,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
 
   // Calculate total amount
   const calculateTotal = () => {
-    return formData.fixedBeforeInventory + formData.fixedAfterInventory + formData.cashAtHome - formData.withdrawal;
+    return toNumber(formData.fixedBeforeInventory) + toNumber(formData.fixedAfterInventory) + toNumber(formData.cashAtHome) - toNumber(formData.withdrawal);
   };
 
   return (
@@ -483,7 +503,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
               <CardContent>
                 <div className="text-2xl font-bold text-green-400 text-right">
                   {formatCurrency(
-                    accounts.reduce((total, account) => total + (account.cashAtHome || 0), 0)
+                    accounts.reduce((total, account) => total + toNumber(account.cashAtHome || 0), 0)
                   )}
                 </div>
               </CardContent>
@@ -499,7 +519,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
               <CardContent>
                 <div className="text-2xl font-bold text-red-400 text-right">
                   {formatCurrency(
-                    accounts.reduce((total, account) => total + (account.withdrawal || 0), 0)
+                    accounts.reduce((total, account) => total + toNumber(account.withdrawal || 0), 0)
                   )}
                 </div>
               </CardContent>
@@ -561,7 +581,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.fixedBeforeInventory}
+                      value={formData.fixedBeforeInventory === '' ? '' : formData.fixedBeforeInventory}
                       onChange={handleInputChange}
                       placeholder="أدخل المبلغ الثابت قبل الجرد"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-green-500 focus:border-green-500 text-right"
@@ -589,7 +609,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.fixedAfterInventory}
+                      value={formData.fixedAfterInventory === '' ? '' : formData.fixedAfterInventory}
                       onChange={handleInputChange}
                       placeholder="أدخل المبلغ الثابت بعد الجرد"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-green-500 focus:border-green-500 text-right"
@@ -617,7 +637,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.cashAtHome}
+                      value={formData.cashAtHome === '' ? '' : formData.cashAtHome}
                       onChange={handleInputChange}
                       placeholder="أدخل المبلغ النقدي في البيت"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-green-500 focus:border-green-500 text-right"
@@ -645,7 +665,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                       type="number"
                       min="0"
                       step="0.01"
-                      value={formData.withdrawal}
+                      value={formData.withdrawal === '' ? '' : formData.withdrawal}
                       onChange={handleInputChange}
                       placeholder="أدخل مبلغ السحب"
                       className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-green-500 focus:border-green-500 text-right"
@@ -877,16 +897,16 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                         >
                           <TableCell className="text-gray-300 text-right">
-                            {formatCurrency(account.fixedBeforeInventory)}
+                            {formatCurrency(toNumber(account.fixedBeforeInventory))}
                           </TableCell>
                           <TableCell className="text-gray-300 text-right">
-                            {formatCurrency(account.fixedAfterInventory)}
+                            {formatCurrency(toNumber(account.fixedAfterInventory))}
                           </TableCell>
                           <TableCell className="text-gray-300 text-right">
-                            {formatCurrency(account.cashAtHome)}
+                            {formatCurrency(toNumber(account.cashAtHome))}
                           </TableCell>
                           <TableCell className="text-red-400 text-right">
-                            {formatCurrency(account.withdrawal)}
+                            {formatCurrency(toNumber(account.withdrawal))}
                           </TableCell>
                           <TableCell className="text-gray-300 text-right">
                             {formatDate(account.date)}
@@ -982,7 +1002,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.fixedBeforeInventory}
+                    value={editFormData.fixedBeforeInventory === '' ? '' : editFormData.fixedBeforeInventory}
                     onChange={handleEditInputChange}
                     placeholder="أدخل المبلغ الثابت قبل الجرد"
                     className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500 text-right"
@@ -1010,7 +1030,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.fixedAfterInventory}
+                    value={editFormData.fixedAfterInventory === '' ? '' : editFormData.fixedAfterInventory}
                     onChange={handleEditInputChange}
                     placeholder="أدخل المبلغ الثابت بعد الجرد"
                     className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500 text-right"
@@ -1038,7 +1058,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.cashAtHome}
+                    value={editFormData.cashAtHome === '' ? '' : editFormData.cashAtHome}
                     onChange={handleEditInputChange}
                     placeholder="أدخل المبلغ النقدي في البيت"
                     className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500 text-right"
@@ -1066,7 +1086,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editFormData.withdrawal}
+                    value={editFormData.withdrawal === '' ? '' : editFormData.withdrawal}
                     onChange={handleEditInputChange}
                     placeholder="أدخل مبلغ السحب"
                     className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500 text-right"

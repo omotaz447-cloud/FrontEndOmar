@@ -75,6 +75,14 @@ const GenericFormDialog: React.FC<GenericFormDialogProps> = ({
     }
   }, [endpoint]);
 
+  const convertToNumber = (value: string): number | string => {
+    if (value === '0') {
+      return '0';
+    }
+    const num = parseFloat(value) || 0;
+    return num;
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchData();
@@ -257,7 +265,7 @@ const GenericFormDialog: React.FC<GenericFormDialogProps> = ({
           type={field.type}
           value={value}
           onChange={(e) => {
-            const newValue = field.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+            const newValue = field.type === 'number' ? convertToNumber(e.target.value) : e.target.value;
             setFormData({ ...formData, [field.name]: newValue });
           }}
           placeholder={field.placeholder || field.label}

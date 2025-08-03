@@ -285,6 +285,16 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
   };
 
   const prepareSubmitData = (data: FormData, section: SectionConfig) => {
+    // Convert string values to numbers or keep "0" as string
+    const convertToNumber = (value: string | number): number | string => {
+      if (typeof value === 'number') return value;
+      if (value === '' || value === null || value === undefined) return 0;
+      // Keep explicit "0" input as string
+      if (value === '0') return "0";
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
     const submitData: Record<string, string | number> = {
       التاريخ: format(date!, 'yyyy-MM-dd'),
       date: format(date!, 'yyyy-MM-dd'),
@@ -295,7 +305,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
 
     // Add section-specific fields
     section.fields.forEach(field => {
-      const value = parseFloat(data[field.key as keyof FormData] as string) || 0;
+      const value = convertToNumber(data[field.key as keyof FormData] as string);
       
       if (field.key === 'fixedBeforeInventory') {
         submitData['ثابت قبل الجرد'] = value;
