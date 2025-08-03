@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getRolePermissions } from '@/utils/roleUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -283,6 +284,12 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       }));
     }
   };
+
+  // Role-based access control
+  const permissions = getRolePermissions('حسابات عمال سنتر دلع الهوانم');
+  
+  // Check if user can access this component
+
 
   if (!isOpen) return null;
 
@@ -584,22 +591,26 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
                                     <TableCell className="text-white text-xs px-1 py-1 whitespace-nowrap">{worker.withdrawal} جنيه</TableCell>
                                     <TableCell className="text-center px-1 py-1 whitespace-nowrap">
                                       <div className="flex justify-center space-x-1 space-x-reverse">
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => handleEdit(worker)}
-                                          className="border-emerald-600/50 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500 hover:text-emerald-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
-                                        >
-                                          <Edit className="w-3 h-3" />
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => setDeleteWorker(worker)}
-                                          className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </Button>
+                                        {permissions.canEdit && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleEdit(worker)}
+                                            className="border-emerald-600/50 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500 hover:text-emerald-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
+                                          >
+                                            <Edit className="w-3 h-3" />
+                                          </Button>
+                                        )}
+                                        {permissions.canDelete && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setDeleteWorker(worker)}
+                                            className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </Button>
+                                        )}
                                       </div>
                                     </TableCell>
                                   </TableRow>

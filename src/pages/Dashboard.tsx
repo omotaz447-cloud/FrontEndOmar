@@ -30,6 +30,7 @@ import CenterGazaAccounts from '@/components/CenterGazaAccounts';
 import CenterGazaMerchants from '@/components/CenterGazaMerchants';
 import CenterGazaWorkers from '@/components/CenterGazaWorkers';
 import NewCenterGazaSales from '@/components/NewCenterGazaSales';
+import { getUserRole } from '@/utils/roleUtils';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import {
@@ -87,10 +88,8 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     // Check if user is authenticated
     const token = Cookies.get('accessToken');
-    const role = Cookies.get('userRole');
-
+    
     console.log('Dashboard - Token:', token);
-    console.log('Dashboard - Role:', role);
 
     if (!token) {
       console.log('No token found, redirecting to login');
@@ -101,6 +100,10 @@ const Dashboard: React.FC = () => {
       return;
     }
 
+    // Get role from token using utility function
+    const role = getUserRole();
+    console.log('Dashboard - Role from token:', role);
+
     // Allow access for admin and factory roles
     const allowedRoles = [
       'admin',
@@ -110,6 +113,7 @@ const Dashboard: React.FC = () => {
       'factory4',
       'factory5',
     ];
+    
     if (role && !allowedRoles.includes(role)) {
       console.log('User role is not authorized:', role);
       toast.error('غير مصرح لك بدخول هذه الصفحة');
@@ -268,7 +272,6 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     Cookies.remove('accessToken');
-    Cookies.remove('userRole');
     toast.success('تم تسجيل الخروج بنجاح');
     window.location.href = '/';
   };
@@ -337,7 +340,29 @@ const Dashboard: React.FC = () => {
     };
 
     const allowedSectionId = roleToSectionMap[userRole];
-    return sections.filter((section) => section.id === allowedSectionId);
+    const filteredSections = sections.filter((section) => section.id === allowedSectionId);
+    
+    // Filter subsections based on role restrictions
+    return filteredSections.map((section) => {
+      const filteredSubSections = section.subSections.filter((subSection) => {
+        // Define restricted subsections for each role
+        const restrictedSubSections: Record<string, string[]> = {
+          factory1: ['ballina-showroom'], // Hide البلينا معرض الجمهورية الدولي
+          factory2: ['girga-mall'], // Hide جرجا معرض مول العرب
+          factory3: ['dalaa-center'], // Hide سنتر دلع الهوانم
+          factory4: ['sima-center'], // Hide سنتر سيما
+          factory5: ['gaza-center'], // Hide سنتر غزة
+        };
+
+        const restricted = restrictedSubSections[userRole] || [];
+        return !restricted.includes(subSection.id);
+      });
+
+      return {
+        ...section,
+        subSections: filteredSubSections,
+      };
+    });
   };
 
   const filteredSections = getFilteredSections();

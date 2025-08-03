@@ -61,6 +61,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface MerchantAccountData {
   _id?: string;
@@ -81,6 +82,18 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
   isOpen,
   onClose,
 }) => {
+  // Get role permissions for this component
+  const permissions = getRolePermissions('حسابات تجار البلينا');
+
+  // Check if user can access this component
+  useEffect(() => {
+    if (isOpen && !permissions.canAccess) {
+      toast.error('غير مخول للوصول إلى هذه الصفحة');
+      onClose();
+      return;
+    }
+  }, [isOpen, permissions.canAccess, onClose]);
+
   // Helper function to create authenticated headers
   const getAuthHeaders = () => {
     const token = Cookies.get('accessToken');
@@ -100,10 +113,9 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     return userRole?.match(/^factory[1-5]$/i);
   };
 
-  // Check if current user role is admin
+  // Check if current user role is admin (updated to use permissions)
   const isAdminRole = () => {
-    const userRole = Cookies.get('userRole');
-    return userRole === 'admin';
+    return permissions.canEdit && permissions.canDelete;
   };
 
   const [formData, setFormData] = useState<MerchantAccountData>({

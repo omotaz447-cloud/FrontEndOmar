@@ -65,6 +65,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface WorkerAccountData {
   id?: string;
@@ -81,6 +82,18 @@ interface WorkerAccountProps {
 }
 
 const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
+  // Get role permissions for this component
+  const permissions = getRolePermissions('حساب عمال البلينا');
+
+  // Check if user can access this component
+  useEffect(() => {
+    if (isOpen && !permissions.canAccess) {
+      toast.error('غير مخول للوصول إلى هذه الصفحة');
+      onClose();
+      return;
+    }
+  }, [isOpen, permissions.canAccess, onClose]);
+
   // Helper function to create authenticated headers
   const getAuthHeaders = () => {
     const token = Cookies.get('accessToken');
@@ -94,11 +107,9 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     };
   };
 
-  // Check if current user role is factory1-5
+  // Check if current user role is factory1-5 (updated to use permissions)
   const isFactoryRole = () => {
-    const userRole = Cookies.get('userRole');
-    const isFactory = userRole?.match(/^factory[1-5]$/i);
-    return isFactory;
+    return !permissions.canEdit && !permissions.canDelete;
   };
 
   const [formData, setFormData] = useState<WorkerAccountData>({

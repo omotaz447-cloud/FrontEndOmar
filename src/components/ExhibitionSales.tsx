@@ -71,6 +71,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface ExhibitionSalesData {
   _id?: string;
@@ -126,8 +127,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 
   // Check if current user role is admin
   const isAdminRole = () => {
-    const userRole = Cookies.get('userRole');
-    return userRole === 'admin';
+    return permissions.canEdit;
   };
 
   const [formData, setFormData] = useState<FormDataType>({
@@ -209,6 +209,12 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
       fetchSalesData();
     }
   }, [isOpen, fetchSalesData]);
+
+  // Role-based access control
+  const permissions = getRolePermissions('مبيعات البلينا معرض الجمهورية');
+  
+  // Check if user can access this component
+ 
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

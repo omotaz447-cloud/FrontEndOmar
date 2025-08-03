@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getRolePermissions } from '@/utils/roleUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -304,6 +305,12 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
     }
   }, [isOpen, showForm, fetchAccounts]);
 
+  // Role-based access control
+  const permissions = getRolePermissions('حساب تجار سنتر سيما');
+  
+  // Check if user can access this component
+ 
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-purple-500/20">
@@ -558,22 +565,26 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
                           </TableCell>
                           <TableCell className="text-center">
                             <div className="flex justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(account)}
-                                className="bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDeleteAccountId(account._id)}
-                                className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {permissions.canEdit && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEdit(account)}
+                                  className="bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {permissions.canDelete && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setDeleteAccountId(account._id)}
+                                  className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

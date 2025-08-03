@@ -47,6 +47,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface CenterGazaMerchantsProps {
   isOpen: boolean;
@@ -76,6 +77,18 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
   isOpen,
   onClose,
 }) => {
+  // Get role permissions for this component
+  const permissions = getRolePermissions('حساب تجار سنتر غزة');
+
+  // Check if user can access this component
+  useEffect(() => {
+    if (isOpen && !permissions.canAccess) {
+      toast.error('غير مخول للوصول إلى هذه الصفحة');
+      onClose();
+      return;
+    }
+  }, [isOpen, permissions.canAccess, onClose]);
+
   const [merchants, setMerchants] = useState<MerchantData[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -367,22 +380,26 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
                       </TableCell>
                       <TableCell className="text-right">{merchant.notes || '-'}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            onClick={() => handleEdit(merchant)}
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={() => setDeleteMerchantId(merchant._id)}
-                            size="sm"
-                            variant="destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        {permissions.canEdit && permissions.canDelete ? (
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              onClick={() => handleEdit(merchant)}
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => setDeleteMerchantId(merchant._id)}
+                              size="sm"
+                              variant="destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">غير مسموح</span>
+                        )}
                       </TableCell>
                     </motion.tr>
                   ))}

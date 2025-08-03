@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getRolePermissions } from '@/utils/roleUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -400,6 +401,12 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     }
   }, [isOpen, fetchWorkers]);
 
+  // Role-based access control
+  const permissions = getRolePermissions('حسابات عمال سنتر غزة');
+  
+  // Check if user can access this component
+ 
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -471,20 +478,24 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
-                          <Button
-                            onClick={() => handleEdit(worker)}
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={() => setDeleteWorkerId(worker._id)}
-                            size="sm"
-                            variant="destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {permissions.canEdit && (
+                            <Button
+                              onClick={() => handleEdit(worker)}
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {permissions.canDelete && (
+                            <Button
+                              onClick={() => setDeleteWorkerId(worker._id)}
+                              size="sm"
+                              variant="destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </motion.tr>

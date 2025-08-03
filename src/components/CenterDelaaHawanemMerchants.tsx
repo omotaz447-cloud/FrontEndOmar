@@ -53,6 +53,7 @@ import {
   FileText
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { getRolePermissions } from '@/utils/roleUtils';
 
 interface MerchantRecord {
   _id?: string;
@@ -70,6 +71,18 @@ interface Props {
 }
 
 const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
+  // Get role permissions for this component
+  const permissions = getRolePermissions('حسابات تجار سنتر دلع الهوانم');
+
+  // Check if user can access this component
+  useEffect(() => {
+    if (isOpen && !permissions.canAccess) {
+      toast.error('غير مخول للوصول إلى هذه الصفحة');
+      onClose();
+      return;
+    }
+  }, [isOpen, permissions.canAccess, onClose]);
+
   // Helper function to create authenticated headers
   const getAuthHeaders = () => {
     const token = Cookies.get('accessToken');
@@ -597,24 +610,28 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
                                       {merchant.notes || '-'}
                                     </TableCell>
                                     <TableCell className="text-center px-1 py-1 whitespace-nowrap">
-                                      <div className="flex justify-center space-x-1 space-x-reverse">
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => handleEdit(merchant)}
-                                          className="border-emerald-600/50 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500 hover:text-emerald-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
-                                        >
-                                          <Edit className="w-3 h-3" />
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => setDeleteMerchant(merchant)}
-                                          className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </Button>
-                                      </div>
+                                      {permissions.canEdit && permissions.canDelete ? (
+                                        <div className="flex justify-center space-x-1 space-x-reverse">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleEdit(merchant)}
+                                            className="border-emerald-600/50 text-emerald-400 hover:bg-emerald-600/20 hover:border-emerald-500 hover:text-emerald-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
+                                          >
+                                            <Edit className="w-3 h-3" />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setDeleteMerchant(merchant)}
+                                            className="border-red-600/50 text-red-400 hover:bg-red-600/20 hover:border-red-500 hover:text-red-300 transition-all duration-300 p-1 h-6 w-6 backdrop-blur-sm"
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <span className="text-gray-500 text-xs">غير مسموح</span>
+                                      )}
                                     </TableCell>
                                   </TableRow>
                                 ))}
