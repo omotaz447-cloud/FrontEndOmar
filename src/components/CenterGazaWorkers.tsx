@@ -34,6 +34,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -93,6 +100,9 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
+      console.log('Fetching workers with token:', !!token);
+      console.log('API endpoint:', 'https://backend-omar-puce.vercel.app/api/worker-center-gaza-account');
+
       const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-center-gaza-account', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -100,26 +110,45 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         },
       });
 
+      console.log('Fetch response status:', response.status);
+      console.log('Fetch response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Fetch Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
         throw new Error(errorData.message || 'فشل في جلب البيانات');
       }
 
       const data = await response.json();
+      console.log('Raw response data:', data);
       
       // Handle different response formats
       let workersArray = [];
       if (data.data && Array.isArray(data.data)) {
         workersArray = data.data;
+        console.log('Using data.data array');
       } else if (data.account && Array.isArray(data.account)) {
         workersArray = data.account;
+        console.log('Using data.account array');
       } else if (Array.isArray(data)) {
         workersArray = data;
+        console.log('Using direct data array');
+      } else {
+        console.log('Unknown response format:', data);
       }
       
+      console.log('Final workers array:', workersArray);
       setWorkers(workersArray);
     } catch (error) {
       console.error('Error fetching workers:', error);
+      console.error('Full error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       toast.error('فشل في جلب البيانات');
     } finally {
       setLoading(false);
@@ -128,6 +157,38 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Function to convert Arabic day names to numbers
+  const convertDayToNumber = (dayName: string): string => {
+    const dayMap: { [key: string]: string } = {
+      'السبت': '1',
+      'الاحد': '2',
+      'الاثنين': '3',
+      'الثلاثاء': '4',
+      'الاربعاء': '5',
+      'الخميس': '6',
+      'الجمعه': '7'
+    };
+    
+    const result = dayMap[dayName] || dayName;
+    console.log(`Converting day: "${dayName}" -> "${result}"`);
+    return result;
+  };
+
+  // Function to convert numbers back to Arabic day names
+  const convertNumberToDay = (dayNumber: string): string => {
+    const numberMap: { [key: string]: string } = {
+      '1': 'السبت',
+      '2': 'الاحد',
+      '3': 'الاثنين',
+      '4': 'الثلاثاء',
+      '5': 'الاربعاء',
+      '6': 'الخميس',
+      '7': 'الجمعه'
+    };
+    
+    return numberMap[dayNumber] || dayNumber; // Return the day name if found, otherwise return original value
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,18 +207,54 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
+      
+      if (!token) {
+        console.error('No access token found');
+        toast.error('لم يتم العثور على رمز التفويض');
+        return;
+      }
+
+      const convertedDay = convertDayToNumber(formData.day);
+      
       const submitData = {
-        name: formData.name,
-        day: formData.day,
-        date: format(date, 'yyyy-MM-dd'),
-        withdrawal: parseFloat(formData.withdrawal),
+        "الاسم": formData.name,
+        "اليوم": convertedDay,
+        "التاريخ": format(date, 'yyyy-MM-dd'),
+        "السحب": parseFloat(formData.withdrawal),
       };
+
+      // Additional validation for converted day
+      if (!['1', '2', '3', '4', '5', '6', '7'].includes(convertedDay)) {
+        console.error('Invalid day conversion:', formData.day, '->', convertedDay);
+        toast.error('يوم العمل غير صحيح');
+        return;
+      }
+
+      // Validate all fields are present and valid
+      if (!submitData["الاسم"] || !submitData["اليوم"] || !submitData["التاريخ"] || !submitData["السحب"]) {
+        console.error('Missing required fields:', submitData);
+        toast.error('جميع الحقول مطلوبة');
+        return;
+      }
+
+      if (isNaN(submitData["السحب"])) {
+        console.error('Invalid withdrawal amount:', formData.withdrawal);
+        toast.error('مبلغ السحب غير صحيح');
+        return;
+      }
 
       const url = editingWorker
         ? `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${editingWorker._id}`
         : 'https://backend-omar-puce.vercel.app/api/worker-center-gaza-account';
 
       const method = editingWorker ? 'PUT' : 'POST';
+
+      console.log('Original day:', formData.day);
+      console.log('Converted day:', convertDayToNumber(formData.day));
+      console.log('Sending data to API:', submitData);
+      console.log('API URL:', url);
+      console.log('Method:', method);
+      console.log('Token exists:', !!token);
 
       const response = await fetch(url, {
         method,
@@ -168,10 +265,24 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         body: JSON.stringify(submitData),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'فشل في حفظ البيانات');
+        console.error('API Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          url,
+          method,
+          sentData: submitData
+        });
+        throw new Error(errorData.message || `HTTP ${response.status}: فشل في حفظ البيانات`);
       }
+
+      const responseData = await response.json();
+      console.log('Success response:', responseData);
 
       toast.success(editingWorker ? 'تم تحديث البيانات بنجاح' : 'تم إضافة العامل بنجاح');
       
@@ -189,6 +300,8 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       fetchWorkers();
     } catch (error) {
       console.error('Error saving worker:', error);
+      console.error('Form data:', formData);
+      console.error('Date:', date);
       toast.error('فشل في حفظ البيانات');
     } finally {
       setLoading(false);
@@ -199,7 +312,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     setEditingWorker(worker);
     setFormData({
       name: worker.name,
-      day: worker.day,
+      day: convertNumberToDay(worker.day),
       withdrawal: worker.withdrawal.toString(),
     });
     setDate(new Date(worker.date));
@@ -213,7 +326,17 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     try {
       const token = Cookies.get('accessToken');
       
-      const response = await fetch(`https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${deleteWorkerId}`, {
+      if (!token) {
+        console.error('No access token found for delete');
+        toast.error('لم يتم العثور على رمز التفويض');
+        return;
+      }
+
+      const deleteUrl = `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${deleteWorkerId}`;
+      console.log('Delete URL:', deleteUrl);
+      console.log('Delete worker ID:', deleteWorkerId);
+      
+      const response = await fetch(deleteUrl, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -221,10 +344,22 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         },
       });
 
+      console.log('Delete response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Delete Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          deleteUrl,
+          workerId: deleteWorkerId
+        });
         throw new Error(errorData.message || 'فشل في حذف البيانات');
       }
+
+      const responseData = await response.json();
+      console.log('Delete success response:', responseData);
 
       toast.success('تم حذف العامل بنجاح');
       setDeleteWorkerId(null);
@@ -314,7 +449,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                       className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
                     >
                       <TableCell className="text-right font-medium">{worker.name}</TableCell>
-                      <TableCell className="text-right">{worker.day}</TableCell>
+                      <TableCell className="text-right">{convertNumberToDay(worker.day)}</TableCell>
                       <TableCell className="text-right">
                         {format(new Date(worker.date), 'yyyy/MM/dd', { locale: ar })}
                       </TableCell>
@@ -380,13 +515,23 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
 
               <div>
                 <Label className="text-gray-300 text-right block mb-2">اليوم</Label>
-                <Input
+                <Select
                   value={formData.day}
-                  onChange={(e) => handleInputChange('day', e.target.value)}
-                  className="bg-gray-800 border-gray-600 text-white text-right"
-                  placeholder="يوم العمل"
-                  required
-                />
+                  onValueChange={(value) => handleInputChange('day', value)}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white text-right">
+                    <SelectValue placeholder="اختر يوم العمل" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600 text-white">
+                    <SelectItem value="السبت">السبت</SelectItem>
+                    <SelectItem value="الاحد">الأحد</SelectItem>
+                    <SelectItem value="الاثنين">الاثنين</SelectItem>
+                    <SelectItem value="الثلاثاء">الثلاثاء</SelectItem>
+                    <SelectItem value="الاربعاء">الأربعاء</SelectItem>
+                    <SelectItem value="الخميس">الخميس</SelectItem>
+                    <SelectItem value="الجمعه">الجمعة</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

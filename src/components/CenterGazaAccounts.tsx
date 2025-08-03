@@ -672,33 +672,2000 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
 
 // Similar components for other sections...
 const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onClose, endpoint, title }) => {
-  // Implementation similar to CenterGazaAccountSection but with different fields
-  // cash, blessing, withdrawal, insurance, date
-  return <CenterGazaAccountSection isOpen={isOpen} onClose={onClose} endpoint={endpoint} title={title} />;
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    cash: '',
+    blessing: '',
+    withdrawal: '',
+    insurance: '',
+    total: 0,
+  });
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [isDateOpen, setIsDateOpen] = useState(false);
+
+  const calculateTotal = (data: typeof formData) => {
+    const cash = parseFloat(data.cash) || 0;
+    const blessing = parseFloat(data.blessing) || 0;
+    const withdrawal = parseFloat(data.withdrawal) || 0;
+    const insurance = parseFloat(data.insurance) || 0;
+    
+    return cash + blessing - withdrawal - insurance;
+  };
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في جلب البيانات');
+      }
+
+      const data = await response.json();
+      setAccounts(Array.isArray(data) ? data : data.data || data.account || []);
+    } catch {
+      toast.error('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  const handleInputChange = (name: string, value: string) => {
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    const total = calculateTotal(newFormData);
+    setFormData(prev => ({ ...prev, total }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) {
+      toast.error('يرجى اختيار التاريخ');
+      return;
+    }
+
+    const requiredFields = ['cash', 'blessing', 'withdrawal', 'insurance'];
+    if (requiredFields.some(field => !formData[field as keyof typeof formData])) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const submitData = {
+        cash: parseFloat(formData.cash),
+        blessing: parseFloat(formData.blessing),
+        withdrawal: parseFloat(formData.withdrawal),
+        insurance: parseFloat(formData.insurance),
+        date: format(date, 'yyyy-MM-dd'),
+        total: calculateTotal(formData),
+      };
+
+      const url = editingAccount
+        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${endpoint}`;
+
+      const response = await fetch(url, {
+        method: editingAccount ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ البيانات');
+      }
+
+      toast.success(editingAccount ? 'تم تحديث البيانات بنجاح' : 'تم إضافة الحساب بنجاح');
+      resetForm();
+      fetchAccounts();
+    } catch {
+      toast.error('فشل في حفظ البيانات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      cash: '',
+      blessing: '',
+      withdrawal: '',
+      insurance: '',
+      total: 0,
+    });
+    setDate(undefined);
+    setEditingAccount(null);
+    setShowForm(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccounts();
+    }
+  }, [isOpen, fetchAccounts]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-l from-green-500 to-green-600 rounded-lg shadow-lg">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة حساب جديد
+              </Button>
+              <Button
+                onClick={fetchAccounts}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-800/50">
+                  <TableHead className="text-gray-300 text-right">نقدي</TableHead>
+                  <TableHead className="text-gray-300 text-right">ربنا كرم</TableHead>
+                  <TableHead className="text-gray-300 text-right">سحب</TableHead>
+                  <TableHead className="text-gray-300 text-right">تأمين</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجمالي</TableHead>
+                  <TableHead className="text-gray-300 text-right">التاريخ</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {accounts.map((account, index) => (
+                    <motion.tr
+                      key={account._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
+                    >
+                      <TableCell className="text-right">{account.cash?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-green-400">{account.blessing?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.withdrawal?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.insurance?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-bold ${(account.total ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(account.total ?? 0).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {account.date && format(new Date(account.date), 'yyyy/MM/dd', { locale: ar })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setFormData({
+                                cash: account.cash?.toString() || '',
+                                blessing: account.blessing?.toString() || '',
+                                withdrawal: account.withdrawal?.toString() || '',
+                                insurance: account.insurance?.toString() || '',
+                                total: account.total || 0,
+                              });
+                              setDate(account.date ? new Date(account.date) : undefined);
+                              setShowForm(true);
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => setDeleteAccountId(account._id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+
+            {accounts.length === 0 && !loading && (
+              <div className="text-center py-12 text-gray-400">
+                <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">لا توجد بيانات حسابات</p>
+                <p className="text-sm">اضغط على "إضافة حساب جديد" لبدء الإدخال</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Add/Edit Form Dialog */}
+        <Dialog open={showForm} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">
+                {editingAccount ? 'تعديل بيانات الحساب' : 'إضافة حساب جديد'}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">نقدي</Label>
+                  <Input
+                    type="number"
+                    value={formData.cash}
+                    onChange={(e) => handleInputChange('cash', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">ربنا كرم</Label>
+                  <Input
+                    type="number"
+                    value={formData.blessing}
+                    onChange={(e) => handleInputChange('blessing', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">سحب</Label>
+                  <Input
+                    type="number"
+                    value={formData.withdrawal}
+                    onChange={(e) => handleInputChange('withdrawal', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">تأمين</Label>
+                  <Input
+                    type="number"
+                    value={formData.insurance}
+                    onChange={(e) => handleInputChange('insurance', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">التاريخ</Label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {date ? format(date, 'yyyy/MM/dd', { locale: ar }) : 'اختر التاريخ'}
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={(selectedDate) => {
+                        setDate(selectedDate);
+                        setIsDateOpen(false);
+                      }}
+                      locale={ar}
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الإجمالي</Label>
+                <Input
+                  type="number"
+                  value={formData.total}
+                  readOnly
+                  className="bg-gray-700 border-gray-600 text-white text-right"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+                >
+                  {loading ? 'جاري الحفظ...' : editingAccount ? 'تحديث' : 'إضافة'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!deleteAccountId) return;
+                  try {
+                    const token = Cookies.get('accessToken');
+                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('فشل في حذف البيانات');
+                    }
+
+                    toast.success('تم حذف الحساب بنجاح');
+                    setDeleteAccountId(null);
+                    fetchAccounts();
+                  } catch {
+                    toast.error('فشل في حذف البيانات');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                حذف
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onClose, endpoint, title }) => {
-  // Implementation similar to CenterGazaAccountSection but with different fields
-  // cash, blessing, withdrawal, insurance, date
-  return <CenterGazaAccountSection isOpen={isOpen} onClose={onClose} endpoint={endpoint} title={title} />;
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    cash: '',
+    blessing: '',
+    withdrawal: '',
+    insurance: '',
+    total: 0,
+  });
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [isDateOpen, setIsDateOpen] = useState(false);
+
+  const calculateTotal = (data: typeof formData) => {
+    const cash = parseFloat(data.cash) || 0;
+    const blessing = parseFloat(data.blessing) || 0;
+    const withdrawal = parseFloat(data.withdrawal) || 0;
+    const insurance = parseFloat(data.insurance) || 0;
+    
+    return cash + blessing - withdrawal - insurance;
+  };
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في جلب البيانات');
+      }
+
+      const data = await response.json();
+      setAccounts(Array.isArray(data) ? data : data.data || data.account || []);
+    } catch {
+      toast.error('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  const handleInputChange = (name: string, value: string) => {
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    const total = calculateTotal(newFormData);
+    setFormData(prev => ({ ...prev, total }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) {
+      toast.error('يرجى اختيار التاريخ');
+      return;
+    }
+
+    const requiredFields = ['cash', 'blessing', 'withdrawal', 'insurance'];
+    if (requiredFields.some(field => !formData[field as keyof typeof formData])) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const submitData = {
+        cash: parseFloat(formData.cash),
+        blessing: parseFloat(formData.blessing),
+        withdrawal: parseFloat(formData.withdrawal),
+        insurance: parseFloat(formData.insurance),
+        date: format(date, 'yyyy-MM-dd'),
+        total: calculateTotal(formData),
+      };
+
+      const url = editingAccount
+        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${endpoint}`;
+
+      const response = await fetch(url, {
+        method: editingAccount ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ البيانات');
+      }
+
+      toast.success(editingAccount ? 'تم تحديث البيانات بنجاح' : 'تم إضافة الحساب بنجاح');
+      resetForm();
+      fetchAccounts();
+    } catch {
+      toast.error('فشل في حفظ البيانات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      cash: '',
+      blessing: '',
+      withdrawal: '',
+      insurance: '',
+      total: 0,
+    });
+    setDate(undefined);
+    setEditingAccount(null);
+    setShowForm(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccounts();
+    }
+  }, [isOpen, fetchAccounts]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-l from-purple-500 to-purple-600 rounded-lg shadow-lg">
+              <Wallet className="w-6 h-6 text-white" />
+            </div>
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة حساب جديد
+              </Button>
+              <Button
+                onClick={fetchAccounts}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-800/50">
+                  <TableHead className="text-gray-300 text-right">نقدي</TableHead>
+                  <TableHead className="text-gray-300 text-right">ربنا كرم</TableHead>
+                  <TableHead className="text-gray-300 text-right">سحب</TableHead>
+                  <TableHead className="text-gray-300 text-right">تأمين</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجمالي</TableHead>
+                  <TableHead className="text-gray-300 text-right">التاريخ</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {accounts.map((account, index) => (
+                    <motion.tr
+                      key={account._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
+                    >
+                      <TableCell className="text-right">{account.cash?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-green-400">{account.blessing?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.withdrawal?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.insurance?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-bold ${(account.total ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(account.total ?? 0).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {account.date && format(new Date(account.date), 'yyyy/MM/dd', { locale: ar })}
+                      </TableCell>
+                      <TableCell className="text-right">{account.notes || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setFormData({
+                                cash: account.cash?.toString() || '',
+                                blessing: account.blessing?.toString() || '',
+                                withdrawal: account.withdrawal?.toString() || '',
+                                insurance: account.insurance?.toString() || '',
+                                total: account.total || 0,
+                              });
+                              setDate(account.date ? new Date(account.date) : undefined);
+                              setShowForm(true);
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => setDeleteAccountId(account._id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+
+            {accounts.length === 0 && !loading && (
+              <div className="text-center py-12 text-gray-400">
+                <Wallet className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">لا توجد بيانات حسابات</p>
+                <p className="text-sm">اضغط على "إضافة حساب جديد" لبدء الإدخال</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Add/Edit Form Dialog */}
+        <Dialog open={showForm} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">
+                {editingAccount ? 'تعديل بيانات الحساب' : 'إضافة حساب جديد'}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">نقدي</Label>
+                  <Input
+                    type="number"
+                    value={formData.cash}
+                    onChange={(e) => handleInputChange('cash', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">ربنا كرم</Label>
+                  <Input
+                    type="number"
+                    value={formData.blessing}
+                    onChange={(e) => handleInputChange('blessing', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">سحب</Label>
+                  <Input
+                    type="number"
+                    value={formData.withdrawal}
+                    onChange={(e) => handleInputChange('withdrawal', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">تأمين</Label>
+                  <Input
+                    type="number"
+                    value={formData.insurance}
+                    onChange={(e) => handleInputChange('insurance', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">التاريخ</Label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {date ? format(date, 'yyyy/MM/dd', { locale: ar }) : 'اختر التاريخ'}
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={(selectedDate) => {
+                        setDate(selectedDate);
+                        setIsDateOpen(false);
+                      }}
+                      locale={ar}
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الإجمالي</Label>
+                <Input
+                  type="number"
+                  value={formData.total}
+                  readOnly
+                  className="bg-gray-700 border-gray-600 text-white text-right"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+                >
+                  {loading ? 'جاري الحفظ...' : editingAccount ? 'تحديث' : 'إضافة'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!deleteAccountId) return;
+                  try {
+                    const token = Cookies.get('accessToken');
+                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('فشل في حذف البيانات');
+                    }
+
+                    toast.success('تم حذف الحساب بنجاح');
+                    setDeleteAccountId(null);
+                    fetchAccounts();
+                  } catch {
+                    toast.error('فشل في حذف البيانات');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                حذف
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onClose, endpoint, title }) => {
-  // Implementation similar to CenterGazaAccountSection but with different fields
-  // cash, withdrawal, date, notes
-  return <CenterGazaAccountSection isOpen={isOpen} onClose={onClose} endpoint={endpoint} title={title} />;
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    cash: '',
+    withdrawal: '',
+    notes: '',
+    total: 0,
+  });
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [isDateOpen, setIsDateOpen] = useState(false);
+
+  const calculateTotal = (data: typeof formData) => {
+    const cash = parseFloat(data.cash) || 0;
+    const withdrawal = parseFloat(data.withdrawal) || 0;
+    
+    return cash - withdrawal;
+  };
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في جلب البيانات');
+      }
+
+      const data = await response.json();
+      setAccounts(Array.isArray(data) ? data : data.data || data.account || []);
+    } catch {
+      toast.error('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  const handleInputChange = (name: string, value: string) => {
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    const total = calculateTotal(newFormData);
+    setFormData(prev => ({ ...prev, total }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) {
+      toast.error('يرجى اختيار التاريخ');
+      return;
+    }
+
+    const requiredFields = ['cash', 'withdrawal'];
+    if (requiredFields.some(field => !formData[field as keyof typeof formData])) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const submitData = {
+        cash: parseFloat(formData.cash),
+        withdrawal: parseFloat(formData.withdrawal),
+        date: format(date, 'yyyy-MM-dd'),
+        notes: formData.notes,
+        total: calculateTotal(formData),
+      };
+
+      const url = editingAccount
+        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${endpoint}`;
+
+      const response = await fetch(url, {
+        method: editingAccount ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ البيانات');
+      }
+
+      toast.success(editingAccount ? 'تم تحديث البيانات بنجاح' : 'تم إضافة الحساب بنجاح');
+      resetForm();
+      fetchAccounts();
+    } catch {
+      toast.error('فشل في حفظ البيانات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      cash: '',
+      withdrawal: '',
+      notes: '',
+      total: 0,
+    });
+    setDate(undefined);
+    setEditingAccount(null);
+    setShowForm(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccounts();
+    }
+  }, [isOpen, fetchAccounts]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-l from-orange-500 to-orange-600 rounded-lg shadow-lg">
+              <DollarSign className="w-6 h-6 text-white" />
+            </div>
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة حساب جديد
+              </Button>
+              <Button
+                onClick={fetchAccounts}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-800/50">
+                  <TableHead className="text-gray-300 text-right">نقدي</TableHead>
+                  <TableHead className="text-gray-300 text-right">سحب</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجمالي</TableHead>
+                  <TableHead className="text-gray-300 text-right">التاريخ</TableHead>
+                  <TableHead className="text-gray-300 text-right">الملاحظات</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {accounts.map((account, index) => (
+                    <motion.tr
+                      key={account._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
+                    >
+                      <TableCell className="text-right">{account.cash?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.withdrawal?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-bold ${(account.total ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(account.total ?? 0).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {account.date && format(new Date(account.date), 'yyyy/MM/dd', { locale: ar })}
+                      </TableCell>
+                      <TableCell className="text-right">{account.notes || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setFormData({
+                                cash: account.cash?.toString() || '',
+                                withdrawal: account.withdrawal?.toString() || '',
+                                notes: account.notes || '',
+                                total: account.total || 0,
+                              });
+                              setDate(account.date ? new Date(account.date) : undefined);
+                              setShowForm(true);
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => setDeleteAccountId(account._id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+
+            {accounts.length === 0 && !loading && (
+              <div className="text-center py-12 text-gray-400">
+                <DollarSign className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">لا توجد بيانات حسابات</p>
+                <p className="text-sm">اضغط على "إضافة حساب جديد" لبدء الإدخال</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Add/Edit Form Dialog */}
+        <Dialog open={showForm} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">
+                {editingAccount ? 'تعديل بيانات الحساب' : 'إضافة حساب جديد'}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">نقدي</Label>
+                  <Input
+                    type="number"
+                    value={formData.cash}
+                    onChange={(e) => handleInputChange('cash', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">سحب</Label>
+                  <Input
+                    type="number"
+                    value={formData.withdrawal}
+                    onChange={(e) => handleInputChange('withdrawal', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">التاريخ</Label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {date ? format(date, 'yyyy/MM/dd', { locale: ar }) : 'اختر التاريخ'}
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={(selectedDate) => {
+                        setDate(selectedDate);
+                        setIsDateOpen(false);
+                      }}
+                      locale={ar}
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الملاحظات (اختياري)</Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white text-right"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الإجمالي</Label>
+                <Input
+                  type="number"
+                  value={formData.total}
+                  readOnly
+                  className="bg-gray-700 border-gray-600 text-white text-right"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+                >
+                  {loading ? 'جاري الحفظ...' : editingAccount ? 'تحديث' : 'إضافة'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!deleteAccountId) return;
+                  try {
+                    const token = Cookies.get('accessToken');
+                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('فشل في حذف البيانات');
+                    }
+
+                    toast.success('تم حذف الحساب بنجاح');
+                    setDeleteAccountId(null);
+                    fetchAccounts();
+                  } catch {
+                    toast.error('فشل في حذف البيانات');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                حذف
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onClose, endpoint, title }) => {
-  // Implementation similar to CenterGazaAccountSection but with different fields
-  // cash, withdrawal, date, notes
-  return <CenterGazaAccountSection isOpen={isOpen} onClose={onClose} endpoint={endpoint} title={title} />;
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    cash: '',
+    withdrawal: '',
+    notes: '',
+    total: 0,
+  });
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [isDateOpen, setIsDateOpen] = useState(false);
+
+  const calculateTotal = (data: typeof formData) => {
+    const cash = parseFloat(data.cash) || 0;
+    const withdrawal = parseFloat(data.withdrawal) || 0;
+    
+    return cash - withdrawal;
+  };
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في جلب البيانات');
+      }
+
+      const data = await response.json();
+      setAccounts(Array.isArray(data) ? data : data.data || data.account || []);
+    } catch {
+      toast.error('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  const handleInputChange = (name: string, value: string) => {
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    const total = calculateTotal(newFormData);
+    setFormData(prev => ({ ...prev, total }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!date) {
+      toast.error('يرجى اختيار التاريخ');
+      return;
+    }
+
+    const requiredFields = ['cash', 'withdrawal'];
+    if (requiredFields.some(field => !formData[field as keyof typeof formData])) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const submitData = {
+        cash: parseFloat(formData.cash),
+        withdrawal: parseFloat(formData.withdrawal),
+        date: format(date, 'yyyy-MM-dd'),
+        notes: formData.notes,
+        total: calculateTotal(formData),
+      };
+
+      const url = editingAccount
+        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${endpoint}`;
+
+      const response = await fetch(url, {
+        method: editingAccount ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ البيانات');
+      }
+
+      toast.success(editingAccount ? 'تم تحديث البيانات بنجاح' : 'تم إضافة الحساب بنجاح');
+      resetForm();
+      fetchAccounts();
+    } catch {
+      toast.error('فشل في حفظ البيانات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      cash: '',
+      withdrawal: '',
+      notes: '',
+      total: 0,
+    });
+    setDate(undefined);
+    setEditingAccount(null);
+    setShowForm(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccounts();
+    }
+  }, [isOpen, fetchAccounts]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-l from-pink-500 to-pink-600 rounded-lg shadow-lg">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة حساب جديد
+              </Button>
+              <Button
+                onClick={fetchAccounts}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-800/50">
+                  <TableHead className="text-gray-300 text-right">نقدي</TableHead>
+                  <TableHead className="text-gray-300 text-right">سحب</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجمالي</TableHead>
+                  <TableHead className="text-gray-300 text-right">التاريخ</TableHead>
+                  <TableHead className="text-gray-300 text-right">الملاحظات</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {accounts.map((account, index) => (
+                    <motion.tr
+                      key={account._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
+                    >
+                      <TableCell className="text-right">{account.cash?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.withdrawal?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-bold ${(account.total ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(account.total ?? 0).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {account.date && format(new Date(account.date), 'yyyy/MM/dd', { locale: ar })}
+                      </TableCell>
+                      <TableCell className="text-right">{account.notes || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setFormData({
+                                cash: account.cash?.toString() || '',
+                                withdrawal: account.withdrawal?.toString() || '',
+                                notes: account.notes || '',
+                                total: account.total || 0,
+                              });
+                              setDate(account.date ? new Date(account.date) : undefined);
+                              setShowForm(true);
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => setDeleteAccountId(account._id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+
+            {accounts.length === 0 && !loading && (
+              <div className="text-center py-12 text-gray-400">
+                <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">لا توجد بيانات حسابات</p>
+                <p className="text-sm">اضغط على "إضافة حساب جديد" لبدء الإدخال</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Add/Edit Form Dialog */}
+        <Dialog open={showForm} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">
+                {editingAccount ? 'تعديل بيانات الحساب' : 'إضافة حساب جديد'}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">نقدي</Label>
+                  <Input
+                    type="number"
+                    value={formData.cash}
+                    onChange={(e) => handleInputChange('cash', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">سحب</Label>
+                  <Input
+                    type="number"
+                    value={formData.withdrawal}
+                    onChange={(e) => handleInputChange('withdrawal', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">التاريخ</Label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {date ? format(date, 'yyyy/MM/dd', { locale: ar }) : 'اختر التاريخ'}
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={(selectedDate) => {
+                        setDate(selectedDate);
+                        setIsDateOpen(false);
+                      }}
+                      locale={ar}
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الملاحظات (اختياري)</Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  className="bg-gray-800 border-gray-600 text-white text-right"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الإجمالي</Label>
+                <Input
+                  type="number"
+                  value={formData.total}
+                  readOnly
+                  className="bg-gray-700 border-gray-600 text-white text-right"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+                >
+                  {loading ? 'جاري الحفظ...' : editingAccount ? 'تحديث' : 'إضافة'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!deleteAccountId) return;
+                  try {
+                    const token = Cookies.get('accessToken');
+                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('فشل في حذف البيانات');
+                    }
+
+                    toast.success('تم حذف الحساب بنجاح');
+                    setDeleteAccountId(null);
+                    fetchAccounts();
+                  } catch {
+                    toast.error('فشل في حذف البيانات');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                حذف
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onClose, endpoint, title }) => {
-  // Implementation similar to CenterGazaAccountSection but with different fields
-  // fixedBeforeInventory, fixedAfterInventory, withdrawalFromBike, cashAtHome, inventoryDate
-  return <CenterGazaAccountSection isOpen={isOpen} onClose={onClose} endpoint={endpoint} title={title} />;
+  const [accounts, setAccounts] = useState<AccountData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    fixedBeforeInventory: '',
+    fixedAfterInventory: '',
+    withdrawalFromBike: '',
+    cashAtHome: '',
+    total: 0,
+  });
+  const [editingAccount, setEditingAccount] = useState<AccountData | null>(null);
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [inventoryDate, setInventoryDate] = useState<Date>();
+  const [isDateOpen, setIsDateOpen] = useState(false);
+
+  const calculateTotal = (data: typeof formData) => {
+    const fixedBefore = parseFloat(data.fixedBeforeInventory) || 0;
+    const fixedAfter = parseFloat(data.fixedAfterInventory) || 0;
+    const withdrawalFromBike = parseFloat(data.withdrawalFromBike) || 0;
+    const cashAtHome = parseFloat(data.cashAtHome) || 0;
+    
+    return fixedBefore + fixedAfter + cashAtHome - withdrawalFromBike;
+  };
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في جلب البيانات');
+      }
+
+      const data = await response.json();
+      setAccounts(Array.isArray(data) ? data : data.data || data.account || []);
+    } catch {
+      toast.error('فشل في جلب البيانات');
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  const handleInputChange = (name: string, value: string) => {
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    const total = calculateTotal(newFormData);
+    setFormData(prev => ({ ...prev, total }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inventoryDate) {
+      toast.error('يرجى اختيار تاريخ الجرد');
+      return;
+    }
+
+    const requiredFields = ['fixedBeforeInventory', 'fixedAfterInventory', 'withdrawalFromBike', 'cashAtHome'];
+    if (requiredFields.some(field => !formData[field as keyof typeof formData])) {
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = Cookies.get('accessToken');
+      const submitData = {
+        fixedBeforeInventory: parseFloat(formData.fixedBeforeInventory),
+        fixedAfterInventory: parseFloat(formData.fixedAfterInventory),
+        withdrawalFromBike: parseFloat(formData.withdrawalFromBike),
+        cashAtHome: parseFloat(formData.cashAtHome),
+        inventoryDate: format(inventoryDate, 'yyyy-MM-dd'),
+        total: calculateTotal(formData),
+      };
+
+      const url = editingAccount
+        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
+        : `https://backend-omar-puce.vercel.app${endpoint}`;
+
+      const response = await fetch(url, {
+        method: editingAccount ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ البيانات');
+      }
+
+      toast.success(editingAccount ? 'تم تحديث البيانات بنجاح' : 'تم إضافة الحساب بنجاح');
+      resetForm();
+      fetchAccounts();
+    } catch {
+      toast.error('فشل في حفظ البيانات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      fixedBeforeInventory: '',
+      fixedAfterInventory: '',
+      withdrawalFromBike: '',
+      cashAtHome: '',
+      total: 0,
+    });
+    setInventoryDate(undefined);
+    setEditingAccount(null);
+    setShowForm(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAccounts();
+    }
+  }, [isOpen, fetchAccounts]);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-l from-teal-500 to-teal-600 rounded-lg shadow-lg">
+              <Bike className="w-6 h-6 text-white" />
+            </div>
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowForm(true)}
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+              >
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة حساب جديد
+              </Button>
+              <Button
+                onClick={fetchAccounts}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-800/50">
+                  <TableHead className="text-gray-300 text-right">ثابت قبل الجرد</TableHead>
+                  <TableHead className="text-gray-300 text-right">ثابت بعد الجرد</TableHead>
+                  <TableHead className="text-gray-300 text-right">سحب من البايكة</TableHead>
+                  <TableHead className="text-gray-300 text-right">نقدي في البيت</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجمالي</TableHead>
+                  <TableHead className="text-gray-300 text-right">تاريخ الجرد</TableHead>
+                  <TableHead className="text-gray-300 text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence>
+                  {accounts.map((account, index) => (
+                    <motion.tr
+                      key={account._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="border-gray-700 hover:bg-gray-800/50 text-gray-200"
+                    >
+                      <TableCell className="text-right">{account.fixedBeforeInventory?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{account.fixedAfterInventory?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-red-400">{account.withdrawalFromBike?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{account.cashAtHome?.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-bold ${(account.total ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(account.total ?? 0).toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {account.inventoryDate && format(new Date(account.inventoryDate), 'yyyy/MM/dd', { locale: ar })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setFormData({
+                                fixedBeforeInventory: account.fixedBeforeInventory?.toString() || '',
+                                fixedAfterInventory: account.fixedAfterInventory?.toString() || '',
+                                withdrawalFromBike: account.withdrawalFromBike?.toString() || '',
+                                cashAtHome: account.cashAtHome?.toString() || '',
+                                total: account.total || 0,
+                              });
+                              setInventoryDate(account.inventoryDate ? new Date(account.inventoryDate) : undefined);
+                              setShowForm(true);
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => setDeleteAccountId(account._id)}
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+
+            {accounts.length === 0 && !loading && (
+              <div className="text-center py-12 text-gray-400">
+                <Bike className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">لا توجد بيانات حسابات</p>
+                <p className="text-sm">اضغط على "إضافة حساب جديد" لبدء الإدخال</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Add/Edit Form Dialog */}
+        <Dialog open={showForm} onOpenChange={resetForm}>
+          <DialogContent className="max-w-lg bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-white">
+                {editingAccount ? 'تعديل بيانات الحساب' : 'إضافة حساب جديد'}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">ثابت قبل الجرد</Label>
+                  <Input
+                    type="number"
+                    value={formData.fixedBeforeInventory}
+                    onChange={(e) => handleInputChange('fixedBeforeInventory', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">ثابت بعد الجرد</Label>
+                  <Input
+                    type="number"
+                    value={formData.fixedAfterInventory}
+                    onChange={(e) => handleInputChange('fixedAfterInventory', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">سحب من البايكة</Label>
+                  <Input
+                    type="number"
+                    value={formData.withdrawalFromBike}
+                    onChange={(e) => handleInputChange('withdrawalFromBike', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300 text-right block mb-2">نقدي في البيت</Label>
+                  <Input
+                    type="number"
+                    value={formData.cashAtHome}
+                    onChange={(e) => handleInputChange('cashAtHome', e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white text-right"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">تاريخ الجرد</Label>
+                <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {inventoryDate ? format(inventoryDate, 'yyyy/MM/dd', { locale: ar }) : 'اختر تاريخ الجرد'}
+                      <Calendar className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600">
+                    <CalendarComponent
+                      mode="single"
+                      selected={inventoryDate}
+                      onSelect={(selectedDate) => {
+                        setInventoryDate(selectedDate);
+                        setIsDateOpen(false);
+                      }}
+                      locale={ar}
+                      className="bg-gray-800 text-white"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-gray-300 text-right block mb-2">الإجمالي</Label>
+                <Input
+                  type="number"
+                  value={formData.total}
+                  readOnly
+                  className="bg-gray-700 border-gray-600 text-white text-right"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+                >
+                  {loading ? 'جاري الحفظ...' : editingAccount ? 'تحديث' : 'إضافة'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!deleteAccountId) return;
+                  try {
+                    const token = Cookies.get('accessToken');
+                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('فشل في حذف البيانات');
+                    }
+
+                    toast.success('تم حذف الحساب بنجاح');
+                    setDeleteAccountId(null);
+                    fetchAccounts();
+                  } catch {
+                    toast.error('فشل في حذف البيانات');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                حذف
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export default CenterGazaAccounts;
