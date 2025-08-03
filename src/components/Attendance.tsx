@@ -88,6 +88,7 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
   const [currentView, setCurrentView] = useState<'today' | 'monthly' | 'all'>(
     'today',
   );
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [formData, setFormData] = useState<Partial<AttendanceRecord>>({
     employeeName: '',
@@ -373,19 +374,31 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
     setShowForm(true);
   };
 
-  // Filter records based on current view
+  // Filter records based on current view and search term
   const getFilteredRecords = () => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const currentMonth = format(new Date(), 'yyyy-MM');
 
+    let filtered: AttendanceRecord[];
     switch (currentView) {
       case 'today':
-        return records.filter((record) => record.date === today);
+        filtered = records.filter((record) => record.date === today);
+        break;
       case 'monthly':
-        return records.filter((record) => record.date.startsWith(currentMonth));
+        filtered = records.filter((record) => record.date.startsWith(currentMonth));
+        break;
       default:
-        return records;
+        filtered = records;
     }
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      filtered = filtered.filter((record) =>
+        record.employeeName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
   };
 
   // Get status badge
@@ -706,37 +719,84 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
             </CardContent>
           </Card>
 
-          {/* View Controls */}
-          <div className="flex items-center justify-between">
-            <div className="flex space-x-2 space-x-reverse">
-              {[
-                { key: 'today' as const, label: 'اليوم', icon: CalendarCheck },
-                {
-                  key: 'monthly' as const,
-                  label: 'الشهر الحالي',
-                  icon: BarChart3,
-                },
-                { key: 'all' as const, label: 'جميع السجلات', icon: Activity },
-              ].map(({ key, label, icon: Icon }) => (
-                <Button
-                  key={key}
-                  onClick={() => setCurrentView(key)}
-                  variant={currentView === key ? 'default' : 'outline'}
-                  size="sm"
-                  className={
-                    currentView === key
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
-                      : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white bg-gray-800/50'
-                  }
-                >
-                  <Icon className="w-4 h-4 ml-2" />
-                  {label}
-                </Button>
-              ))}
+          {/* Search and View Controls */}
+          <div className="space-y-4">
+            {/* Search Input */}
+            <Card className="bg-gray-800/40 border-gray-700/50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="flex-1">
+                    <Label className="text-white text-right block mb-2">
+                      البحث بالاسم
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-gray-800 border-gray-600 text-white text-right pl-10"
+                        placeholder="ابحث عن موظف بالاسم..."
+                      />
+                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                  {searchTerm && (
+                    <Button
+                      onClick={() => setSearchTerm('')}
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-400 hover:text-white hover:bg-gray-700 mt-6"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                {searchTerm && (
+                  <div className="mt-2 text-sm text-gray-400 text-right">
+                    البحث عن: "{searchTerm}" - {filteredRecords.length} نتيجة
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* View Controls */}
+            <div className="flex items-center justify-between">
+              <div className="flex space-x-2 space-x-reverse">
+                {[
+                  { key: 'today' as const, label: 'اليوم', icon: CalendarCheck },
+                  {
+                    key: 'monthly' as const,
+                    label: 'الشهر الحالي',
+                    icon: BarChart3,
+                  },
+                  { key: 'all' as const, label: 'جميع السجلات', icon: Activity },
+                ].map(({ key, label, icon: Icon }) => (
+                  <Button
+                    key={key}
+                    onClick={() => setCurrentView(key)}
+                    variant={currentView === key ? 'default' : 'outline'}
+                    size="sm"
+                    className={
+                      currentView === key
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                        : 'border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white bg-gray-800/50'
+                    }
+                  >
+                    <Icon className="w-4 h-4 ml-2" />
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex items-center space-x-3 space-x-reverse">
+                {searchTerm && (
+                  <Badge variant="secondary" className="text-gray-300 border-gray-600 bg-blue-500/20 border-blue-500/50">
+                    نتائج البحث: {filteredRecords.length}
+                  </Badge>
+                )}
+                <Badge variant="outline" className="text-gray-300 border-gray-600 bg-gray-800/50">
+                  {filteredRecords.length} سجل
+                </Badge>
+              </div>
             </div>
-            <Badge variant="outline" className="text-gray-300 border-gray-600 bg-gray-800/50">
-              {filteredRecords.length} سجل
-            </Badge>
           </div>
 
           {/* Attendance Table */}
@@ -801,10 +861,29 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
                           >
                             <div className="flex flex-col items-center space-y-3">
                               <Users className="w-16 h-16 opacity-50" />
-                              <p className="text-lg">لا توجد سجلات حضور</p>
-                              <p className="text-sm">
-                                اضغط على "تسجيل حضور" لإضافة سجل جديد
-                              </p>
+                              {searchTerm ? (
+                                <>
+                                  <p className="text-lg">لا توجد نتائج للبحث</p>
+                                  <p className="text-sm">
+                                    لم يتم العثور على موظفين بالاسم "{searchTerm}"
+                                  </p>
+                                  <Button
+                                    onClick={() => setSearchTerm('')}
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white bg-gray-800/50"
+                                  >
+                                    مسح البحث
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-lg">لا توجد سجلات حضور</p>
+                                  <p className="text-sm">
+                                    اضغط على "تسجيل حضور" لإضافة سجل جديد
+                                  </p>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
