@@ -45,6 +45,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Plus,
   Calendar,
   DollarSign,
@@ -58,6 +65,8 @@ import {
   Edit,
   Trash2,
   Search,
+  Filter,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -137,6 +146,32 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     useState<MerchantGargaAccountData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedName, setSelectedName] = useState('');
+
+  // Months array for filtering
+  const months = [
+    { value: '01', label: 'يناير' },
+    { value: '02', label: 'فبراير' },
+    { value: '03', label: 'مارس' },
+    { value: '04', label: 'أبريل' },
+    { value: '05', label: 'مايو' },
+    { value: '06', label: 'يونيو' },
+    { value: '07', label: 'يوليو' },
+    { value: '08', label: 'أغسطس' },
+    { value: '09', label: 'سبتمبر' },
+    { value: '10', label: 'أكتوبر' },
+    { value: '11', label: 'نوفمبر' },
+    { value: '12', label: 'ديسمبر' },
+  ];
+
+  // Generate years for filtering (current year and 2 years back)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 3 }, (_, i) => (currentYear - i).toString());
 
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
@@ -411,8 +446,40 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     return toNumber(formData.invoice) - toNumber(formData.payment);
   };
 
-  // Filter accounts based on search query
-  const filteredAccounts = accounts.filter(account =>
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedMonth('all');
+    setSelectedYear(new Date().getFullYear().toString());
+    setSelectedName('');
+  };
+
+  // Apply filters to accounts
+  const accountsToDisplay = accounts.filter(account => {
+    // Date filtering
+    if ((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString()) {
+      const accountDate = new Date(account.date);
+      const accountMonth = (accountDate.getMonth() + 1).toString().padStart(2, '0');
+      const accountYear = accountDate.getFullYear().toString();
+
+      if (selectedMonth && selectedMonth !== 'all' && accountMonth !== selectedMonth) {
+        return false;
+      }
+
+      if (selectedYear !== new Date().getFullYear().toString() && accountYear !== selectedYear) {
+        return false;
+      }
+    }
+
+    // Name filtering
+    if (selectedName && !account.name.toLowerCase().includes(selectedName.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Filter accounts based on search query AND filters
+  const filteredAccounts = accountsToDisplay.filter(account =>
     account.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -882,6 +949,96 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                   </motion.p>
                 )}
               </motion.div>
+
+              {/* Filter Section */}
+              <motion.div
+                className="mt-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="outline"
+                    className="bg-gray-700/50 border-gray-600/50 text-gray-300 hover:bg-gray-600/50 flex items-center gap-2 w-full"
+                  >
+                    <Filter className="w-4 h-4" />
+                    {showFilters ? 'تصفيه البيانات' : 'إظهار كيفيه تصفيه البيانات'}
+                  </Button>
+                  
+                  {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Button
+                        onClick={clearFilters}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                      >
+                        <X className="w-4 h-4" />
+                        مسح الفلاتر
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/30"
+                  >
+                    {/* Name Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">البحث بالاسم</Label>
+                      <Input
+                        type="text"
+                        placeholder="اسم التاجر..."
+                        value={selectedName}
+                        onChange={(e) => setSelectedName(e.target.value)}
+                        className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+                      />
+                    </div>
+
+                    {/* Month Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">الشهر</Label>
+                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر الشهر" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="all">جميع الشهور</SelectItem>
+                          {months.map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Year Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">السنة</Label>
+                      <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر السنة" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -993,6 +1150,59 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Total Display when Filtered - Under Table */}
+              {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mt-4 mx-4 mb-4 p-4 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 rounded-lg"
+                >
+                  <div className="text-center mb-3">
+                    <h3 className="text-emerald-300 text-lg font-semibold">الإجمالي للبيانات المفلترة</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-emerald-300 text-sm">إجمالي السجلات</div>
+                      <div className="text-white text-lg font-bold">{filteredAccounts.length}</div>
+                    </div>
+                    <div>
+                      <div className="text-green-300 text-sm">إجمالي الفواتير</div>
+                      <div className="text-green-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccounts.reduce(
+                            (total, account) => total + toNumber(account.invoice || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-blue-300 text-sm">إجمالي المدفوعات</div>
+                      <div className="text-blue-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccounts.reduce(
+                            (total, account) => total + toNumber(account.payment || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-emerald-300 text-sm">إجمالي المتبقي</div>
+                      <div className="text-emerald-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccounts.reduce(
+                            (total, account) => total + toNumber(account.total || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </div>

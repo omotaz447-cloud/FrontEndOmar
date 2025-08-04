@@ -62,6 +62,9 @@ import {
   UserCircle,
   Edit,
   Trash2,
+  Search,
+  Filter,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -146,6 +149,33 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
   const [deleteAccountName, setDeleteAccountName] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedName, setSelectedName] = useState('');
+
+  // Months array for filtering
+  const months = [
+    { value: '01', label: 'يناير' },
+    { value: '02', label: 'فبراير' },
+    { value: '03', label: 'مارس' },
+    { value: '04', label: 'أبريل' },
+    { value: '05', label: 'مايو' },
+    { value: '06', label: 'يونيو' },
+    { value: '07', label: 'يوليو' },
+    { value: '08', label: 'أغسطس' },
+    { value: '09', label: 'سبتمبر' },
+    { value: '10', label: 'أكتوبر' },
+    { value: '11', label: 'نوفمبر' },
+    { value: '12', label: 'ديسمبر' },
+  ];
+
+  // Generate years for filtering (current year and 2 years back)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 3 }, (_, i) => (currentYear - i).toString());
 
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
@@ -437,6 +467,43 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     const dayOption = daysOptions.find(day => day.value === englishDay);
     return dayOption ? dayOption.label : englishDay;
   };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedMonth('all');
+    setSelectedYear(new Date().getFullYear().toString());
+    setSelectedName('');
+  };
+
+  // Apply filters to accounts
+  const accountsToDisplay = accounts.filter(account => {
+    // Date filtering
+    if ((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString()) {
+      const accountDate = new Date(account.date);
+      const accountMonth = (accountDate.getMonth() + 1).toString().padStart(2, '0');
+      const accountYear = accountDate.getFullYear().toString();
+
+      if (selectedMonth && selectedMonth !== 'all' && accountMonth !== selectedMonth) {
+        return false;
+      }
+
+      if (selectedYear !== new Date().getFullYear().toString() && accountYear !== selectedYear) {
+        return false;
+      }
+    }
+
+    // Name filtering
+    if (selectedName && !account.name.toLowerCase().includes(selectedName.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Filter accounts based on search query AND filters
+  const filteredAccounts = accountsToDisplay.filter(account =>
+    account.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -798,6 +865,145 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
               <CardDescription className="text-gray-400 text-right">
                 جميع سجلات حسابات عمال جرجا معرض مول العرب
               </CardDescription>
+
+              {/* Search Input */}
+              <motion.div
+                className="mt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative max-w-md ml-auto">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="text"
+                    placeholder="البحث بالاسم..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-gray-700/50 border-gray-600/50 text-white placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500 text-right pr-10 rounded-xl"
+                  />
+                  {searchQuery && (
+                    <motion.div
+                      className="absolute inset-y-0 left-0 flex items-center pl-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchQuery('')}
+                        className="h-auto p-1 text-gray-400 hover:text-gray-300"
+                      >
+                        ×
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+                {searchQuery && (
+                  <motion.p
+                    className="text-sm text-gray-400 mt-2 text-right"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {filteredAccounts.length} نتيجة من أصل {accounts.length} سجل
+                  </motion.p>
+                )}
+              </motion.div>
+
+              {/* Filter Section */}
+              <motion.div
+                className="mt-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="outline"
+                    className="bg-gray-700/50 border-gray-600/50 text-gray-300 hover:bg-gray-600/50 flex items-center gap-2 w-full"
+                  >
+                    <Filter className="w-4 h-4" />
+                    {showFilters ? 'تصفيه البيانات' : 'إظهار كيفيه تصفيه البيانات'}
+                  </Button>
+                  
+                  {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Button
+                        onClick={clearFilters}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                      >
+                        <X className="w-4 h-4" />
+                        مسح الفلاتر
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/30"
+                  >
+                    {/* Name Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">البحث بالاسم</Label>
+                      <Input
+                        type="text"
+                        placeholder="اسم العامل..."
+                        value={selectedName}
+                        onChange={(e) => setSelectedName(e.target.value)}
+                        className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+                      />
+                    </div>
+
+                    {/* Month Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">الشهر</Label>
+                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر الشهر" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="all">جميع الشهور</SelectItem>
+                          {months.map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Year Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">السنة</Label>
+                      <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر السنة" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -836,17 +1042,17 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : accounts.length === 0 ? (
+                    ) : filteredAccounts.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={isAdminRole() ? 5 : 4}
                           className="text-center py-8 text-gray-400"
                         >
-                          لا توجد سجلات متاحة
+                          {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات متاحة'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      accounts.map((account, index) => (
+                      filteredAccounts.map((account, index) => (
                         <motion.tr
                           key={account._id || index}
                           className="border-gray-700/30 hover:bg-gray-800/50 transition-colors duration-200"
@@ -897,6 +1103,50 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Total Display when Filtered - Under Table */}
+              {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mt-4 mx-4 mb-4 p-4 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 rounded-lg"
+                >
+                  <div className="text-center mb-3">
+                    <h3 className="text-emerald-300 text-lg font-semibold">الإجمالي للبيانات المفلترة</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-emerald-300 text-sm">إجمالي السجلات</div>
+                      <div className="text-white text-lg font-bold">{filteredAccounts.length}</div>
+                    </div>
+                    <div>
+                      <div className="text-emerald-300 text-sm">إجمالي السحوبات</div>
+                      <div className="text-emerald-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccounts.reduce(
+                            (total, account) => total + toNumber(account.withdrawal || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-teal-300 text-sm">متوسط السحب</div>
+                      <div className="text-teal-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccounts.length > 0
+                            ? filteredAccounts.reduce(
+                                (total, account) => total + toNumber(account.withdrawal || 0),
+                                0,
+                              ) / filteredAccounts.length
+                            : 0,
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </div>

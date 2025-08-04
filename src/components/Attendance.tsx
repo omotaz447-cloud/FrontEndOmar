@@ -197,6 +197,9 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
         const stats = calculateStats(attendanceData);
         Cookies.set('attendanceStats', JSON.stringify(stats), { expires: 7 });
 
+        // Dispatch custom event for same-tab synchronization with WorkerAccount
+        window.dispatchEvent(new CustomEvent('attendanceDataChanged'));
+
         console.log('Attendance data saved successfully');
       } catch (error) {
         console.error('Error saving attendance data:', error);
@@ -290,15 +293,19 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
       // Update local records
       const currentRecords = [...records];
       if (editingRecord && editingRecord._id) {
-        const index = currentRecords.findIndex(
-          (r) => r._id === editingRecord._id,
-        );
-        if (index !== -1) {
-          currentRecords[index] = { ...record, _id: editingRecord._id };
-        }
+        // Remove existing record and add updated one to prevent duplicates
+        const filteredRecords = currentRecords.filter(r => r._id !== editingRecord._id);
+        record._id = editingRecord._id;
+        filteredRecords.push(record);
+        currentRecords.splice(0, currentRecords.length, ...filteredRecords);
       } else {
+        // Remove any existing record for same employee and date, then add new one
+        const filteredRecords = currentRecords.filter(
+          r => !(r.employeeName === record.employeeName && r.date === record.date)
+        );
         record._id = `attendance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        currentRecords.push(record);
+        filteredRecords.push(record);
+        currentRecords.splice(0, currentRecords.length, ...filteredRecords);
       }
 
       // Save to cookies and localStorage

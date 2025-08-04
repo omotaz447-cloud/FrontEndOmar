@@ -45,6 +45,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import {
   Plus,
   Calendar,
   DollarSign,
@@ -58,6 +66,11 @@ import {
   Edit,
   Trash2,
   Search,
+  Filter,
+  X,
+  UserCheck,
+  UserX,
+  Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -72,6 +85,25 @@ interface MerchantAccountData {
   date: string;
   notes?: string;
   total?: number;
+  // Attendance fields
+  attendanceStatus?: 'present' | 'absent' | 'late' | 'half-day';
+  checkInTime?: string;
+  checkOutTime?: string;
+  workingHours?: number;
+  attendanceNotes?: string;
+}
+
+interface AttendanceRecord {
+  _id?: string;
+  employeeName: string;
+  date: string;
+  checkInTime: string;
+  checkOutTime?: string;
+  status: 'present' | 'absent' | 'late' | 'half-day';
+  workingHours?: number;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface MerchantAccountProps {
@@ -150,6 +182,179 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Filter states
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString(),
+  );
+  const [selectedName, setSelectedName] = useState<string>('');
+  const [filteredAccounts, setFilteredAccounts] = useState<MerchantAccountData[]>(
+    [],
+  );
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Attendance states
+  const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
+  const [selectedMerchantForAttendance, setSelectedMerchantForAttendance] = useState<MerchantAccountData | null>(null);
+  const [attendanceFormData, setAttendanceFormData] = useState({
+    status: 'present' as 'present' | 'absent' | 'late' | 'half-day',
+    checkInTime: '',
+    checkOutTime: '',
+    notes: '',
+  });
+
+  // Months in Arabic
+  const months = [
+    { value: '01', label: 'يناير' },
+    { value: '02', label: 'فبراير' },
+    { value: '03', label: 'مارس' },
+    { value: '04', label: 'أبريل' },
+    { value: '05', label: 'مايو' },
+    { value: '06', label: 'يونيو' },
+    { value: '07', label: 'يوليو' },
+    { value: '08', label: 'أغسطس' },
+    { value: '09', label: 'سبتمبر' },
+    { value: '10', label: 'أكتوبر' },
+    { value: '11', label: 'نوفمبر' },
+    { value: '12', label: 'ديسمبر' },
+  ];
+
+  // Generate years (current year and 5 years back)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) =>
+    (currentYear - i).toString(),
+  );
+
+  // Filter accounts based on selected month, year, and name
+  useEffect(() => {
+    let filtered = accounts;
+
+    // Filter by name if provided
+    if (selectedName) {
+      filtered = filtered.filter((account) =>
+        account.name.toLowerCase().includes(selectedName.toLowerCase()),
+      );
+    }
+
+    // Filter by month and year
+    if (selectedMonth && selectedMonth !== 'all' && selectedYear) {
+      filtered = filtered.filter((account) => {
+        const accountDate = new Date(account.date);
+        const accountMonth = (accountDate.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        const accountYear = accountDate.getFullYear().toString();
+        return accountMonth === selectedMonth && accountYear === selectedYear;
+      });
+    } else if (selectedMonth && selectedMonth !== 'all') {
+      filtered = filtered.filter((account) => {
+        const accountDate = new Date(account.date);
+        const accountMonth = (accountDate.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        return accountMonth === selectedMonth;
+      });
+    } else if (selectedYear) {
+      filtered = filtered.filter((account) => {
+        const accountDate = new Date(account.date);
+        const accountYear = accountDate.getFullYear().toString();
+        return accountYear === selectedYear;
+      });
+    }
+
+    setFilteredAccounts(filtered);
+  }, [accounts, selectedMonth, selectedYear, selectedName]);
+
+  // Clear filters
+  const clearFilters = () => {
+    setSelectedMonth('all');
+    setSelectedYear(new Date().getFullYear().toString());
+    setSelectedName('');
+    setShowFilters(false);
+  };
+
+  // Get the accounts to display (filtered or all)
+  const accountsToDisplay =
+    (selectedMonth && selectedMonth !== 'all') ||
+    selectedYear !== new Date().getFullYear().toString() ||
+    selectedName
+      ? filteredAccounts
+      : accounts;
+
+  // Load attendance data from cookies and localStorage (same as WorkerAccount component)
+  const loadAttendanceData = useCallback((): AttendanceRecord[] => {
+    try {
+      // First try localStorage (most recent and complete)
+      const stored = localStorage.getItem('attendanceSystem');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.data || [];
+      }
+
+      // Fallback to cookies
+      const cookieData = Cookies.get('attendanceData');
+      if (cookieData) {
+        const compactData = JSON.parse(cookieData);
+        return compactData.map((item: {
+          id: string;
+          n: string;
+          dt: string;
+          ci: string;
+          co: string;
+          s: AttendanceRecord['status'];
+          wh: number;
+          nt: string;
+        }) => ({
+          _id: item.id || `cookie_${Date.now()}_${Math.random()}`,
+          employeeName: item.n,
+          date: item.dt,
+          checkInTime: item.ci,
+          checkOutTime: item.co,
+          status: item.s,
+          workingHours: item.wh,
+          notes: item.nt,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading attendance data:', error);
+    }
+    return [];
+  }, []);
+
+  // Save attendance data to cookies (same as WorkerAccount component)
+  const saveAttendanceData = useCallback((attendanceData: AttendanceRecord[]) => {
+    try {
+      // Save full data to localStorage
+      const attendanceStorage = {
+        data: attendanceData,
+        lastUpdated: new Date().toISOString(),
+      };
+      localStorage.setItem('attendanceSystem', JSON.stringify(attendanceStorage));
+
+      // Save recent records to cookies (for persistence across sessions)
+      const recentData = attendanceData.slice(-20).map((record) => ({
+        id: record._id,
+        n: record.employeeName,
+        dt: record.date,
+        ci: record.checkInTime,
+        co: record.checkOutTime || '',
+        s: record.status,
+        wh: record.workingHours || 0,
+        nt: record.notes || '',
+      }));
+      Cookies.set('attendanceData', JSON.stringify(recentData), {
+        expires: 365,
+      });
+
+      // Dispatch custom event for same-tab synchronization
+      window.dispatchEvent(new CustomEvent('attendanceDataChanged'));
+
+      console.log('Attendance data saved successfully');
+    } catch (error) {
+      console.error('Error saving attendance data:', error);
+    }
+  }, []);
+
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
@@ -162,7 +367,39 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
       );
       if (response.ok) {
         const data = await response.json();
-        setAccounts(Array.isArray(data) ? data : []);
+        const accountsData = Array.isArray(data) ? data : [];
+        
+        // Load attendance data and merge with accounts
+        const attendanceData = loadAttendanceData();
+        const accountsWithAttendance = accountsData.map((account: MerchantAccountData) => {
+          const attendance = attendanceData.find(
+            (record: AttendanceRecord) => record.employeeName === account.name && record.date === account.date
+          );
+          
+          if (attendance) {
+            // Completely replace attendance fields with latest data
+            return {
+              ...account,
+              attendanceStatus: attendance.status,
+              checkInTime: attendance.checkInTime,
+              checkOutTime: attendance.checkOutTime,
+              workingHours: attendance.workingHours,
+              attendanceNotes: attendance.notes,
+            };
+          }
+          
+          // If no attendance record found, ensure attendance fields are cleared
+          return {
+            ...account,
+            attendanceStatus: undefined,
+            checkInTime: undefined,
+            checkOutTime: undefined,
+            workingHours: undefined,
+            attendanceNotes: undefined,
+          };
+        });
+        
+        setAccounts(accountsWithAttendance);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -177,13 +414,78 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadAttendanceData]);
 
   useEffect(() => {
     if (isOpen) {
       fetchAccounts();
     }
   }, [isOpen, fetchAccounts]);
+
+  // Function to update accounts with latest attendance data
+  const updateAccountsWithAttendance = useCallback(() => {
+    const attendanceData = loadAttendanceData();
+    setAccounts(prevAccounts => 
+      prevAccounts.map((account: MerchantAccountData) => {
+        const attendance = attendanceData.find(
+          (record: AttendanceRecord) => record.employeeName === account.name && record.date === account.date
+        );
+        
+        if (attendance) {
+          // Completely replace attendance fields with latest data
+          return {
+            ...account,
+            attendanceStatus: attendance.status,
+            checkInTime: attendance.checkInTime,
+            checkOutTime: attendance.checkOutTime,
+            workingHours: attendance.workingHours,
+            attendanceNotes: attendance.notes,
+          };
+        }
+        
+        // If no attendance record found, clear attendance fields
+        return {
+          ...account,
+          attendanceStatus: undefined,
+          checkInTime: undefined,
+          checkOutTime: undefined,
+          workingHours: undefined,
+          attendanceNotes: undefined,
+        };
+      })
+    );
+  }, [loadAttendanceData]);
+
+  // Listen for changes in attendance data (for synchronization with Attendance component)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'attendanceSystem' && isOpen) {
+        // Update accounts immediately with latest attendance data
+        setTimeout(() => {
+          updateAccountsWithAttendance();
+        }, 100); // Small delay to ensure data is written
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for changes in the same tab using custom event
+    const handleAttendanceChange = () => {
+      if (isOpen) {
+        // Update accounts immediately when attendance changes in same tab
+        setTimeout(() => {
+          updateAccountsWithAttendance();
+        }, 100); // Small delay to ensure data is written
+      }
+    };
+
+    window.addEventListener('attendanceDataChanged', handleAttendanceChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('attendanceDataChanged', handleAttendanceChange);
+    };
+  }, [isOpen, updateAccountsWithAttendance]);
 
   const convertToNumber = (value: string): number | string => {
     if (value === '0') {
@@ -423,8 +725,143 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     return toNumber(formData.invoice) - toNumber(formData.payment);
   };
 
-  // Filter accounts based on search query
-  const filteredAccounts = accounts.filter(account =>
+  // Attendance functions
+  const handleMarkAttendance = (merchant: MerchantAccountData) => {
+    setSelectedMerchantForAttendance(merchant);
+    
+    // Check if attendance already exists for this merchant and date
+    const existingAttendance = loadAttendanceData();
+    const existing = existingAttendance.find(
+      (record: AttendanceRecord) => record.employeeName === merchant.name && record.date === merchant.date
+    );
+
+    if (existing) {
+      // Pre-fill form with existing data
+      setAttendanceFormData({
+        status: existing.status,
+        checkInTime: existing.checkInTime || '',
+        checkOutTime: existing.checkOutTime || '',
+        notes: existing.notes || '',
+      });
+    } else {
+      // New attendance record
+      setAttendanceFormData({
+        status: 'present',
+        checkInTime: '',
+        checkOutTime: '',
+        notes: '',
+      });
+    }
+    
+    setShowAttendanceDialog(true);
+  };
+
+  const handleSaveAttendance = async () => {
+    if (!selectedMerchantForAttendance) return;
+
+    try {
+      const workingHours = attendanceFormData.checkInTime && attendanceFormData.checkOutTime
+        ? calculateWorkingHours(attendanceFormData.checkInTime, attendanceFormData.checkOutTime)
+        : 0;
+
+      // Create attendance record (same format as WorkerAccount component)
+      const attendanceRecord: AttendanceRecord = {
+        _id: `attendance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        employeeName: selectedMerchantForAttendance.name,
+        date: selectedMerchantForAttendance.date,
+        checkInTime: attendanceFormData.checkInTime,
+        checkOutTime: attendanceFormData.checkOutTime,
+        status: attendanceFormData.status,
+        workingHours: workingHours,
+        notes: attendanceFormData.notes,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Load existing attendance data
+      const existingAttendance = loadAttendanceData();
+      
+      // Remove any existing records for this employee and date to prevent duplicates
+      const filteredAttendance = existingAttendance.filter(
+        (record: AttendanceRecord) => !(record.employeeName === selectedMerchantForAttendance.name && record.date === selectedMerchantForAttendance.date)
+      );
+      
+      // Add the new/updated record
+      const updatedAttendance = [...filteredAttendance, attendanceRecord];
+      
+      toast.success(existingAttendance.length !== filteredAttendance.length ? 'تم التحديث بنجاح' : 'تم التسجيل بنجاح');
+
+      // Save to cookies and localStorage (same as WorkerAccount component)
+      saveAttendanceData(updatedAttendance);
+
+      setShowAttendanceDialog(false);
+      setSelectedMerchantForAttendance(null);
+
+      // Update accounts immediately with new attendance data
+      setTimeout(() => {
+        updateAccountsWithAttendance();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      toast.error('فشل في التسجيل');
+    }
+  };
+
+  const calculateWorkingHours = (checkIn: string, checkOut: string): number => {
+    if (!checkIn || !checkOut) return 0;
+
+    const [inHour, inMinute] = checkIn.split(':').map(Number);
+    const [outHour, outMinute] = checkOut.split(':').map(Number);
+
+    const inTotalMinutes = inHour * 60 + inMinute;
+    const outTotalMinutes = outHour * 60 + outMinute;
+
+    const workingMinutes = outTotalMinutes - inTotalMinutes;
+    return Math.max(0, workingMinutes / 60);
+  };
+
+  const getAttendanceStatusBadge = (status?: string, onClick?: () => void) => {
+    if (!status) {
+      // Return a default badge for "No Status" that's clickable
+      return (
+        <Badge 
+          variant="outline" 
+          className="flex items-center gap-1 bg-gray-500/20 text-gray-400 border-gray-500/50 border text-xs cursor-pointer hover:bg-gray-500/30 transition-colors"
+          onClick={onClick}
+        >
+          <Clock className="w-3 h-3" />
+          لم يحدد
+        </Badge>
+      );
+    }
+    
+    const configs = {
+      present: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50', label: 'حاضر', icon: UserCheck },
+      absent: { color: 'bg-red-500/20 text-red-300 border-red-500/50', label: 'غائب', icon: UserX },
+      late: { color: 'bg-amber-500/20 text-amber-300 border-amber-500/50', label: 'متأخر', icon: Clock },
+      'half-day': { color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50', label: 'نصف يوم', icon: Clock },
+    };
+
+    const config = configs[status as keyof typeof configs];
+    if (!config) return null;
+
+    const Icon = config.icon;
+
+    return (
+      <Badge 
+        variant="outline" 
+        className={`flex items-center gap-1 ${config.color} border text-xs ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+        onClick={onClick}
+      >
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </Badge>
+    );
+  };
+
+  // Filter accounts based on search query AND filters
+  const filteredAccountsForSearch = accountsToDisplay.filter(account =>
     account.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -897,9 +1334,100 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {filteredAccounts.length} نتيجة من أصل {accounts.length} سجل
+                    {filteredAccountsForSearch.length} نتيجة من أصل {accounts.length} سجل
                   </motion.p>
                 )}
+              </motion.div>
+
+              {/* Filter Section */}
+              <motion.div
+                className="mt-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="outline"
+                    className="bg-gray-700/50 border-gray-600/50 text-gray-300 hover:bg-gray-600/50 flex items-center gap-2 w-full"
+                  >
+                    <Filter className="w-4 h-4" />
+                    {showFilters ? 'تصفيه البيانات' : 'إظهار كيفيه تصفيه البيانات'}
+                  </Button>
+                  
+                  {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Button
+                        onClick={clearFilters}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                      >
+                        <X className="w-4 h-4" />
+                        مسح الفلاتر
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/30"
+                  >
+                    {/* Name Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">البحث بالاسم</Label>
+                      <Input
+                        type="text"
+                        placeholder="اسم التاجر..."
+                        value={selectedName}
+                        onChange={(e) => setSelectedName(e.target.value)}
+                        className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+                      />
+                    </div>
+
+                    {/* Month Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">الشهر</Label>
+                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر الشهر" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="all">جميع الشهور</SelectItem>
+                          {months.map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Year Filter */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300 text-right block">السنة</Label>
+                      <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                          <SelectValue placeholder="اختر السنة" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </motion.div>
+                )}
+
               </motion.div>
             </CardHeader>
             <CardContent className="p-0">
@@ -925,6 +1453,9 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                       <TableHead className="text-gray-300 font-semibold text-right">
                         ملاحظات
                       </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-right">
+                        الحالة
+                      </TableHead>
                       {isAdminRole() && (
                         <TableHead className="text-gray-300 font-semibold text-right">
                           الإجراءات
@@ -936,7 +1467,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                     {isLoading ? (
                       <TableRow>
                         <TableCell
-                          colSpan={isAdminRole() ? 7 : 6}
+                          colSpan={isAdminRole() ? 8 : 7}
                           className="text-center py-8"
                         >
                           <div className="flex items-center justify-center space-x-2 space-x-reverse text-gray-400">
@@ -945,17 +1476,17 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : filteredAccounts.length === 0 ? (
+                    ) : filteredAccountsForSearch.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={isAdminRole() ? 7 : 6}
+                          colSpan={isAdminRole() ? 8 : 7}
                           className="text-center py-8 text-gray-400"
                         >
                           {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات متاحة'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredAccounts.map((account, index) => (
+                      filteredAccountsForSearch.map((account, index) => (
                         <motion.tr
                           key={account._id || index}
                           className="border-gray-700/30 hover:bg-gray-800/50 transition-colors duration-200"
@@ -982,6 +1513,9 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                           </TableCell>
                           <TableCell className="text-gray-300 text-right max-w-xs truncate">
                             {account.notes || '-'}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {getAttendanceStatusBadge(account.attendanceStatus, () => handleMarkAttendance(account))}
                           </TableCell>
                           {isAdminRole() && (
                             <TableCell className="text-right">
@@ -1012,6 +1546,59 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Total Display when Filtered - Under Table */}
+              {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="mt-4 mx-4 mb-4 p-4 bg-gradient-to-r from-teal-600/20 to-cyan-600/20 border border-teal-500/30 rounded-lg"
+                >
+                  <div className="text-center mb-3">
+                    <h3 className="text-teal-300 text-lg font-semibold">الإجمالي للبيانات المفلترة</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-teal-300 text-sm">إجمالي السجلات</div>
+                      <div className="text-white text-lg font-bold">{filteredAccountsForSearch.length}</div>
+                    </div>
+                    <div>
+                      <div className="text-green-300 text-sm">إجمالي الفواتير</div>
+                      <div className="text-green-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccountsForSearch.reduce(
+                            (total, account) => total + toNumber(account.invoice || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-blue-300 text-sm">إجمالي المدفوعات</div>
+                      <div className="text-blue-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccountsForSearch.reduce(
+                            (total, account) => total + toNumber(account.payment || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-teal-300 text-sm">إجمالي المتبقي</div>
+                      <div className="text-teal-400 text-lg font-bold">
+                        {formatCurrency(
+                          filteredAccountsForSearch.reduce(
+                            (total, account) => total + (account.total || 0),
+                            0,
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -1236,6 +1823,131 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
                 </Button>
               </div>
             </form>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attendance Dialog */}
+      <Dialog
+        open={showAttendanceDialog}
+        onOpenChange={setShowAttendanceDialog}
+      >
+        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right text-blue-400 flex items-center justify-end">
+              <Clock className="w-5 h-5 ml-2" />
+              تسجيل البيانات
+            </DialogTitle>
+            {selectedMerchantForAttendance && (
+              <p className="text-gray-300 text-right">
+                التاجر: {selectedMerchantForAttendance.name}
+              </p>
+            )}
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Attendance Status */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-right block">
+                الحالة
+              </Label>
+              <Select
+                value={attendanceFormData.status}
+                onValueChange={(value: 'present' | 'absent' | 'late' | 'half-day') =>
+                  setAttendanceFormData(prev => ({
+                    ...prev,
+                    status: value,
+                  }))
+                }
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue placeholder="اختر الحالة" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="present">حاضر</SelectItem>
+                  <SelectItem value="absent">غائب</SelectItem>
+                  <SelectItem value="late">متأخر</SelectItem>
+                  <SelectItem value="half-day">نصف يوم</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Check In Time */}
+            {attendanceFormData.status !== 'absent' && (
+              <div className="space-y-2">
+                <Label className="text-gray-300 text-right block">
+                  وقت الوصول
+                </Label>
+                <Input
+                  type="time"
+                  value={attendanceFormData.checkInTime}
+                  onChange={(e) =>
+                    setAttendanceFormData(prev => ({
+                      ...prev,
+                      checkInTime: e.target.value,
+                    }))
+                  }
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+            )}
+
+            {/* Check Out Time */}
+            {attendanceFormData.status !== 'absent' && (
+              <div className="space-y-2">
+                <Label className="text-gray-300 text-right block">
+                  وقت المغادرة
+                </Label>
+                <Input
+                  type="time"
+                  value={attendanceFormData.checkOutTime}
+                  onChange={(e) =>
+                    setAttendanceFormData(prev => ({
+                      ...prev,
+                      checkOutTime: e.target.value,
+                    }))
+                  }
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+            )}
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-right block">
+                ملاحظات
+              </Label>
+              <Textarea
+                value={attendanceFormData.notes}
+                onChange={(e) =>
+                  setAttendanceFormData(prev => ({
+                    ...prev,
+                    notes: e.target.value,
+                  }))
+                }
+                placeholder="أدخل ملاحظات إضافية..."
+                className="bg-gray-800 border-gray-600 text-white text-right"
+                rows={3}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                onClick={() => setShowAttendanceDialog(false)}
+                variant="outline"
+                className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleSaveAttendance}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <UserCheck className="w-4 h-4 ml-2" />
+                حفظ البيانات
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

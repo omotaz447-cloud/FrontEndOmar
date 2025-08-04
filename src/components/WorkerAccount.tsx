@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   Popover,
@@ -61,6 +62,12 @@ import {
   Trash2,
   Users,
   TrendingUp,
+  Filter,
+  X,
+  ChevronDown,
+  UserCheck,
+  UserX,
+  Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -74,6 +81,25 @@ interface WorkerAccountData {
   date: string;
   withdrawal: string;
   role?: string;
+  // Attendance fields
+  attendanceStatus?: 'present' | 'absent' | 'late' | 'half-day';
+  checkInTime?: string;
+  checkOutTime?: string;
+  workingHours?: number;
+  attendanceNotes?: string;
+}
+
+interface AttendanceRecord {
+  _id?: string;
+  employeeName: string;
+  date: string;
+  checkInTime: string;
+  checkOutTime?: string;
+  status: 'present' | 'absent' | 'late' | 'half-day';
+  workingHours?: number;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface WorkerAccountProps {
@@ -142,6 +168,27 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
   );
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Filter states
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString(),
+  );
+  const [selectedName, setSelectedName] = useState<string>('');
+  const [filteredWorkers, setFilteredWorkers] = useState<WorkerAccountData[]>(
+    [],
+  );
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Attendance states
+  const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
+  const [selectedWorkerForAttendance, setSelectedWorkerForAttendance] = useState<WorkerAccountData | null>(null);
+  const [attendanceFormData, setAttendanceFormData] = useState({
+    status: 'present' as 'present' | 'absent' | 'late' | 'half-day',
+    checkInTime: '',
+    checkOutTime: '',
+    notes: '',
+  });
+
   const days = [
     'الأحد',
     'الاثنين',
@@ -152,16 +199,203 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     'السبت',
   ];
 
+  // Months in Arabic
+  const months = [
+    { value: '01', label: 'يناير' },
+    { value: '02', label: 'فبراير' },
+    { value: '03', label: 'مارس' },
+    { value: '04', label: 'أبريل' },
+    { value: '05', label: 'مايو' },
+    { value: '06', label: 'يونيو' },
+    { value: '07', label: 'يوليو' },
+    { value: '08', label: 'أغسطس' },
+    { value: '09', label: 'سبتمبر' },
+    { value: '10', label: 'أكتوبر' },
+    { value: '11', label: 'نوفمبر' },
+    { value: '12', label: 'ديسمبر' },
+  ];
+
+  // Generate years (current year and 5 years back)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) =>
+    (currentYear - i).toString(),
+  );
+
+  // Filter workers based on selected month, year, and name
+  useEffect(() => {
+    let filtered = workers;
+
+    // Filter by name if provided
+    if (selectedName) {
+      filtered = filtered.filter((worker) =>
+        worker.name.toLowerCase().includes(selectedName.toLowerCase()),
+      );
+    }
+
+    // Filter by month and year
+    if (selectedMonth && selectedYear) {
+      filtered = filtered.filter((worker) => {
+        const workerDate = new Date(worker.date);
+        const workerMonth = (workerDate.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        const workerYear = workerDate.getFullYear().toString();
+        return workerMonth === selectedMonth && workerYear === selectedYear;
+      });
+    } else if (selectedMonth) {
+      filtered = filtered.filter((worker) => {
+        const workerDate = new Date(worker.date);
+        const workerMonth = (workerDate.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        return workerMonth === selectedMonth;
+      });
+    } else if (selectedYear) {
+      filtered = filtered.filter((worker) => {
+        const workerDate = new Date(worker.date);
+        const workerYear = workerDate.getFullYear().toString();
+        return workerYear === selectedYear;
+      });
+    }
+
+    setFilteredWorkers(filtered);
+  }, [workers, selectedMonth, selectedYear, selectedName]);
+
+  // Clear filters
+  const clearFilters = () => {
+    setSelectedMonth('');
+    setSelectedYear(new Date().getFullYear().toString());
+    setSelectedName('');
+    setShowFilters(false);
+  };
+
+  // Get the workers to display (filtered or all)
+  const workersToDisplay =
+    selectedMonth ||
+    selectedYear !== new Date().getFullYear().toString() ||
+    selectedName
+      ? filteredWorkers
+      : workers;
+
+  // Load attendance data from cookies and localStorage (same as Attendance component)
+  const loadAttendanceData = useCallback((): AttendanceRecord[] => {
+    try {
+      // First try localStorage (most recent and complete)
+      const stored = localStorage.getItem('attendanceSystem');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.data || [];
+      }
+
+      // Fallback to cookies
+      const cookieData = Cookies.get('attendanceData');
+      if (cookieData) {
+        const compactData = JSON.parse(cookieData);
+        return compactData.map((item: {
+          id: string;
+          n: string;
+          dt: string;
+          ci: string;
+          co: string;
+          s: AttendanceRecord['status'];
+          wh: number;
+          nt: string;
+        }) => ({
+          _id: item.id || `cookie_${Date.now()}_${Math.random()}`,
+          employeeName: item.n,
+          date: item.dt,
+          checkInTime: item.ci,
+          checkOutTime: item.co,
+          status: item.s,
+          workingHours: item.wh,
+          notes: item.nt,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading attendance data:', error);
+    }
+    return [];
+  }, []);
+
+  // Save attendance data to cookies (same as Attendance component)
+  const saveAttendanceData = useCallback((attendanceData: AttendanceRecord[]) => {
+    try {
+      // Save full data to localStorage
+      const attendanceStorage = {
+        data: attendanceData,
+        lastUpdated: new Date().toISOString(),
+      };
+      localStorage.setItem('attendanceSystem', JSON.stringify(attendanceStorage));
+
+      // Save recent records to cookies (for persistence across sessions)
+      const recentData = attendanceData.slice(-20).map((record) => ({
+        id: record._id,
+        n: record.employeeName,
+        dt: record.date,
+        ci: record.checkInTime,
+        co: record.checkOutTime || '',
+        s: record.status,
+        wh: record.workingHours || 0,
+        nt: record.notes || '',
+      }));
+      Cookies.set('attendanceData', JSON.stringify(recentData), {
+        expires: 365,
+      });
+
+      // Dispatch custom event for same-tab synchronization
+      window.dispatchEvent(new CustomEvent('attendanceDataChanged'));
+
+      console.log('Attendance data saved successfully');
+    } catch (error) {
+      console.error('Error saving attendance data:', error);
+    }
+  }, []);
+
   // Fetch existing worker accounts
   const fetchWorkers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-account', {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/worker-account',
+        {
+          headers: getAuthHeaders(),
+        },
+      );
       if (response.ok) {
         const data = await response.json();
-        setWorkers(Array.isArray(data) ? data : []);
+        const workersData = Array.isArray(data) ? data : [];
+        
+        // Load attendance data and merge with workers
+        const attendanceData = loadAttendanceData();
+        const workersWithAttendance = workersData.map((worker: WorkerAccountData) => {
+          const attendance = attendanceData.find(
+            (record: AttendanceRecord) => record.employeeName === worker.name && record.date === worker.date
+          );
+          
+          if (attendance) {
+            // Completely replace attendance fields with latest data
+            return {
+              ...worker,
+              attendanceStatus: attendance.status,
+              checkInTime: attendance.checkInTime,
+              checkOutTime: attendance.checkOutTime,
+              workingHours: attendance.workingHours,
+              attendanceNotes: attendance.notes,
+            };
+          }
+          
+          // If no attendance record found, ensure attendance fields are cleared
+          return {
+            ...worker,
+            attendanceStatus: undefined,
+            checkInTime: undefined,
+            checkOutTime: undefined,
+            workingHours: undefined,
+            attendanceNotes: undefined,
+          };
+        });
+        
+        setWorkers(workersWithAttendance);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -177,13 +411,78 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadAttendanceData]);
 
   useEffect(() => {
     if (isOpen) {
       fetchWorkers();
     }
   }, [isOpen, fetchWorkers]);
+
+  // Function to update workers with latest attendance data without API call
+  const updateWorkersWithAttendance = useCallback(() => {
+    const attendanceData = loadAttendanceData();
+    setWorkers(prevWorkers => 
+      prevWorkers.map((worker: WorkerAccountData) => {
+        const attendance = attendanceData.find(
+          (record: AttendanceRecord) => record.employeeName === worker.name && record.date === worker.date
+        );
+        
+        if (attendance) {
+          // Completely replace attendance fields with latest data
+          return {
+            ...worker,
+            attendanceStatus: attendance.status,
+            checkInTime: attendance.checkInTime,
+            checkOutTime: attendance.checkOutTime,
+            workingHours: attendance.workingHours,
+            attendanceNotes: attendance.notes,
+          };
+        }
+        
+        // If no attendance record found, clear attendance fields
+        return {
+          ...worker,
+          attendanceStatus: undefined,
+          checkInTime: undefined,
+          checkOutTime: undefined,
+          workingHours: undefined,
+          attendanceNotes: undefined,
+        };
+      })
+    );
+  }, [loadAttendanceData]);
+
+  // Listen for changes in attendance data (for synchronization with Attendance component)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'attendanceSystem' && isOpen) {
+        // Update workers immediately with latest attendance data
+        setTimeout(() => {
+          updateWorkersWithAttendance();
+        }, 100); // Small delay to ensure data is written
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for changes in the same tab using custom event
+    const handleAttendanceChange = () => {
+      if (isOpen) {
+        // Update workers immediately when attendance changes in same tab
+        setTimeout(() => {
+          updateWorkersWithAttendance();
+        }, 100); // Small delay to ensure data is written
+      }
+    };
+
+    window.addEventListener('attendanceDataChanged', handleAttendanceChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('attendanceDataChanged', handleAttendanceChange);
+    };
+  }, [isOpen, updateWorkersWithAttendance]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -215,11 +514,14 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-account', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/worker-account',
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(formData),
+        },
+      );
 
       if (response.ok) {
         toast.success('تم إضافة السجل بنجاح');
@@ -409,6 +711,141 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setEditSelectedDate(undefined);
   };
 
+  // Attendance functions
+  const handleMarkAttendance = (worker: WorkerAccountData) => {
+    setSelectedWorkerForAttendance(worker);
+    
+    // Check if attendance already exists for this worker and date
+    const existingAttendance = loadAttendanceData();
+    const existing = existingAttendance.find(
+      (record: AttendanceRecord) => record.employeeName === worker.name && record.date === worker.date
+    );
+
+    if (existing) {
+      // Pre-fill form with existing data
+      setAttendanceFormData({
+        status: existing.status,
+        checkInTime: existing.checkInTime || '',
+        checkOutTime: existing.checkOutTime || '',
+        notes: existing.notes || '',
+      });
+    } else {
+      // New attendance record
+      setAttendanceFormData({
+        status: 'present',
+        checkInTime: '',
+        checkOutTime: '',
+        notes: '',
+      });
+    }
+    
+    setShowAttendanceDialog(true);
+  };
+
+  const handleSaveAttendance = async () => {
+    if (!selectedWorkerForAttendance) return;
+
+    try {
+      const workingHours = attendanceFormData.checkInTime && attendanceFormData.checkOutTime
+        ? calculateWorkingHours(attendanceFormData.checkInTime, attendanceFormData.checkOutTime)
+        : 0;
+
+      // Create attendance record (same format as Attendance component)
+      const attendanceRecord: AttendanceRecord = {
+        _id: `attendance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        employeeName: selectedWorkerForAttendance.name,
+        date: selectedWorkerForAttendance.date,
+        checkInTime: attendanceFormData.checkInTime,
+        checkOutTime: attendanceFormData.checkOutTime,
+        status: attendanceFormData.status,
+        workingHours: workingHours,
+        notes: attendanceFormData.notes,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Load existing attendance data
+      const existingAttendance = loadAttendanceData();
+      
+      // Remove any existing records for this employee and date to prevent duplicates
+      const filteredAttendance = existingAttendance.filter(
+        (record: AttendanceRecord) => !(record.employeeName === selectedWorkerForAttendance.name && record.date === selectedWorkerForAttendance.date)
+      );
+      
+      // Add the new/updated record
+      const updatedAttendance = [...filteredAttendance, attendanceRecord];
+      
+      toast.success(existingAttendance.length !== filteredAttendance.length ? 'تم التحديث بنجاح' : 'تم التسجيل بنجاح');
+
+      // Save to cookies and localStorage (same as Attendance component)
+      saveAttendanceData(updatedAttendance);
+
+      setShowAttendanceDialog(false);
+      setSelectedWorkerForAttendance(null);
+
+      // Update workers immediately with new attendance data
+      setTimeout(() => {
+        updateWorkersWithAttendance();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      toast.error('فشل في التسجيل');
+    }
+  };
+
+  const calculateWorkingHours = (checkIn: string, checkOut: string): number => {
+    if (!checkIn || !checkOut) return 0;
+
+    const [inHour, inMinute] = checkIn.split(':').map(Number);
+    const [outHour, outMinute] = checkOut.split(':').map(Number);
+
+    const inTotalMinutes = inHour * 60 + inMinute;
+    const outTotalMinutes = outHour * 60 + outMinute;
+
+    const workingMinutes = outTotalMinutes - inTotalMinutes;
+    return Math.max(0, workingMinutes / 60);
+  };
+
+  const getAttendanceStatusBadge = (status?: string, onClick?: () => void) => {
+    if (!status) {
+      // Return a default badge for "No Status" that's clickable
+      return (
+        <Badge 
+          variant="outline" 
+          className="flex items-center gap-1 bg-gray-500/20 text-gray-400 border-gray-500/50 border text-xs cursor-pointer hover:bg-gray-500/30 transition-colors"
+          onClick={onClick}
+        >
+          <Clock className="w-3 h-3" />
+          لم يحدد
+        </Badge>
+      );
+    }
+    
+    const configs = {
+      present: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50', label: 'حاضر', icon: UserCheck },
+      absent: { color: 'bg-red-500/20 text-red-300 border-red-500/50', label: 'غائب', icon: UserX },
+      late: { color: 'bg-amber-500/20 text-amber-300 border-amber-500/50', label: 'متأخر', icon: Clock },
+      'half-day': { color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50', label: 'نصف يوم', icon: Clock },
+    };
+
+    const config = configs[status as keyof typeof configs];
+    if (!config) return null;
+
+    const Icon = config.icon;
+
+    return (
+      <Badge 
+        variant="outline" 
+        className={`flex items-center gap-1 ${config.color} border text-xs ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+        onClick={onClick}
+      >
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </Badge>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50 p-0">
@@ -474,28 +911,70 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-400 text-right">
-                  {workers.length}
+                  {workersToDisplay.length}
                 </div>
+                {(selectedMonth ||
+                  selectedYear !== new Date().getFullYear().toString() ||
+                  selectedName) && (
+                  <div className="text-xs text-gray-400 text-right mt-1">
+                    من إجمالي {workers.length} عامل
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/40 border-gray-700/50">
+            <Card className="bg-gray-800/40 border-gray-700/50 relative overflow-hidden">
               <CardHeader className="pb-2">
-                <CardTitle className="text-white text-right flex items-center justify-end">
-                  <span className="ml-2">الاجمالي</span>
-                  <DollarSign className="w-5 h-5" />
+                <CardTitle className="text-white text-right flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className="ml-2">الإجمالي</span>
+                    <DollarSign className="w-5 h-5" />
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-400 text-right">
-                  {formatCurrency(
-                    workers
-                      .reduce(
-                        (total, worker) =>
-                          total + (parseFloat(worker.withdrawal) || 0),
-                        0,
-                      )
-                      .toString(),
+                <div className="relative">
+                  <motion.div
+                    className="text-2xl font-bold text-green-400 text-right"
+                    key={workersToDisplay.reduce(
+                      (total, worker) =>
+                        total + (parseFloat(worker.withdrawal) || 0),
+                      0,
+                    )}
+                    initial={{ scale: 1.1, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {formatCurrency(
+                      workersToDisplay
+                        .reduce(
+                          (total, worker) =>
+                            total + (parseFloat(worker.withdrawal) || 0),
+                          0,
+                        )
+                        .toString(),
+                    )}
+                  </motion.div>
+                  {(selectedMonth ||
+                    selectedYear !== new Date().getFullYear().toString() ||
+                    selectedName) && (
+                    <motion.div
+                      className="text-xs text-gray-400 text-right mt-1"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                    >
+                      المجموع المفلتر • الكل:{' '}
+                      {formatCurrency(
+                        workers
+                          .reduce(
+                            (total, worker) =>
+                              total + (parseFloat(worker.withdrawal) || 0),
+                            0,
+                          )
+                          .toString(),
+                      )}
+                    </motion.div>
                   )}
                 </div>
               </CardContent>
@@ -511,12 +990,19 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
               <CardContent>
                 <div className="text-2xl font-bold text-purple-400 text-right">
                   {
-                    workers.filter((w) => {
+                    workersToDisplay.filter((w) => {
                       const today = new Date().toISOString().split('T')[0];
                       return w.date === today;
                     }).length
                   }
                 </div>
+                {(selectedMonth ||
+                  selectedYear !== new Date().getFullYear().toString() ||
+                  selectedName) && (
+                  <div className="text-xs text-gray-400 text-right mt-1">
+                    في الفترة المحددة
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -744,6 +1230,180 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
             </CardContent>
           </Card>
 
+          {/* Filter Section Above Table */}
+          <Card className="bg-gray-800/40 border-gray-700/30 mb-6">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-white text-right flex items-center">
+                  <Filter className="w-5 h-5 ml-2" />
+                  <span>تصفية البيانات</span>
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 transition-all duration-200"
+                >
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`}
+                  />
+                </Button>
+              </div>
+            </CardHeader>
+            <motion.div
+              initial={false}
+              animate={{
+                height: showFilters ? 'auto' : 0,
+                opacity: showFilters ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Name Filter */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-gray-300 text-right">
+                      اسم العامل
+                    </Label>
+                    <div className="flex gap-1">
+                      <Input
+                        value={selectedName}
+                        onChange={(e) => setSelectedName(e.target.value)}
+                        placeholder="ابحث بالاسم..."
+                        className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500 text-right"
+                      />
+                      {selectedName && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedName('')}
+                          className="h-10 w-10 p-0 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Month Filter */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-gray-300 text-right">
+                      الشهر
+                    </Label>
+                    <div className="flex gap-1">
+                      <Select
+                        value={selectedMonth}
+                        onValueChange={setSelectedMonth}
+                      >
+                        <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500">
+                          <SelectValue placeholder="كل الشهور" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {months.map((month) => (
+                            <SelectItem
+                              key={month.value}
+                              value={month.value}
+                              className="text-white"
+                            >
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedMonth && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedMonth('')}
+                          className="h-10 w-10 p-0 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Year Filter */}
+                  <div className="space-y-2">
+                    <Label className="text-sm text-gray-300 text-right">
+                      السنة
+                    </Label>
+                    <Select
+                      value={selectedYear}
+                      onValueChange={setSelectedYear}
+                    >
+                      <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-blue-500 focus:border-blue-500">
+                        <SelectValue placeholder="اختر السنة" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        {years.map((year) => (
+                          <SelectItem
+                            key={year}
+                            value={year}
+                            className="text-white"
+                          >
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Filter Status and Clear Button */}
+                {(selectedMonth ||
+                  selectedYear !== new Date().getFullYear().toString() ||
+                  selectedName) && (
+                  <motion.div
+                    className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-blue-300 text-right">
+                        <div>
+                          عرض {workersToDisplay.length} من أصل {workers.length}{' '}
+                          سجل
+                        </div>
+                        {selectedName && (
+                          <div className="text-xs mt-1">
+                            الاسم: "{selectedName}"
+                          </div>
+                        )}
+                        {selectedMonth && (
+                          <div className="text-xs mt-1">
+                            الشهر:{' '}
+                            {
+                              months.find((m) => m.value === selectedMonth)
+                                ?.label
+                            }
+                          </div>
+                        )}
+                        {selectedYear !==
+                          new Date().getFullYear().toString() && (
+                          <div className="text-xs mt-1">
+                            السنة: {selectedYear}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFilters}
+                        className="text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                      >
+                        <X className="w-4 h-4 ml-1" />
+                        مسح الكل
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </CardContent>
+            </motion.div>
+          </Card>
+
           {/* Table Section */}
           <Card className="bg-gray-800/40 border-gray-700/30">
             <CardHeader className="border-b border-gray-700/30">
@@ -794,6 +1454,9 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
                       <TableHead className="text-gray-300 font-semibold text-right">
                         مبلغ الانسحاب
                       </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-right">
+                        الحالة
+                      </TableHead>
                       {!isFactoryRole() && (
                         <TableHead className="text-gray-300 font-semibold text-right">
                           الإجراءات
@@ -805,7 +1468,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
                     {isLoading ? (
                       <TableRow>
                         <TableCell
-                          colSpan={!isFactoryRole() ? 5 : 4}
+                          colSpan={!isFactoryRole() ? 6 : 5}
                           className="text-center py-8"
                         >
                           <div className="flex items-center justify-center space-x-2 space-x-reverse text-gray-400">
@@ -814,17 +1477,22 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : workers.length === 0 ? (
+                    ) : workersToDisplay.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={!isFactoryRole() ? 5 : 4}
+                          colSpan={!isFactoryRole() ? 6 : 5}
                           className="text-center py-8 text-gray-400"
                         >
-                          لا توجد سجلات متاحة
+                          {selectedMonth ||
+                          selectedYear !==
+                            new Date().getFullYear().toString() ||
+                          selectedName
+                            ? 'لا توجد سجلات في الفترة المحددة'
+                            : 'لا توجد سجلات متاحة'}
                         </TableCell>
                       </TableRow>
                     ) : (
-                      workers.map((worker, index) => (
+                      workersToDisplay.map((worker, index) => (
                         <motion.tr
                           key={worker.id || index}
                           className="border-gray-700/30 hover:bg-gray-800/50 transition-colors duration-200"
@@ -845,6 +1513,11 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
                             <span className="text-emerald-400 font-semibold">
                               {formatCurrency(worker.withdrawal)}
                             </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end">
+                              {getAttendanceStatusBadge(worker.attendanceStatus, () => handleMarkAttendance(worker))}
+                            </div>
                           </TableCell>
                           {!isFactoryRole() && (
                             <TableCell className="text-right">
@@ -873,6 +1546,41 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
                         </motion.tr>
                       ))
                     )}
+
+                    {/* Total Row when filtering */}
+                    {(selectedMonth ||
+                      selectedYear !== new Date().getFullYear().toString() ||
+                      selectedName) &&
+                      workersToDisplay.length > 0 && (
+                        <motion.tr
+                          className="border-t-2 border-blue-500/30 bg-blue-500/10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.2 }}
+                        >
+                          <TableCell
+                            className="text-blue-300 font-bold text-right"
+                            colSpan={4}
+                          >
+                            الإجمالي ({workersToDisplay.length} سجل)
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="text-green-400 font-bold text-lg">
+                              {formatCurrency(
+                                workersToDisplay
+                                  .reduce(
+                                    (total, worker) =>
+                                      total +
+                                      (parseFloat(worker.withdrawal) || 0),
+                                    0,
+                                  )
+                                  .toString(),
+                              )}
+                            </span>
+                          </TableCell>
+                          {!isFactoryRole() && <TableCell></TableCell>}
+                        </motion.tr>
+                      )}
                   </TableBody>
                 </Table>
               </div>
@@ -1205,6 +1913,131 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Attendance Dialog */}
+      <Dialog
+        open={showAttendanceDialog}
+        onOpenChange={setShowAttendanceDialog}
+      >
+        <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-right text-blue-400 flex items-center justify-end">
+              <Clock className="w-5 h-5 ml-2" />
+              تسجيل البيانات
+            </DialogTitle>
+            {selectedWorkerForAttendance && (
+              <p className="text-gray-300 text-right">
+                العامل: {selectedWorkerForAttendance.name}
+              </p>
+            )}
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Attendance Status */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-right block">
+                الحالة
+              </Label>
+              <Select
+                value={attendanceFormData.status}
+                onValueChange={(value: 'present' | 'absent' | 'late' | 'half-day') =>
+                  setAttendanceFormData(prev => ({
+                    ...prev,
+                    status: value
+                  }))
+                }
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue placeholder="اختر الحالة" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="present">حاضر</SelectItem>
+                  <SelectItem value="absent">غائب</SelectItem>
+                  <SelectItem value="late">متأخر</SelectItem>
+                  <SelectItem value="half-day">نصف يوم</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Check In Time */}
+            {attendanceFormData.status !== 'absent' && (
+              <div className="space-y-2">
+                <Label className="text-gray-300 text-right block">
+                  وقت الوصول
+                </Label>
+                <Input
+                  type="time"
+                  value={attendanceFormData.checkInTime}
+                  onChange={(e) =>
+                    setAttendanceFormData(prev => ({
+                      ...prev,
+                      checkInTime: e.target.value
+                    }))
+                  }
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+            )}
+
+            {/* Check Out Time */}
+            {attendanceFormData.status === 'present' && (
+              <div className="space-y-2">
+                <Label className="text-gray-300 text-right block">
+                  وقت الانصراف
+                </Label>
+                <Input
+                  type="time"
+                  value={attendanceFormData.checkOutTime}
+                  onChange={(e) =>
+                    setAttendanceFormData(prev => ({
+                      ...prev,
+                      checkOutTime: e.target.value
+                    }))
+                  }
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+            )}
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-right block">
+                ملاحظات
+              </Label>
+              <textarea
+                value={attendanceFormData.notes}
+                onChange={(e) =>
+                  setAttendanceFormData(prev => ({
+                    ...prev,
+                    notes: e.target.value
+                  }))
+                }
+                className="w-full bg-gray-800 border-gray-600 text-white rounded-md p-2 resize-none"
+                rows={3}
+                placeholder="أضف ملاحظات إضافية..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-start space-x-2 space-x-reverse pt-4">
+              <Button
+                onClick={() => setShowAttendanceDialog(false)}
+                variant="outline"
+                className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleSaveAttendance}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <UserCheck className="w-4 h-4 ml-2" />
+                حفظ البيانات
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
