@@ -53,10 +53,13 @@ import {
   User,
   TrendingUp,
   FileText,
-  Calculator,
   Heart,
   Edit,
   Trash2,
+  TrendingDown,
+  Wallet,
+  PiggyBank,
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -406,6 +409,50 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
     }).format(amount || 0);
   };
 
+  // Enhanced statistics calculation functions
+  const calculateStatistics = () => {
+    if (accounts.length === 0) {
+      return {
+        totalAccounts: 0,
+        totalCash: 0,
+        totalBlessing: 0,
+        totalWithdrawals: 0,
+        totalBalance: 0,
+        averageBalance: 0,
+      };
+    }
+
+    const stats = accounts.reduce(
+      (acc, account) => {
+        const cash = toNumber(account.cash || 0);
+        const blessing = toNumber(account.blessing || 0);
+        const withdrawal = toNumber(account.withdrawal || 0);
+        const balance = cash + blessing - withdrawal;
+        
+        return {
+          totalCash: acc.totalCash + cash,
+          totalBlessing: acc.totalBlessing + blessing,
+          totalWithdrawals: acc.totalWithdrawals + withdrawal,
+          totalBalance: acc.totalBalance + balance,
+        };
+      },
+      {
+        totalCash: 0,
+        totalBlessing: 0,
+        totalWithdrawals: 0,
+        totalBalance: 0,
+      }
+    );
+
+    return {
+      totalAccounts: accounts.length,
+      ...stats,
+      averageBalance: stats.totalBalance / accounts.length,
+    };
+  };
+
+  const stats = calculateStatistics();
+
   // Format date from ISO string to DD/MM/YYYY
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
@@ -478,66 +525,94 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
 
         {/* Content */}
         <div className="relative z-10 p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card className="bg-gray-800/40 border-orange-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-right flex items-center justify-end">
-                  <span className="ml-2">إجمالي السجلات</span>
-                  <FileText className="w-5 h-5 text-orange-400" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-400 text-right">
-                  {accounts.length}
+          {/* Enhanced Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+            {/* Total Accounts */}
+            <Card className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 border-blue-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-blue-100 text-sm font-medium">إجمالي السجلات</p>
+                    <p className="text-2xl font-bold text-white">
+                      {stats.totalAccounts}
+                    </p>
+                  </div>
+                  <FileText className="w-8 h-8 text-blue-200" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/40 border-orange-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-right flex items-center justify-end">
-                  <span className="ml-2">إجمالي النقدي</span>
-                  <DollarSign className="w-5 h-5 text-orange-400" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-400 text-right">
-                  {formatCurrency(
-                    accounts.reduce((total, account) => total + toNumber(account.cash || 0), 0)
-                  )}
+            {/* Total Cash */}
+            <Card className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 border-emerald-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-emerald-100 text-sm font-medium">إجمالي النقدي</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalCash)}
+                    </p>
+                  </div>
+                  <Wallet className="w-8 h-8 text-emerald-200" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/40 border-orange-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-right flex items-center justify-end">
-                  <span className="ml-2">إجمالي ربنا كرم</span>
-                  <Heart className="w-5 h-5 text-orange-400" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-pink-400 text-right">
-                  {formatCurrency(
-                    accounts.reduce((total, account) => total + toNumber(account.blessing || 0), 0)
-                  )}
+            {/* Total Blessing */}
+            <Card className="bg-gradient-to-br from-pink-600 via-pink-700 to-rose-800 border-pink-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-pink-100 text-sm font-medium">إجمالي ربنا كرم</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalBlessing)}
+                    </p>
+                  </div>
+                  <Heart className="w-8 h-8 text-pink-200" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/40 border-orange-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-right flex items-center justify-end">
-                  <span className="ml-2">الإجمالي العام</span>
-                  <Calculator className="w-5 h-5 text-orange-400" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-400 text-right">
-                  {formatCurrency(
-                    accounts.reduce((total, account) => total + (account.total || 0), 0)
-                  )}
+            {/* Total Withdrawals */}
+            <Card className="bg-gradient-to-br from-red-600 via-red-700 to-red-800 border-red-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-red-100 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalWithdrawals)}
+                    </p>
+                  </div>
+                  <TrendingDown className="w-8 h-8 text-red-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Balance */}
+            <Card className="bg-gradient-to-br from-orange-600 via-orange-700 to-amber-800 border-orange-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-orange-100 text-sm font-medium">إجمالي الرصيد</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalBalance)}
+                    </p>
+                  </div>
+                  <PiggyBank className="w-8 h-8 text-orange-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Average Balance */}
+            <Card className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 border-indigo-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-indigo-100 text-sm font-medium">متوسط الرصيد</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.averageBalance)}
+                    </p>
+                  </div>
+                  <Activity className="w-8 h-8 text-indigo-200" />
                 </div>
               </CardContent>
             </Card>

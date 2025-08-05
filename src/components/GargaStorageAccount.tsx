@@ -38,7 +38,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { CalendarIcon, Package, Calculator, DollarSign, TrendingUp, Edit, Trash2, RefreshCw, Save } from 'lucide-react';
+import {
+  CalendarIcon,
+  Package,
+  Calculator,
+  DollarSign,
+  TrendingUp,
+  Edit,
+  Trash2,
+  RefreshCw,
+  Save,
+  BarChart3,
+  TrendingDown,
+  Wallet,
+  PiggyBank,
+  Activity,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -95,10 +110,14 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
   const [accounts, setAccounts] = useState<GargaStorageData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<GargaStorageData | null>(null);
-  const [deleteAccount, setDeleteAccount] = useState<GargaStorageData | null>(null);
+  const [editingAccount, setEditingAccount] = useState<GargaStorageData | null>(
+    null,
+  );
+  const [deleteAccount, setDeleteAccount] = useState<GargaStorageData | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Edit dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<FormData>({
@@ -122,9 +141,12 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/garga-storage', {
-        headers: getAuthHeaders(),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/garga-storage',
+        {
+          headers: getAuthHeaders(),
+        },
+      );
       if (response.ok) {
         const data = await response.json();
         setAccounts(Array.isArray(data) ? data : []);
@@ -169,9 +191,14 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.fixedBeforeInventory || !formData.fixedAfterInventory || 
-        !formData.cashAtHome || !formData.withdrawal || !formData.date) {
+
+    if (
+      !formData.fixedBeforeInventory ||
+      !formData.fixedAfterInventory ||
+      !formData.cashAtHome ||
+      !formData.withdrawal ||
+      !formData.date
+    ) {
       toast.error('جميع الحقول مطلوبة');
       return;
     }
@@ -179,18 +206,21 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/garga-storage', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          'ثابت قبل الجرد': convertToNumber(formData.fixedBeforeInventory),
-          'ثابت بعد الجرد': convertToNumber(formData.fixedAfterInventory),
-          'فلوس نقدي في البيت': convertToNumber(formData.cashAtHome),
-          'سحب': convertToNumber(formData.withdrawal),
-          'التاريخ': formData.date?.toISOString(),
-          'Notes': formData.notes,
-        }),
-      });
+      const response = await fetch(
+        'https://backend-omar-puce.vercel.app/api/garga-storage',
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            'ثابت قبل الجرد': convertToNumber(formData.fixedBeforeInventory),
+            'ثابت بعد الجرد': convertToNumber(formData.fixedAfterInventory),
+            'فلوس نقدي في البيت': convertToNumber(formData.cashAtHome),
+            سحب: convertToNumber(formData.withdrawal),
+            التاريخ: formData.date?.toISOString(),
+            Notes: formData.notes,
+          }),
+        },
+      );
 
       const result = await response.json();
 
@@ -242,7 +272,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
-        }
+        },
       );
 
       if (response.ok) {
@@ -278,8 +308,13 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!editFormData.fixedBeforeInventory || !editFormData.fixedAfterInventory || 
-        !editFormData.cashAtHome || !editFormData.withdrawal || !editFormData.date) {
+    if (
+      !editFormData.fixedBeforeInventory ||
+      !editFormData.fixedAfterInventory ||
+      !editFormData.cashAtHome ||
+      !editFormData.withdrawal ||
+      !editFormData.date
+    ) {
       toast.error('جميع الحقول مطلوبة');
       return;
     }
@@ -294,14 +329,16 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            'ثابت قبل الجرد': convertToNumber(editFormData.fixedBeforeInventory),
+            'ثابت قبل الجرد': convertToNumber(
+              editFormData.fixedBeforeInventory,
+            ),
             'ثابت بعد الجرد': convertToNumber(editFormData.fixedAfterInventory),
             'فلوس نقدي في البيت': convertToNumber(editFormData.cashAtHome),
-            'سحب': convertToNumber(editFormData.withdrawal),
-            'التاريخ': editFormData.date?.toISOString(),
-            'Notes': editFormData.notes,
+            سحب: convertToNumber(editFormData.withdrawal),
+            التاريخ: editFormData.date?.toISOString(),
+            Notes: editFormData.notes,
           }),
-        }
+        },
       );
 
       const result = await response.json();
@@ -333,6 +370,53 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     return fixedAfter + cash - withdrawal;
   };
 
+  // Statistics calculation functions
+  const calculateStatistics = () => {
+    if (accounts.length === 0) {
+      return {
+        totalAccounts: 0,
+        totalFixedAfterInventory: 0,
+        totalCashAtHome: 0,
+        totalWithdrawals: 0,
+        totalBalance: 0,
+        averageBalance: 0,
+      };
+    }
+
+    const stats = accounts.reduce(
+      (acc, account) => {
+        const balance = account.fixedAfterInventory + account.cashAtHome - account.withdrawal;
+        return {
+          totalFixedAfterInventory: acc.totalFixedAfterInventory + account.fixedAfterInventory,
+          totalCashAtHome: acc.totalCashAtHome + account.cashAtHome,
+          totalWithdrawals: acc.totalWithdrawals + account.withdrawal,
+          totalBalance: acc.totalBalance + balance,
+        };
+      },
+      {
+        totalFixedAfterInventory: 0,
+        totalCashAtHome: 0,
+        totalWithdrawals: 0,
+        totalBalance: 0,
+      },
+    );
+
+    return {
+      totalAccounts: accounts.length,
+      ...stats,
+      averageBalance: stats.totalBalance / accounts.length,
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   const total = calculateTotal();
 
   return (
@@ -352,11 +436,106 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+            {/* Total Accounts */}
+            <Card className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 border-blue-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-blue-100 text-sm font-medium">إجمالي السجلات</p>
+                    <p className="text-2xl font-bold text-white">
+                      {stats.totalAccounts}
+                    </p>
+                  </div>
+                  <Package className="w-8 h-8 text-blue-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Fixed After Inventory */}
+            <Card className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 border-emerald-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-emerald-100 text-sm font-medium">إجمالي الثابت بعد الجرد</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalFixedAfterInventory)}
+                    </p>
+                  </div>
+                  <BarChart3 className="w-8 h-8 text-emerald-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Cash at Home */}
+            <Card className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 border-purple-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-purple-100 text-sm font-medium">إجمالي النقدي في البيت</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalCashAtHome)}
+                    </p>
+                  </div>
+                  <Wallet className="w-8 h-8 text-purple-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Withdrawals */}
+            <Card className="bg-gradient-to-br from-red-600 via-red-700 to-red-800 border-red-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-red-100 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalWithdrawals)}
+                    </p>
+                  </div>
+                  <TrendingDown className="w-8 h-8 text-red-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Balance */}
+            <Card className="bg-gradient-to-br from-yellow-600 via-yellow-700 to-orange-800 border-yellow-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-yellow-100 text-sm font-medium">إجمالي الرصيد</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.totalBalance)}
+                    </p>
+                  </div>
+                  <PiggyBank className="w-8 h-8 text-yellow-200" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Average Balance */}
+            <Card className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 border-indigo-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-right">
+                    <p className="text-indigo-100 text-sm font-medium">متوسط الرصيد</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats.averageBalance)}
+                    </p>
+                  </div>
+                  <Activity className="w-8 h-8 text-indigo-200" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Fixed Before Inventory */}
               <div className="space-y-2">
-                <Label htmlFor="fixedBeforeInventory" className="text-white font-medium">
+                <Label
+                  htmlFor="fixedBeforeInventory"
+                  className="text-white font-medium"
+                >
                   ثابت قبل الجرد
                 </Label>
                 <div className="relative">
@@ -377,7 +556,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
               {/* Fixed After Inventory */}
               <div className="space-y-2">
-                <Label htmlFor="fixedAfterInventory" className="text-white font-medium">
+                <Label
+                  htmlFor="fixedAfterInventory"
+                  className="text-white font-medium"
+                >
                   ثابت بعد الجرد
                 </Label>
                 <div className="relative">
@@ -512,7 +694,11 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                 {isSubmitting ? (
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full ml-2"
                   />
                 ) : null}
@@ -527,7 +713,11 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                 {isLoading ? (
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                   />
                 ) : (
@@ -542,7 +732,9 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
             <Card className="bg-gray-800/60 border-gray-700/50">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">السجلات المحفوظة</h3>
+                  <h3 className="text-xl font-bold text-white">
+                    السجلات المحفوظة
+                  </h3>
                   <span className="text-gray-400 text-sm">
                     إجمالي السجلات: {accounts.length}
                   </span>
@@ -552,16 +744,26 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                   <div className="flex items-center justify-center py-8">
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
                       className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"
                     />
-                    <span className="text-white mr-3">جاري تحميل البيانات...</span>
+                    <span className="text-white mr-3">
+                      جاري تحميل البيانات...
+                    </span>
                   </div>
                 ) : accounts.length === 0 ? (
                   <div className="text-center py-8">
                     <Package className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                    <p className="text-gray-400 text-lg">لا توجد سجلات محفوظة</p>
-                    <p className="text-gray-500 text-sm mt-2">قم بإضافة حساب جديد للبدء</p>
+                    <p className="text-gray-400 text-lg">
+                      لا توجد سجلات محفوظة
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      قم بإضافة حساب جديد للبدء
+                    </p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -601,13 +803,21 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                             className="border-gray-700/30 hover:bg-gray-800/50 transition-colors duration-200"
                           >
                             <TableCell className="text-gray-300 text-right">
-                              {format(new Date(account.date), 'dd/MM/yyyy', { locale: ar })}
+                              {format(new Date(account.date), 'dd/MM/yyyy', {
+                                locale: ar,
+                              })}
                             </TableCell>
                             <TableCell className="text-gray-300 text-right">
-                              {account.fixedBeforeInventory.toLocaleString('ar-EG')} جنيه
+                              {account.fixedBeforeInventory.toLocaleString(
+                                'ar-EG',
+                              )}{' '}
+                              جنيه
                             </TableCell>
                             <TableCell className="text-gray-300 text-right">
-                              {account.fixedAfterInventory.toLocaleString('ar-EG')} جنيه
+                              {account.fixedAfterInventory.toLocaleString(
+                                'ar-EG',
+                              )}{' '}
+                              جنيه
                             </TableCell>
                             <TableCell className="text-gray-300 text-right">
                               {account.cashAtHome.toLocaleString('ar-EG')} جنيه
@@ -616,7 +826,12 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                               {account.withdrawal.toLocaleString('ar-EG')} جنيه
                             </TableCell>
                             <TableCell className="text-green-400 font-semibold text-right">
-                              {((account.fixedAfterInventory + account.cashAtHome) - account.withdrawal).toLocaleString('ar-EG')} جنيه
+                              {(
+                                account.fixedAfterInventory +
+                                account.cashAtHome -
+                                account.withdrawal
+                              ).toLocaleString('ar-EG')}{' '}
+                              جنيه
                             </TableCell>
                             <TableCell className="text-gray-300 text-right max-w-xs truncate">
                               {account.notes || '-'}
@@ -663,10 +878,15 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
         </motion.div>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccount} onOpenChange={() => setDeleteAccount(null)}>
+        <AlertDialog
+          open={!!deleteAccount}
+          onOpenChange={() => setDeleteAccount(null)}
+        >
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
+              <AlertDialogTitle className="text-white">
+                تأكيد الحذف
+              </AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
                 هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>
@@ -679,7 +899,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
               >
                 {isDeleting ? 'جاري الحذف...' : 'حذف'}
               </AlertDialogAction>
-              <AlertDialogCancel 
+              <AlertDialogCancel
                 onClick={() => setDeleteAccount(null)}
                 className="border-gray-600 text-gray-300 hover:bg-gray-700"
               >
@@ -698,16 +918,27 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
               تعديل حساب بايكه ومخازن جرجا
             </DialogTitle>
             <DialogDescription className="text-gray-400 text-right">
-              تعديل البيانات المالية لتاريخ {editingAccount?.date ? format(new Date(editingAccount.date), 'dd/MM/yyyy', { locale: ar }) : ''}
+              تعديل البيانات المالية لتاريخ{' '}
+              {editingAccount?.date
+                ? format(new Date(editingAccount.date), 'dd/MM/yyyy', {
+                    locale: ar,
+                  })
+                : ''}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-4 sm:p-6">
-            <form onSubmit={handleEditSubmit} className="space-y-4 sm:space-y-6">
+            <form
+              onSubmit={handleEditSubmit}
+              className="space-y-4 sm:space-y-6"
+            >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Fixed Before Inventory */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-fixedBeforeInventory" className="text-white font-medium">
+                  <Label
+                    htmlFor="edit-fixedBeforeInventory"
+                    className="text-white font-medium"
+                  >
                     ثابت قبل الجرد
                   </Label>
                   <div className="relative">
@@ -728,7 +959,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
                 {/* Fixed After Inventory */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-fixedAfterInventory" className="text-white font-medium">
+                  <Label
+                    htmlFor="edit-fixedAfterInventory"
+                    className="text-white font-medium"
+                  >
                     ثابت بعد الجرد
                   </Label>
                   <div className="relative">
@@ -749,7 +983,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
                 {/* Cash at Home */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-cashAtHome" className="text-white font-medium">
+                  <Label
+                    htmlFor="edit-cashAtHome"
+                    className="text-white font-medium"
+                  >
                     فلوس نقدي في البيت
                   </Label>
                   <div className="relative">
@@ -770,7 +1007,10 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
                 {/* Withdrawal */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-withdrawal" className="text-white font-medium">
+                  <Label
+                    htmlFor="edit-withdrawal"
+                    className="text-white font-medium"
+                  >
                     سحب
                   </Label>
                   <div className="relative">

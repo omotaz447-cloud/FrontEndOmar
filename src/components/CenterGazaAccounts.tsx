@@ -35,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -49,6 +50,11 @@ import {
   Wallet,
   DollarSign,
   Bike,
+  BarChart3,
+  TrendingDown,
+  PiggyBank,
+  FileText,
+  Crown,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
@@ -371,6 +377,28 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalFixedAfterInventory: accounts.reduce((sum, acc) => sum + (acc.fixedAfterInventory || 0), 0),
+      totalCashAtHome: accounts.reduce((sum, acc) => sum + (acc.cashAtHome || 0), 0),
+      totalWithdrawals: accounts.reduce((sum, acc) => sum + (acc.withdrawal || 0), 0),
+      totalInsurance: accounts.reduce((sum, acc) => sum + (acc.insurance || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -382,6 +410,136 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-green-500/20 to-green-600/30 border-green-500/50 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium">ثابت بعد الجرد</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalFixedAfterInventory)}</p>
+                  </div>
+                  <div className="p-3 bg-green-500/30 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-green-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm font-medium">نقدي في البيت</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCashAtHome)}</p>
+                  </div>
+                  <div className="p-3 bg-purple-500/30 rounded-full">
+                    <PiggyBank className="w-6 h-6 text-purple-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawals)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-br from-orange-500/20 to-orange-600/30 border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-300 text-sm font-medium">إجمالي التأمين</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalInsurance)}</p>
+                  </div>
+                  <div className="p-3 bg-orange-500/30 rounded-full">
+                    <DollarSign className="w-6 h-6 text-orange-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -815,6 +973,28 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalCash: accounts.reduce((sum, acc) => sum + (acc.cash || 0), 0),
+      totalBlessing: accounts.reduce((sum, acc) => sum + (acc.blessing || 0), 0),
+      totalWithdrawals: accounts.reduce((sum, acc) => sum + (acc.withdrawal || 0), 0),
+      totalInsurance: accounts.reduce((sum, acc) => sum + (acc.insurance || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -826,6 +1006,136 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-green-500/20 to-green-600/30 border-green-500/50 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-green-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-green-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">إجمالي النقدي</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCash)}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <DollarSign className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm font-medium">ربنا كرم</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalBlessing)}</p>
+                  </div>
+                  <div className="p-3 bg-purple-500/30 rounded-full">
+                    <PiggyBank className="w-6 h-6 text-purple-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawals)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-br from-orange-500/20 to-orange-600/30 border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-300 text-sm font-medium">إجمالي التأمين</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalInsurance)}</p>
+                  </div>
+                  <div className="p-3 bg-orange-500/30 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-orange-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -1231,6 +1541,28 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalCash: accounts.reduce((sum, acc) => sum + (acc.cash || 0), 0),
+      totalBlessing: accounts.reduce((sum, acc) => sum + (acc.blessing || 0), 0),
+      totalWithdrawals: accounts.reduce((sum, acc) => sum + (acc.withdrawal || 0), 0),
+      totalInsurance: accounts.reduce((sum, acc) => sum + (acc.insurance || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -1242,6 +1574,136 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-purple-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-purple-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">إجمالي النقدي</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCash)}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <DollarSign className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-green-500/20 to-green-600/30 border-green-500/50 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium">ربنا كرم</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalBlessing)}</p>
+                  </div>
+                  <div className="p-3 bg-green-500/30 rounded-full">
+                    <PiggyBank className="w-6 h-6 text-green-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawals)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-br from-orange-500/20 to-orange-600/30 border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-300 text-sm font-medium">إجمالي التأمين</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalInsurance)}</p>
+                  </div>
+                  <div className="p-3 bg-orange-500/30 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-orange-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -1643,6 +2105,26 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalCash: accounts.reduce((sum, acc) => sum + (acc.cash || 0), 0),
+      totalWithdrawals: accounts.reduce((sum, acc) => sum + (acc.withdrawal || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -1654,6 +2136,96 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-orange-500/20 to-orange-600/30 border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-orange-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-orange-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">إجمالي النقدي</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCash)}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <DollarSign className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawals)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -2037,6 +2609,26 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalCash: accounts.reduce((sum, acc) => sum + (acc.cash || 0), 0),
+      totalWithdrawals: accounts.reduce((sum, acc) => sum + (acc.withdrawal || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -2048,6 +2640,96 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-pink-500/20 to-pink-600/30 border-pink-500/50 hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-pink-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-pink-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-pink-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">إجمالي النقدي</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCash)}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <DollarSign className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">إجمالي السحوبات</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawals)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -2436,6 +3118,28 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     }
   }, [isOpen, fetchAccounts]);
 
+  // Statistics calculations
+  const calculateStatistics = () => {
+    return {
+      totalAccounts: accounts.length,
+      totalFixedBeforeInventory: accounts.reduce((sum, acc) => sum + (acc.fixedBeforeInventory || 0), 0),
+      totalFixedAfterInventory: accounts.reduce((sum, acc) => sum + (acc.fixedAfterInventory || 0), 0),
+      totalCashAtHome: accounts.reduce((sum, acc) => sum + (acc.cashAtHome || 0), 0),
+      totalWithdrawalFromBike: accounts.reduce((sum, acc) => sum + (acc.withdrawalFromBike || 0), 0),
+      netTotal: accounts.reduce((sum, acc) => sum + (acc.total || 0), 0),
+    };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const stats = calculateStatistics();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
@@ -2447,6 +3151,136 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
             {title}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-teal-500/20 to-teal-600/30 border-teal-500/50 hover:shadow-lg hover:shadow-teal-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-teal-300 text-sm font-medium">إجمالي الحسابات</p>
+                    <p className="text-2xl font-bold text-white">{stats.totalAccounts}</p>
+                  </div>
+                  <div className="p-3 bg-teal-500/30 rounded-full">
+                    <FileText className="w-6 h-6 text-teal-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-300 text-sm font-medium">ثابت قبل الجرد</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalFixedBeforeInventory)}</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/30 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-blue-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="bg-gradient-to-br from-green-500/20 to-green-600/30 border-green-500/50 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-300 text-sm font-medium">ثابت بعد الجرد</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalFixedAfterInventory)}</p>
+                  </div>
+                  <div className="p-3 bg-green-500/30 rounded-full">
+                    <BarChart3 className="w-6 h-6 text-green-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-300 text-sm font-medium">نقدي في البيت</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalCashAtHome)}</p>
+                  </div>
+                  <div className="p-3 bg-purple-500/30 rounded-full">
+                    <PiggyBank className="w-6 h-6 text-purple-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <Card className="bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">سحب من البايكة</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(stats.totalWithdrawalFromBike)}</p>
+                  </div>
+                  <div className="p-3 bg-red-500/30 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-300" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
+            <Card className={`${stats.netTotal >= 0 
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 border-emerald-500/50 hover:shadow-emerald-500/25' 
+              : 'bg-gradient-to-br from-red-500/20 to-red-600/30 border-red-500/50 hover:shadow-red-500/25'
+            } hover:shadow-lg transition-all duration-300`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'} text-sm font-medium`}>
+                      صافي الإجمالي
+                    </p>
+                    <p className={`text-xl font-bold ${stats.netTotal >= 0 ? 'text-emerald-100' : 'text-red-100'}`}>
+                      {formatCurrency(stats.netTotal)}
+                    </p>
+                  </div>
+                  <div className={`p-3 ${stats.netTotal >= 0 ? 'bg-emerald-500/30' : 'bg-red-500/30'} rounded-full`}>
+                    <Crown className={`w-6 h-6 ${stats.netTotal >= 0 ? 'text-emerald-300' : 'text-red-300'}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-6">

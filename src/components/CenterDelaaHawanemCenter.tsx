@@ -52,6 +52,11 @@ import {
   Crown,
   TrendingUp,
   ChevronRight,
+  BarChart3,
+  TrendingDown,
+  PiggyBank,
+  FileText,
+  DollarSign,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
@@ -510,6 +515,102 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
     setShowForm(false);
   };
 
+  // Statistics calculation functions
+  const calculateStatistics = () => {
+    if (accounts.length === 0) {
+      return {
+        totalAccounts: 0,
+        totalCash: 0,
+        totalBlessing: 0,
+        totalWithdrawals: 0,
+        totalBalance: 0,
+        averageBalance: 0,
+        totalFixedAfterInventory: 0,
+        totalCashAtHome: 0,
+        totalInsurance: 0,
+      };
+    }
+
+    const currentSection = getCurrentSection();
+    
+    if (currentSection?.id === 'main-accounts') {
+      // For main accounts (storage type)
+      const stats = accounts.reduce(
+        (acc, account) => {
+          const fixedAfter = account.fixedAfterInventory || 0;
+          const cashAtHome = account.cashAtHome || 0;
+          const withdrawal = account.withdrawal || 0;
+          const insurance = account.insurance || 0;
+          const balance = fixedAfter + cashAtHome - withdrawal - insurance;
+          
+          return {
+            totalFixedAfterInventory: acc.totalFixedAfterInventory + fixedAfter,
+            totalCashAtHome: acc.totalCashAtHome + cashAtHome,
+            totalWithdrawals: acc.totalWithdrawals + withdrawal,
+            totalInsurance: acc.totalInsurance + insurance,
+            totalBalance: acc.totalBalance + balance,
+          };
+        },
+        {
+          totalFixedAfterInventory: 0,
+          totalCashAtHome: 0,
+          totalWithdrawals: 0,
+          totalInsurance: 0,
+          totalBalance: 0,
+        }
+      );
+
+      return {
+        totalAccounts: accounts.length,
+        ...stats,
+        averageBalance: stats.totalBalance / accounts.length,
+        totalCash: 0,
+        totalBlessing: 0,
+      };
+    } else {
+      // For personal accounts (cash/blessing type)
+      const stats = accounts.reduce(
+        (acc, account) => {
+          const cash = account.cash || 0;
+          const blessing = account.blessing || 0;
+          const withdrawal = account.withdrawal || 0;
+          const balance = cash + blessing - withdrawal;
+          
+          return {
+            totalCash: acc.totalCash + cash,
+            totalBlessing: acc.totalBlessing + blessing,
+            totalWithdrawals: acc.totalWithdrawals + withdrawal,
+            totalBalance: acc.totalBalance + balance,
+          };
+        },
+        {
+          totalCash: 0,
+          totalBlessing: 0,
+          totalWithdrawals: 0,
+          totalBalance: 0,
+        }
+      );
+
+      return {
+        totalAccounts: accounts.length,
+        ...stats,
+        averageBalance: stats.totalBalance / accounts.length,
+        totalFixedAfterInventory: 0,
+        totalCashAtHome: 0,
+        totalInsurance: 0,
+      };
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+    }).format(amount || 0);
+  };
+
+  const stats = calculateStatistics();
+
   const handleSectionSelect = (sectionId: string) => {
     setSelectedSection(sectionId);
     setAccounts([]);
@@ -766,6 +867,134 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
                 exit={{ opacity: 0, x: -20 }}
                 className="p-6 space-y-6"
               >
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                  {/* Total Accounts */}
+                  <Card className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 border-blue-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-right">
+                          <p className="text-blue-100 text-sm font-medium">إجمالي السجلات</p>
+                          <p className="text-2xl font-bold text-white">
+                            {stats.totalAccounts}
+                          </p>
+                        </div>
+                        <FileText className="w-8 h-8 text-blue-200" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {currentSection?.id === 'main-accounts' ? (
+                    <>
+                      {/* Fixed After Inventory */}
+                      <Card className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 border-emerald-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-right">
+                              <p className="text-emerald-100 text-sm font-medium">إجمالي ثابت بعد الجرد</p>
+                              <p className="text-xl font-bold text-white">
+                                {formatCurrency(stats.totalFixedAfterInventory)}
+                              </p>
+                            </div>
+                            <BarChart3 className="w-8 h-8 text-emerald-200" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Cash at Home */}
+                      <Card className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 border-purple-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-right">
+                              <p className="text-purple-100 text-sm font-medium">إجمالي النقدي في البيت</p>
+                              <p className="text-xl font-bold text-white">
+                                {formatCurrency(stats.totalCashAtHome)}
+                              </p>
+                            </div>
+                            <DollarSign className="w-8 h-8 text-purple-200" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Total Insurance */}
+                      <Card className="bg-gradient-to-br from-yellow-600 via-yellow-700 to-orange-800 border-yellow-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-right">
+                              <p className="text-yellow-100 text-sm font-medium">إجمالي التأمين</p>
+                              <p className="text-xl font-bold text-white">
+                                {formatCurrency(stats.totalInsurance)}
+                              </p>
+                            </div>
+                            <Wallet className="w-8 h-8 text-yellow-200" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  ) : (
+                    <>
+                      {/* Total Cash */}
+                      <Card className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 border-emerald-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-right">
+                              <p className="text-emerald-100 text-sm font-medium">إجمالي النقدي</p>
+                              <p className="text-xl font-bold text-white">
+                                {formatCurrency(stats.totalCash)}
+                              </p>
+                            </div>
+                            <DollarSign className="w-8 h-8 text-emerald-200" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Total Blessing */}
+                      <Card className="bg-gradient-to-br from-pink-600 via-pink-700 to-rose-800 border-pink-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-right">
+                              <p className="text-pink-100 text-sm font-medium">إجمالي ربنا كرم</p>
+                              <p className="text-xl font-bold text-white">
+                                {formatCurrency(stats.totalBlessing)}
+                              </p>
+                            </div>
+                            <Crown className="w-8 h-8 text-pink-200" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+
+                  {/* Total Withdrawals */}
+                  <Card className="bg-gradient-to-br from-red-600 via-red-700 to-red-800 border-red-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-right">
+                          <p className="text-red-100 text-sm font-medium">إجمالي السحوبات</p>
+                          <p className="text-xl font-bold text-white">
+                            {formatCurrency(stats.totalWithdrawals)}
+                          </p>
+                        </div>
+                        <TrendingDown className="w-8 h-8 text-red-200" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Total Balance */}
+                  <Card className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 border-indigo-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-right">
+                          <p className="text-indigo-100 text-sm font-medium">إجمالي الرصيد</p>
+                          <p className="text-xl font-bold text-white">
+                            {formatCurrency(stats.totalBalance)}
+                          </p>
+                        </div>
+                        <PiggyBank className="w-8 h-8 text-indigo-200" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-semibold text-white">
                     قائمة الحسابات
