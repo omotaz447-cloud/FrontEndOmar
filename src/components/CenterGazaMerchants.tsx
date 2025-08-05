@@ -660,7 +660,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
             <div className="p-2 bg-gradient-to-l from-orange-500 to-amber-600 rounded-lg shadow-lg">
               <Users className="w-6 h-6 text-white" />
             </div>
-            حساب تجار سنتر غزة
+            حساب تجار سنتر غزة 
           </DialogTitle>
           <DialogDescription className="text-gray-300 text-lg">
             إدارة حسابات تجار سنتر غزة ومتابعة الفواتير والدفعات
