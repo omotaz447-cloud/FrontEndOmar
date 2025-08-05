@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Package, User, Users, Building2 } from 'lucide-react';
 import GargaStorageAccount from './GargaStorageAccount';
-import MahmoudAccount from './MahmoudAccount';
+import MahmoudGargaAccount from './MahmoudGargaAccount';
 import WaheedGargaAccount from './WaheedGargaAccount';
 
 interface GargaMallAccountsProps {
@@ -160,7 +160,7 @@ const GargaMallAccounts: React.FC<GargaMallAccountsProps> = ({
         onClose={handleBackToSections}
       />
 
-      <MahmoudAccount
+      <MahmoudGargaAccount
         isOpen={selectedSection === 'mahmoud'}
         onClose={handleBackToSections}
       />

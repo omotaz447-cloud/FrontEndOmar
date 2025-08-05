@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,10 @@ import {
   Trash2,
   RefreshCw,
   Save,
+  Store,
+  Calculator,
+  Receipt,
+  ArrowUpCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -407,6 +412,18 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
   
   // Check if user can access this component
 
+  // Calculate net profit for a single sale record
+  const calculateSaleNetProfit = (sale: ExhibitionGargaSalesData) => {
+    return (sale.sold || 0) - (sale.rent || 0) - (sale.expenses || 0) - (sale.exits || 0);
+  };
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+    }).format(amount || 0);
+  };
 
   const total = calculateTotal();
 
@@ -435,6 +452,120 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                   transition={{ duration: 0.5 }}
                   className="space-y-4"
                 >
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">إجمالي السجلات</span>
+                          <Store className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-blue-400 text-right">
+                          {sales.length}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">إجمالي المبيعات</span>
+                          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-green-400 text-right">
+                          {formatCurrency(
+                            sales.reduce(
+                              (total, sale) => total + (sale.sold || 0),
+                              0,
+                            ),
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">إجمالي المصروفات</span>
+                          <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-red-400 text-right">
+                          {formatCurrency(
+                            sales.reduce(
+                              (total, sale) => total + (sale.expenses || 0),
+                              0,
+                            ),
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">صافي الأرباح</span>
+                          <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-purple-400 text-right">
+                          {formatCurrency(
+                            sales.reduce(
+                              (total, sale) => total + calculateSaleNetProfit(sale),
+                              0,
+                            ),
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">إجمالي الإيجار</span>
+                          <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-orange-400 text-right">
+                          {formatCurrency(
+                            sales.reduce(
+                              (total, sale) => total + (sale.rent || 0),
+                              0,
+                            ),
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gray-800/40 border-gray-700/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                          <span className="ml-2">إجمالي الخوارج</span>
+                          <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-lg sm:text-xl font-bold text-yellow-400 text-right">
+                          {formatCurrency(
+                            sales.reduce(
+                              (total, sale) => total + (sale.exits || 0),
+                              0,
+                            ),
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Separator className="my-6 bg-gray-700/50" />
+
                   {/* Form Section */}
                   <form
                     onSubmit={handleSubmit}
@@ -844,15 +975,9 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
                                           {sale.exits} جنيه
                                         </TableCell>
                                         <TableCell
-                                          className={`text-xs px-1 py-1 font-bold whitespace-nowrap ${sale.sold - sale.rent - sale.expenses - sale.exits >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                                          className={`text-xs px-1 py-1 font-bold whitespace-nowrap ${calculateSaleNetProfit(sale) >= 0 ? 'text-green-400' : 'text-red-400'}`}
                                         >
-                                          {(
-                                            sale.sold -
-                                            sale.rent -
-                                            sale.expenses -
-                                            sale.exits
-                                          ).toFixed(2)}{' '}
-                                          جنيه
+                                          {calculateSaleNetProfit(sale).toFixed(2)} جنيه
                                         </TableCell>
                                         <TableCell className="text-white text-xs px-1 py-1 max-w-[80px] truncate">
                                           {sale.notes || '-'}

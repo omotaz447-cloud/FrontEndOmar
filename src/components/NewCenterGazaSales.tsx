@@ -36,6 +36,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -46,6 +52,12 @@ import {
   RefreshCw, 
   BarChart3,
   Calendar,
+  Store,
+  Receipt,
+  Calculator,
+  DollarSign,
+  ArrowUpCircle,
+  TrendingUp,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 
@@ -109,6 +121,21 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
     
     // المباع - الايجار - المصاريف - الخوارج
     return sold - rent - expenses - exits;
+  };
+
+  // Helper function to calculate net profit for a sale
+  const calculateSaleNetProfit = (sale: SalesData) => {
+    return sale.sold - sale.rent - sale.expenses - sale.exits;
+  };
+
+  // Helper function to format currency in Arabic
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-EG', {
+      style: 'currency',
+      currency: 'EGP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(amount);
   };
 
   const fetchSales = useCallback(async () => {
@@ -360,6 +387,118 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
             </div>
           </div>
 
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">إجمالي السجلات</span>
+                  <Store className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-blue-400 text-right">
+                  {sales.length}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">إجمالي المبيعات</span>
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-green-400 text-right">
+                  {formatCurrency(
+                    sales.reduce(
+                      (total, sale) => total + (sale.sold || 0),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">إجمالي المصروفات</span>
+                  <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-red-400 text-right">
+                  {formatCurrency(
+                    sales.reduce(
+                      (total, sale) => total + (sale.expenses || 0),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">صافي الأرباح</span>
+                  <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-emerald-400 text-right">
+                  {formatCurrency(
+                    sales.reduce(
+                      (total, sale) => total + calculateSaleNetProfit(sale),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">إجمالي الإيجار</span>
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-amber-400 text-right">
+                  {formatCurrency(
+                    sales.reduce(
+                      (total, sale) => total + (sale.rent || 0),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-orange-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
+                  <span className="ml-2">إجمالي الخوارج</span>
+                  <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg sm:text-xl font-bold text-yellow-400 text-right">
+                  {formatCurrency(
+                    sales.reduce(
+                      (total, sale) => total + (sale.exits || 0),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="flex-1 overflow-auto">
             <Table>
               <TableHeader>
@@ -397,8 +536,8 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
                       <TableCell className="text-right">{sale.exitName}</TableCell>
                       <TableCell className="text-right text-red-400">{sale.exits.toLocaleString()}</TableCell>
                       <TableCell className="text-right">
-                        <span className={`font-bold ${sale.total >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {sale.total.toLocaleString()}
+                        <span className={`font-bold ${calculateSaleNetProfit(sale) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatCurrency(calculateSaleNetProfit(sale))}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">{sale.notes || '-'}</TableCell>
