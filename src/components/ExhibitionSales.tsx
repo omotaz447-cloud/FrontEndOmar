@@ -495,6 +495,11 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     return day ? day.label : englishDay;
   };
 
+  // Calculate net profit for a single sale record
+  const calculateSaleNetProfit = (sale: ExhibitionSalesData) => {
+    return (sale.sold || 0) - (sale.rent || 0) - (sale.expenses || 0) - (sale.exits || 0);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50 p-0">
@@ -550,7 +555,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
         {/* Content */}
         <div className="relative z-10 p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
             <Card className="bg-gray-800/40 border-gray-700/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-right flex items-center justify-end">
@@ -595,7 +600,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                 <div className="text-2xl font-bold text-red-400 text-right">
                   {formatCurrency(
                     salesData.reduce(
-                      (total, sale) => total + (sale.rent || 0) + (sale.expenses || 0) + (sale.exits || 0),
+                      (total, sale) => total + (sale.expenses || 0),
                       0,
                     ),
                   )}
@@ -614,7 +619,45 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                 <div className="text-2xl font-bold text-purple-400 text-right">
                   {formatCurrency(
                     salesData.reduce(
-                      (total, sale) => total + (sale.total || 0),
+                      (total, sale) => total + calculateSaleNetProfit(sale),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-gray-700/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end">
+                  <span className="ml-2">إجمالي الإيجار</span>
+                  <DollarSign className="w-5 h-5" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-400 text-right">
+                  {formatCurrency(
+                    salesData.reduce(
+                      (total, sale) => total + (sale.rent || 0),
+                      0,
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/40 border-gray-700/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-right flex items-center justify-end">
+                  <span className="ml-2">إجمالي الخوارج</span>
+                  <ArrowUpCircle className="w-5 h-5" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-400 text-right">
+                  {formatCurrency(
+                    salesData.reduce(
+                      (total, sale) => total + (sale.exits || 0),
                       0,
                     ),
                   )}
@@ -1089,7 +1132,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="text-purple-400 font-semibold">
-                              {formatCurrency(sale.total || 0)}
+                              {formatCurrency(calculateSaleNetProfit(sale))}
                             </span>
                           </TableCell>
                           <TableCell className="text-gray-300 text-right max-w-xs truncate">
