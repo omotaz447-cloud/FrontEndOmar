@@ -584,7 +584,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
     setAccounts([]);
   };
 
-  useEffect(() => {
+  useEffect(() => { 
     if (selectedSection && !showForm) {
       fetchAccounts();
     }
@@ -592,8 +592,8 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-purple-500/20">
-        <DialogHeader className="border-b border-purple-500/20 pb-4">
+      <DialogContent className="max-w-6xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-purple-500/20 flex flex-col">
+        <DialogHeader className="border-b border-purple-500/20 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.div
@@ -642,7 +642,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <AnimatePresence mode="wait">
             {!selectedSection ? (
               <motion.div
@@ -650,7 +650,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="p-6 overflow-y-auto max-h-[70vh]"
+                className="p-4 sm:p-6"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {sections.map((section) => (
@@ -685,10 +685,10 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="p-6 overflow-y-auto max-h-[70vh]"
+                className="p-4 sm:p-6"
               >
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {selectedSection.fields.map((field) => (
                       <div key={field.key} className="space-y-2">
                         <Label className="text-white font-medium">
@@ -768,20 +768,20 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-700/50">
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 sm:pt-6 border-t border-gray-700/50">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={resetForm}
                       disabled={loading}
-                      className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                      className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50 w-full sm:w-auto"
                     >
                       إلغاء
                     </Button>
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="bg-gradient-to-l from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-semibold px-8"
+                      className="bg-gradient-to-l from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-semibold px-8 w-full sm:w-auto"
                     >
                       {loading ? (
                         <>
@@ -804,10 +804,10 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="p-6 space-y-6"
+                className="p-4 sm:p-6 space-y-4 sm:space-y-6"
               >
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   {/* Total Accounts */}
                   <Card className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 border-blue-500/50 shadow-lg hover:shadow-xl transition-all duration-300">
                     <CardContent className="p-4">
@@ -934,9 +934,9 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                     </CardContent>
                   </Card>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                   <h3 className="text-xl font-semibold text-white">قائمة {selectedSection.name}</h3>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <Button
                       onClick={() => {
                         console.log('Manual refresh triggered for accounts');
@@ -944,14 +944,14 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                       }}
                       variant="outline"
                       disabled={loading}
-                      className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                      className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50 w-full sm:w-auto"
                     >
                       <RefreshCw className={`ml-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                       تحديث ({accounts.length})
                     </Button>
                     <Button
                       onClick={() => setShowForm(true)}
-                      className="bg-gradient-to-l from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white"
+                      className="bg-gradient-to-l from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white w-full sm:w-auto"
                     >
                       <Plus className="ml-2 h-4 w-4" />
                       إضافة جديد
@@ -959,7 +959,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-gray-700/50">
+                <div className="overflow-x-auto rounded-lg border border-gray-700/50">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-gray-800/80 border-gray-700/50 hover:bg-gray-800/80">

@@ -164,8 +164,8 @@ const CenterGazaAccounts: React.FC<CenterGazaAccountsProps> = ({
     <>
       {/* Main sections dialog */}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-          <DialogHeader className="border-b border-gray-700 pb-4">
+        <DialogContent className="max-w-4xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+          <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
             <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
               <div className="p-2 bg-gradient-to-l from-orange-500 to-amber-600 rounded-lg shadow-lg">
                 <Building2 className="w-6 h-6 text-white" />
@@ -177,8 +177,9 @@ const CenterGazaAccounts: React.FC<CenterGazaAccountsProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-            {sections.map((section, index) => (
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
+              {sections.map((section, index) => (
               <motion.div
                 key={section.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -208,12 +209,11 @@ const CenterGazaAccounts: React.FC<CenterGazaAccountsProps> = ({
                   </div>
                 </div>
               </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
         </DialogContent>
-      </Dialog>
-
-      {/* Individual section dialog */}
+      </Dialog>      {/* Individual section dialog */}
       {selectedSectionData && (
         <selectedSectionData.component
           isOpen={showSectionDialog}
@@ -401,8 +401,8 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-blue-500 to-blue-600 rounded-lg shadow-lg">
               <Building2 className="w-6 h-6 text-white" />
@@ -411,8 +411,9 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -648,6 +649,7 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Add/Edit Form Dialog */}
@@ -997,8 +999,8 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-green-500 to-green-600 rounded-lg shadow-lg">
               <Users className="w-6 h-6 text-white" />
@@ -1007,8 +1009,9 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1238,6 +1241,7 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Add/Edit Form Dialog */}
@@ -1565,8 +1569,8 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-purple-500 to-purple-600 rounded-lg shadow-lg">
               <Wallet className="w-6 h-6 text-white" />
@@ -1575,8 +1579,9 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1969,6 +1974,7 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -2127,8 +2133,8 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-orange-500 to-orange-600 rounded-lg shadow-lg">
               <DollarSign className="w-6 h-6 text-white" />
@@ -2137,8 +2143,9 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2325,6 +2332,7 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Add/Edit Form Dialog */}
@@ -2631,8 +2639,8 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-pink-500 to-pink-600 rounded-lg shadow-lg">
               <Users className="w-6 h-6 text-white" />
@@ -2641,8 +2649,9 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2829,6 +2838,7 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Add/Edit Form Dialog */}
@@ -3142,8 +3152,8 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-teal-500 to-teal-600 rounded-lg shadow-lg">
               <Bike className="w-6 h-6 text-white" />
@@ -3152,8 +3162,9 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
           </DialogTitle>
         </DialogHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-6 border-b border-gray-700">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-700">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -3383,6 +3394,7 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {/* Add/Edit Form Dialog */}

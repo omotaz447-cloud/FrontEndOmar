@@ -654,8 +654,8 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-orange-500 to-amber-600 rounded-lg shadow-lg">
               <Users className="w-6 h-6 text-white" />
@@ -667,13 +667,13 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
           {/* Action Buttons */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button
                 onClick={() => setShowForm(true)}
-                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300 w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة تاجر جديد
@@ -681,7 +681,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
               <Button
                 onClick={fetchMerchants}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 w-full sm:w-auto"
                 disabled={loading}
               >
                 <RefreshCw
@@ -885,7 +885,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
           </div>
 
           {/* Totals Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
             <motion.div
               className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-lg p-4"
               whileHover={{ scale: 1.02 }}
@@ -974,7 +974,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
           </div>
 
           {/* Scrollable Table Container */}
-          <div className="flex-1 overflow-auto min-h-0 bg-gray-800/30 rounded-lg border border-gray-700/50">
+          <div className="overflow-auto bg-gray-800/30 rounded-lg border border-gray-700/50">
             <Table>
               <TableHeader className="sticky top-0 bg-gray-800 z-10">
                 <TableRow className="border-gray-700 hover:bg-gray-800/50">

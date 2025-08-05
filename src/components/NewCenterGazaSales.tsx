@@ -352,8 +352,8 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
-        <DialogHeader className="border-b border-gray-700 pb-4">
+      <DialogContent className="max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 flex flex-col">
+        <DialogHeader className="border-b border-gray-700 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
             <div className="p-2 bg-gradient-to-l from-orange-500 to-amber-600 rounded-lg shadow-lg">
               <BarChart3 className="w-6 h-6 text-white" />
@@ -365,12 +365,12 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex gap-3">
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button
                 onClick={() => setShowForm(true)}
-                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300"
+                className="bg-gradient-to-l from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-lg transition-all duration-300 w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة مبيعات جديدة
@@ -378,7 +378,7 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
               <Button
                 onClick={fetchSales}
                 variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 w-full sm:w-auto"
                 disabled={loading}
               >
                 <RefreshCw className={`w-4 h-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
@@ -388,7 +388,7 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
             <Card className="bg-gray-800/40 border-orange-500/20">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-right flex items-center justify-end text-xs sm:text-sm">
@@ -499,7 +499,7 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
             </Card>
           </div>
 
-          <div className="flex-1 overflow-auto">
+          <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-gray-700 hover:bg-gray-800/50">
