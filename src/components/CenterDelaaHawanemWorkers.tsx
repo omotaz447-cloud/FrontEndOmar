@@ -206,7 +206,25 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       );
       if (response.ok) {
         const data = await response.json();
-        setWorkers(Array.isArray(data) ? data : []);
+        const workersData = Array.isArray(data) ? data : [];
+        
+        // Load attendance data and merge with workers
+        const attendanceData = loadAttendanceData();
+        const workersWithAttendance = workersData.map((worker: WorkerRecord) => {
+          const attendance = attendanceData.find(
+            (record: AttendanceRecord) => 
+              record.employeeName === worker.name && record.date === worker.date
+          );
+          return {
+            ...worker,
+            attendanceStatus: attendance ? attendance.status : undefined,
+            checkInTime: attendance ? attendance.checkInTime : undefined,
+            checkOutTime: attendance ? attendance.checkOutTime : undefined,
+            attendanceNotes: attendance ? attendance.notes : undefined,
+          };
+        });
+        
+        setWorkers(workersWithAttendance);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -296,12 +314,12 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
   // Attendance utility functions
   const loadAttendanceData = (): AttendanceRecord[] => {
     try {
-      const cookieData = Cookies.get('attendanceData');
+      const cookieData = Cookies.get('centerDelaaHawanemWorkersAttendanceData');
       if (cookieData) {
         return JSON.parse(cookieData);
       }
       
-      const localData = localStorage.getItem('attendanceData');
+      const localData = localStorage.getItem('centerDelaaHawanemWorkersAttendanceData');
       if (localData) {
         return JSON.parse(localData);
       }
@@ -317,9 +335,9 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       const dataString = JSON.stringify(attendanceData);
       // Save to cookies (primary storage)
-      Cookies.set('attendanceData', dataString, { expires: 365 });
+      Cookies.set('centerDelaaHawanemWorkersAttendanceData', dataString, { expires: 365 });
       // Save to localStorage (backup)
-      localStorage.setItem('attendanceData', dataString);
+      localStorage.setItem('centerDelaaHawanemWorkersAttendanceData', dataString);
     } catch (error) {
       console.error('Error saving attendance data:', error);
     }
@@ -409,7 +427,13 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       setWorkers(prevWorkers => 
         prevWorkers.map(w => 
           w.name === selectedWorkerForAttendance.name && w.date === selectedWorkerForAttendance.date
-            ? { ...w, attendanceStatus: attendanceFormData.status }
+            ? { 
+                ...w, 
+                attendanceStatus: attendanceFormData.status,
+                checkInTime: attendanceFormData.checkInTime,
+                checkOutTime: attendanceFormData.checkOutTime,
+                attendanceNotes: attendanceFormData.notes
+              }
             : w
         )
       );
@@ -464,6 +488,11 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       fetchWorkers();
+      // Load attendance data when component opens to restore state
+      const savedAttendanceData = loadAttendanceData();
+      if (savedAttendanceData.length > 0) {
+        console.log('Loaded attendance data for Center Delaa Hawanem Workers:', savedAttendanceData.length, 'records');
+      }
     }
   }, [isOpen, fetchWorkers]);
 

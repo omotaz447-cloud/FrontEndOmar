@@ -199,7 +199,23 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         accountsArray = data;
       }
       
-      setAccounts(accountsArray);
+      // Load attendance data and merge with accounts
+      const attendanceData = loadAttendanceData();
+      const accountsWithAttendance = accountsArray.map((account: WorkerAccountData) => {
+        const attendance = attendanceData.find(
+          (record: AttendanceRecord) => 
+            record.employeeName === account.name && record.date === account.date
+        );
+        return {
+          ...account,
+          attendanceStatus: attendance ? attendance.status : undefined,
+          checkInTime: attendance ? attendance.checkInTime : undefined,
+          checkOutTime: attendance ? attendance.checkOutTime : undefined,
+          attendanceNotes: attendance ? attendance.notes : undefined,
+        };
+      });
+      
+      setAccounts(accountsWithAttendance);
     } catch (error) {
       console.error('Error fetching worker accounts:', error);
       toast.error('فشل في جلب البيانات');
@@ -294,12 +310,12 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
   // Attendance utility functions
   const loadAttendanceData = (): AttendanceRecord[] => {
     try {
-      const cookieData = Cookies.get('attendanceData');
+      const cookieData = Cookies.get('workerCenterSeimaAttendanceData');
       if (cookieData) {
         return JSON.parse(cookieData);
       }
       
-      const localData = localStorage.getItem('attendanceData');
+      const localData = localStorage.getItem('workerCenterSeimaAttendanceData');
       if (localData) {
         return JSON.parse(localData);
       }
@@ -315,9 +331,9 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
     try {
       const dataString = JSON.stringify(attendanceData);
       // Save to cookies (primary storage)
-      Cookies.set('attendanceData', dataString, { expires: 365 });
+      Cookies.set('workerCenterSeimaAttendanceData', dataString, { expires: 365 });
       // Save to localStorage (backup)
-      localStorage.setItem('attendanceData', dataString);
+      localStorage.setItem('workerCenterSeimaAttendanceData', dataString);
     } catch (error) {
       console.error('Error saving attendance data:', error);
     }
@@ -407,7 +423,13 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
       setAccounts(prevAccounts => 
         prevAccounts.map(acc => 
           acc.name === selectedWorkerForAttendance.name && acc.date === selectedWorkerForAttendance.date
-            ? { ...acc, attendanceStatus: attendanceFormData.status }
+            ? { 
+                ...acc, 
+                attendanceStatus: attendanceFormData.status,
+                checkInTime: attendanceFormData.checkInTime,
+                checkOutTime: attendanceFormData.checkOutTime,
+                attendanceNotes: attendanceFormData.notes
+              }
             : acc
         )
       );
@@ -604,6 +626,11 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
   useEffect(() => {
     if (isOpen && !showForm) {
       fetchAccounts();
+      // Load attendance data when component opens to restore state
+      const savedAttendanceData = loadAttendanceData();
+      if (savedAttendanceData.length > 0) {
+        console.log('Loaded attendance data for Worker Center Seima:', savedAttendanceData.length, 'records');
+      }
     }
   }, [isOpen, showForm, fetchAccounts]);
 

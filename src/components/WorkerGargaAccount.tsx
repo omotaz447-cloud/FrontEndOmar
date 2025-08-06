@@ -36,6 +36,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   Popover,
@@ -65,6 +66,7 @@ import {
   Search,
   Filter,
   X,
+  UserCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -76,6 +78,25 @@ interface WorkerGargaAccountData {
   day: string;
   date: string;
   withdrawal: number | string;
+  // Attendance fields
+  attendanceStatus?: 'present' | 'absent' | 'late' | 'half-day';
+  checkInTime?: string;
+  checkOutTime?: string;
+  attendanceNotes?: string;
+}
+
+// Attendance record interface (same format as Attendance component)
+interface AttendanceRecord {
+  _id: string;
+  employeeName: string;
+  date: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  status: 'present' | 'absent' | 'late' | 'half-day';
+  workingHours?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface WorkerGargaAccountProps {
@@ -150,6 +171,16 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const [deleteAccountName, setDeleteAccountName] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Attendance states
+  const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
+  const [selectedWorkerForAttendance, setSelectedWorkerForAttendance] = useState<WorkerGargaAccountData | null>(null);
+  const [attendanceFormData, setAttendanceFormData] = useState({
+    status: 'present' as 'present' | 'absent' | 'late' | 'half-day',
+    checkInTime: '',
+    checkOutTime: '',
+    notes: '',
+  });
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -177,6 +208,134 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 3 }, (_, i) => (currentYear - i).toString());
 
+  // Attendance utility functions
+  const loadAttendanceData = (): AttendanceRecord[] => {
+    try {
+      const cookieData = Cookies.get('workerGargaAttendanceData');
+      if (cookieData) {
+        return JSON.parse(cookieData);
+      }
+      
+      const localData = localStorage.getItem('workerGargaAttendanceData');
+      if (localData) {
+        return JSON.parse(localData);
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Error loading attendance data:', error);
+      return [];
+    }
+  };
+
+  const saveAttendanceData = (attendanceData: AttendanceRecord[]) => {
+    try {
+      const dataString = JSON.stringify(attendanceData);
+      // Save to cookies (primary storage)
+      Cookies.set('workerGargaAttendanceData', dataString, { expires: 365 });
+      // Save to localStorage (backup)
+      localStorage.setItem('workerGargaAttendanceData', dataString);
+    } catch (error) {
+      console.error('Error saving attendance data:', error);
+    }
+  };
+
+  const calculateWorkingHours = (checkIn: string, checkOut: string): number => {
+    if (!checkIn || !checkOut) return 0;
+    
+    const checkInTime = new Date(`2000-01-01T${checkIn}`);
+    const checkOutTime = new Date(`2000-01-01T${checkOut}`);
+    
+    if (checkOutTime <= checkInTime) return 0;
+    
+    const diffMs = checkOutTime.getTime() - checkInTime.getTime();
+    return Number((diffMs / (1000 * 60 * 60)).toFixed(2));
+  };
+
+  const handleMarkAttendance = (worker: WorkerGargaAccountData) => {
+    setSelectedWorkerForAttendance(worker);
+    
+    // Check if attendance already exists for this worker and date
+    const existingAttendance = loadAttendanceData();
+    const existing = existingAttendance.find(
+      (record: AttendanceRecord) => record.employeeName === worker.name && record.date === worker.date
+    );
+
+    if (existing) {
+      // Pre-fill form with existing data
+      setAttendanceFormData({
+        status: existing.status,
+        checkInTime: existing.checkInTime || '',
+        checkOutTime: existing.checkOutTime || '',
+        notes: existing.notes || '',
+      });
+    } else {
+      // Reset form for new attendance
+      setAttendanceFormData({
+        status: 'present',
+        checkInTime: '',
+        checkOutTime: '',
+        notes: '',
+      });
+    }
+    
+    setShowAttendanceDialog(true);
+  };
+
+  const handleAttendanceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedWorkerForAttendance) return;
+
+    try {
+      const existingAttendance = loadAttendanceData();
+      const workingHours = calculateWorkingHours(attendanceFormData.checkInTime, attendanceFormData.checkOutTime);
+      
+      const attendanceRecord: AttendanceRecord = {
+        _id: Date.now().toString(),
+        employeeName: selectedWorkerForAttendance.name,
+        date: selectedWorkerForAttendance.date,
+        checkInTime: attendanceFormData.checkInTime,
+        checkOutTime: attendanceFormData.checkOutTime,
+        status: attendanceFormData.status,
+        workingHours,
+        notes: attendanceFormData.notes,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Remove existing record for this employee and date if it exists
+      const filteredAttendance = existingAttendance.filter(
+        (record: AttendanceRecord) => 
+          !(record.employeeName === selectedWorkerForAttendance.name && record.date === selectedWorkerForAttendance.date)
+      );
+
+      const updatedAttendance = [...filteredAttendance, attendanceRecord];
+      saveAttendanceData(updatedAttendance);
+
+      // Update the account's attendance status in the local state
+      setAccounts(prevAccounts => 
+        prevAccounts.map(account => 
+          account.name === selectedWorkerForAttendance.name && account.date === selectedWorkerForAttendance.date
+            ? { 
+                ...account, 
+                attendanceStatus: attendanceFormData.status,
+                checkInTime: attendanceFormData.checkInTime,
+                checkOutTime: attendanceFormData.checkOutTime,
+                attendanceNotes: attendanceFormData.notes
+              }
+            : account
+        )
+      );
+
+      toast.success('تم تسجيل الحضور بنجاح');
+      setShowAttendanceDialog(false);
+      setSelectedWorkerForAttendance(null);
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      toast.error('حدث خطأ في تسجيل الحضور');
+    }
+  };
+
   // Fetch existing accounts
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
@@ -189,7 +348,25 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       );
       if (response.ok) {
         const data = await response.json();
-        setAccounts(Array.isArray(data) ? data : []);
+        const accountsData = Array.isArray(data) ? data : [];
+        
+        // Load attendance data and merge with accounts
+        const attendanceData = loadAttendanceData();
+        const accountsWithAttendance = accountsData.map((account: WorkerGargaAccountData) => {
+          const attendance = attendanceData.find(
+            (record: AttendanceRecord) => 
+              record.employeeName === account.name && record.date === account.date
+          );
+          return {
+            ...account,
+            attendanceStatus: attendance ? attendance.status : undefined,
+            checkInTime: attendance ? attendance.checkInTime : undefined,
+            checkOutTime: attendance ? attendance.checkOutTime : undefined,
+            attendanceNotes: attendance ? attendance.notes : undefined,
+          };
+        });
+        
+        setAccounts(accountsWithAttendance);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -209,6 +386,11 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   useEffect(() => {
     if (isOpen) {
       fetchAccounts();
+      // Load attendance data when component opens to restore state
+      const savedAttendanceData = loadAttendanceData();
+      if (savedAttendanceData.length > 0) {
+        console.log('Loaded attendance data for Worker Garga:', savedAttendanceData.length, 'records');
+      }
     }
   }, [isOpen, fetchAccounts]);
 
@@ -227,6 +409,46 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const toNumber = (value: string | number): number => {
     if (typeof value === 'number') return value;
     return parseFloat(value) || 0;
+  };
+
+  // Function to get attendance status badge
+  const getAttendanceStatusBadge = (status?: string, onClick?: () => void) => {
+    if (!status) {
+      // Return a default badge for "No Status" that's clickable
+      return (
+        <Badge 
+          variant="outline" 
+          className="flex items-center gap-1 bg-gray-500/20 text-gray-400 border-gray-500/50 border text-xs cursor-pointer hover:bg-gray-500/30 transition-colors"
+          onClick={onClick}
+        >
+          <Clock className="w-3 h-3" />
+          لم يحدد
+        </Badge>
+      );
+    }
+    
+    const configs = {
+      present: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50', label: 'حاضر', icon: UserCheck },
+      absent: { color: 'bg-red-500/20 text-red-300 border-red-500/50', label: 'غائب', icon: UserCheck },
+      late: { color: 'bg-amber-500/20 text-amber-300 border-amber-500/50', label: 'متأخر', icon: Clock },
+      'half-day': { color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50', label: 'نصف يوم', icon: Clock },
+    };
+
+    const config = configs[status as keyof typeof configs];
+    if (!config) return null;
+
+    const Icon = config.icon;
+
+    return (
+      <Badge 
+        variant="outline" 
+        className={`flex items-center gap-1 ${config.color} border text-xs ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+        onClick={onClick}
+      >
+        <Icon className="w-3 h-3" />
+        {config.label}
+      </Badge>
+    );
   };
 
   const handleInputChange = (
@@ -1022,6 +1244,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                       <TableHead className="text-gray-300 font-semibold text-right">
                         السحب
                       </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-center">
+                        حالة الحضور
+                      </TableHead>
                       {isAdminRole() && (
                         <TableHead className="text-gray-300 font-semibold text-right">
                           الإجراءات
@@ -1074,9 +1299,21 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                               {formatCurrency(toNumber(account.withdrawal))}
                             </span>
                           </TableCell>
+                          <TableCell className="text-center">
+                            {getAttendanceStatusBadge(account.attendanceStatus, () => handleMarkAttendance(account))}
+                          </TableCell>
                           {isAdminRole() && (
                             <TableCell className="text-right">
                               <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleMarkAttendance(account)}
+                                  className="text-green-400 hover:text-green-300 hover:bg-green-400/10 p-1"
+                                  title="تسجيل الحضور"
+                                >
+                                  <UserCheck className="w-4 h-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1381,6 +1618,114 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Attendance Dialog */}
+      <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
+        <DialogContent className="max-w-md bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-green-500/20">
+          <DialogHeader className="border-b border-green-500/20 pb-4">
+            <DialogTitle className="text-green-400 text-right flex items-center justify-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              تسجيل حضور - {selectedWorkerForAttendance?.name}
+            </DialogTitle>
+            <DialogDescription className="text-gray-400 text-right">
+              تاريخ: {selectedWorkerForAttendance?.date}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+            {/* Status */}
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-gray-300 text-right block">
+                حالة الحضور
+              </Label>
+              <Select
+                value={attendanceFormData.status}
+                onValueChange={(value: 'present' | 'absent' | 'late' | 'half-day') =>
+                  setAttendanceFormData({ ...attendanceFormData, status: value })
+                }
+              >
+                <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="present" className="text-right">حاضر</SelectItem>
+                  <SelectItem value="late" className="text-right">متأخر</SelectItem>
+                  <SelectItem value="half-day" className="text-right">نصف يوم</SelectItem>
+                  <SelectItem value="absent" className="text-right">غائب</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Check In Time */}
+            <div className="space-y-2">
+              <Label htmlFor="checkInTime" className="text-gray-300 text-right block">
+                وقت الحضور
+              </Label>
+              <Input
+                id="checkInTime"
+                type="time"
+                value={attendanceFormData.checkInTime}
+                onChange={(e) =>
+                  setAttendanceFormData({ ...attendanceFormData, checkInTime: e.target.value })
+                }
+                className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+              />
+            </div>
+
+            {/* Check Out Time */}
+            <div className="space-y-2">
+              <Label htmlFor="checkOutTime" className="text-gray-300 text-right block">
+                وقت الانصراف
+              </Label>
+              <Input
+                id="checkOutTime"
+                type="time"
+                value={attendanceFormData.checkOutTime}
+                onChange={(e) =>
+                  setAttendanceFormData({ ...attendanceFormData, checkOutTime: e.target.value })
+                }
+                className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+              />
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-gray-300 text-right block">
+                ملاحظات
+              </Label>
+              <Input
+                id="notes"
+                type="text"
+                value={attendanceFormData.notes}
+                onChange={(e) =>
+                  setAttendanceFormData({ ...attendanceFormData, notes: e.target.value })
+                }
+                className="bg-gray-700/50 border-gray-600/50 text-white text-right"
+                placeholder="أضف ملاحظات (اختياري)"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAttendanceDialog(false)}
+                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                إلغاء
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <UserCheck className="w-4 h-4 ml-2" />
+                تسجيل الحضور
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };

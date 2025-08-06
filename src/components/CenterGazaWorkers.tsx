@@ -312,8 +312,9 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       const existingAttendance = loadAttendanceData();
       
       // Remove any existing records for this employee and date to prevent duplicates
+      const attendanceDateFormatted = format(attendanceDate, 'yyyy-MM-dd');
       const filteredAttendance = existingAttendance.filter(
-        (record: AttendanceRecord) => !(record.employeeName === selectedWorkerForAttendance.name && record.date === format(attendanceDate, 'yyyy-MM-dd'))
+        (record: AttendanceRecord) => !(record.employeeName === selectedWorkerForAttendance.name && record.date === attendanceDateFormatted)
       );
       
       // Add the new/updated record
@@ -326,11 +327,21 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
 
       // Update the worker's attendance status in the local state
       setWorkers(prevWorkers => 
-        prevWorkers.map(worker => 
-          worker.name === selectedWorkerForAttendance.name && worker.date === format(attendanceDate, 'yyyy-MM-dd')
-            ? { ...worker, attendanceStatus: attendanceStatus }
-            : worker
-        )
+        prevWorkers.map(worker => {
+          // Normalize both dates to yyyy-MM-dd format for comparison
+          const workerDateNormalized = format(new Date(worker.date), 'yyyy-MM-dd');
+          const attendanceDateNormalized = format(attendanceDate, 'yyyy-MM-dd');
+          
+          return worker.name === selectedWorkerForAttendance.name && workerDateNormalized === attendanceDateNormalized
+            ? { 
+                ...worker, 
+                attendanceStatus: attendanceStatus,
+                checkInTime: timeIn,
+                checkOutTime: timeOut,
+                attendanceNotes: attendanceNotes
+              }
+            : worker;
+        })
       );
 
       setShowAttendanceDialog(false);
@@ -441,7 +452,26 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       }
       
       console.log('Final workers array:', workersArray);
-      setWorkers(workersArray);
+      
+      // Load attendance data and merge with workers
+      const attendanceData = loadAttendanceData();
+      const workersWithAttendance = workersArray.map((worker: WorkerData) => {
+        // Normalize worker date to yyyy-MM-dd format for consistent comparison
+        const workerDateNormalized = format(new Date(worker.date), 'yyyy-MM-dd');
+        const attendance = attendanceData.find(
+          (record: AttendanceRecord) => 
+            record.employeeName === worker.name && record.date === workerDateNormalized
+        );
+        return {
+          ...worker,
+          attendanceStatus: attendance ? attendance.status : undefined,
+          checkInTime: attendance ? attendance.checkInTime : undefined,
+          checkOutTime: attendance ? attendance.checkOutTime : undefined,
+          attendanceNotes: attendance ? attendance.notes : undefined,
+        };
+      });
+      
+      setWorkers(workersWithAttendance);
     } catch (error) {
       console.error('Error fetching workers:', error);
       console.error('Full error details:', {
