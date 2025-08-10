@@ -484,8 +484,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (!formData.withdrawal || toNumber(formData.withdrawal) <= 0) {
+    if (formData.withdrawal === '' || formData.withdrawal === null || formData.withdrawal === undefined) {
       toast.error('يرجى إدخال مبلغ السحب');
+      return;
+    }
+
+    // Allow 0 as a valid withdrawal amount
+    if (formData.withdrawal !== '0' && toNumber(formData.withdrawal) <= 0) {
+      toast.error('يرجى إدخال مبلغ سحب صحيح');
       return;
     }
 
@@ -626,8 +632,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (!editFormData.withdrawal || toNumber(editFormData.withdrawal) <= 0) {
+    if (editFormData.withdrawal === '' || editFormData.withdrawal === null || editFormData.withdrawal === undefined) {
       toast.error('يرجى إدخال مبلغ السحب');
+      return;
+    }
+
+    // Allow 0 as a valid withdrawal amount
+    if (editFormData.withdrawal !== '0' && toNumber(editFormData.withdrawal) <= 0) {
+      toast.error('يرجى إدخال مبلغ سحب صحيح');
       return;
     }
 
