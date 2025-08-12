@@ -168,12 +168,15 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
-  const [deleteAccountName, setDeleteAccountName] = useState<string | null>(null);
+  const [deleteAccountName, setDeleteAccountName] = useState<string | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Attendance states
   const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
-  const [selectedWorkerForAttendance, setSelectedWorkerForAttendance] = useState<WorkerGargaAccountData | null>(null);
+  const [selectedWorkerForAttendance, setSelectedWorkerForAttendance] =
+    useState<WorkerGargaAccountData | null>(null);
   const [attendanceFormData, setAttendanceFormData] = useState({
     status: 'present' as 'present' | 'absent' | 'late' | 'half-day',
     checkInTime: '',
@@ -185,7 +188,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState('all');
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear().toString(),
+  );
   const [selectedName, setSelectedName] = useState('');
 
   // Months array for filtering
@@ -206,7 +211,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
   // Generate years for filtering (current year and 2 years back)
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 3 }, (_, i) => (currentYear - i).toString());
+  const years = Array.from({ length: 3 }, (_, i) =>
+    (currentYear - i).toString(),
+  );
 
   // Attendance utility functions
   const loadAttendanceData = (): AttendanceRecord[] => {
@@ -215,12 +222,12 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       if (cookieData) {
         return JSON.parse(cookieData);
       }
-      
+
       const localData = localStorage.getItem('workerGargaAttendanceData');
       if (localData) {
         return JSON.parse(localData);
       }
-      
+
       return [];
     } catch (error) {
       console.error('Error loading attendance data:', error);
@@ -242,23 +249,24 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
   const calculateWorkingHours = (checkIn: string, checkOut: string): number => {
     if (!checkIn || !checkOut) return 0;
-    
+
     const checkInTime = new Date(`2000-01-01T${checkIn}`);
     const checkOutTime = new Date(`2000-01-01T${checkOut}`);
-    
+
     if (checkOutTime <= checkInTime) return 0;
-    
+
     const diffMs = checkOutTime.getTime() - checkInTime.getTime();
     return Number((diffMs / (1000 * 60 * 60)).toFixed(2));
   };
 
   const handleMarkAttendance = (worker: WorkerGargaAccountData) => {
     setSelectedWorkerForAttendance(worker);
-    
+
     // Check if attendance already exists for this worker and date
     const existingAttendance = loadAttendanceData();
     const existing = existingAttendance.find(
-      (record: AttendanceRecord) => record.employeeName === worker.name && record.date === worker.date
+      (record: AttendanceRecord) =>
+        record.employeeName === worker.name && record.date === worker.date,
     );
 
     if (existing) {
@@ -278,7 +286,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
         notes: '',
       });
     }
-    
+
     setShowAttendanceDialog(true);
   };
 
@@ -288,8 +296,11 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
     try {
       const existingAttendance = loadAttendanceData();
-      const workingHours = calculateWorkingHours(attendanceFormData.checkInTime, attendanceFormData.checkOutTime);
-      
+      const workingHours = calculateWorkingHours(
+        attendanceFormData.checkInTime,
+        attendanceFormData.checkOutTime,
+      );
+
       const attendanceRecord: AttendanceRecord = {
         _id: Date.now().toString(),
         employeeName: selectedWorkerForAttendance.name,
@@ -305,26 +316,30 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
       // Remove existing record for this employee and date if it exists
       const filteredAttendance = existingAttendance.filter(
-        (record: AttendanceRecord) => 
-          !(record.employeeName === selectedWorkerForAttendance.name && record.date === selectedWorkerForAttendance.date)
+        (record: AttendanceRecord) =>
+          !(
+            record.employeeName === selectedWorkerForAttendance.name &&
+            record.date === selectedWorkerForAttendance.date
+          ),
       );
 
       const updatedAttendance = [...filteredAttendance, attendanceRecord];
       saveAttendanceData(updatedAttendance);
 
       // Update the account's attendance status in the local state
-      setAccounts(prevAccounts => 
-        prevAccounts.map(account => 
-          account.name === selectedWorkerForAttendance.name && account.date === selectedWorkerForAttendance.date
-            ? { 
-                ...account, 
+      setAccounts((prevAccounts) =>
+        prevAccounts.map((account) =>
+          account.name === selectedWorkerForAttendance.name &&
+          account.date === selectedWorkerForAttendance.date
+            ? {
+                ...account,
                 attendanceStatus: attendanceFormData.status,
                 checkInTime: attendanceFormData.checkInTime,
                 checkOutTime: attendanceFormData.checkOutTime,
-                attendanceNotes: attendanceFormData.notes
+                attendanceNotes: attendanceFormData.notes,
               }
-            : account
-        )
+            : account,
+        ),
       );
 
       toast.success('تم تسجيل الحضور بنجاح');
@@ -349,23 +364,26 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       if (response.ok) {
         const data = await response.json();
         const accountsData = Array.isArray(data) ? data : [];
-        
+
         // Load attendance data and merge with accounts
         const attendanceData = loadAttendanceData();
-        const accountsWithAttendance = accountsData.map((account: WorkerGargaAccountData) => {
-          const attendance = attendanceData.find(
-            (record: AttendanceRecord) => 
-              record.employeeName === account.name && record.date === account.date
-          );
-          return {
-            ...account,
-            attendanceStatus: attendance ? attendance.status : undefined,
-            checkInTime: attendance ? attendance.checkInTime : undefined,
-            checkOutTime: attendance ? attendance.checkOutTime : undefined,
-            attendanceNotes: attendance ? attendance.notes : undefined,
-          };
-        });
-        
+        const accountsWithAttendance = accountsData.map(
+          (account: WorkerGargaAccountData) => {
+            const attendance = attendanceData.find(
+              (record: AttendanceRecord) =>
+                record.employeeName === account.name &&
+                record.date === account.date,
+            );
+            return {
+              ...account,
+              attendanceStatus: attendance ? attendance.status : undefined,
+              checkInTime: attendance ? attendance.checkInTime : undefined,
+              checkOutTime: attendance ? attendance.checkOutTime : undefined,
+              attendanceNotes: attendance ? attendance.notes : undefined,
+            };
+          },
+        );
+
         setAccounts(accountsWithAttendance);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
@@ -389,7 +407,11 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       // Load attendance data when component opens to restore state
       const savedAttendanceData = loadAttendanceData();
       if (savedAttendanceData.length > 0) {
-        console.log('Loaded attendance data for Worker Garga:', savedAttendanceData.length, 'records');
+        console.log(
+          'Loaded attendance data for Worker Garga:',
+          savedAttendanceData.length,
+          'records',
+        );
       }
     }
   }, [isOpen, fetchAccounts]);
@@ -399,7 +421,16 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return '0';
     }
     if (typeof value === 'string') {
-      const num = parseFloat(value) || 0;
+      // Check if the string value is empty or invalid
+      if (value.trim() === '') {
+        return '';
+      }
+      const num = parseFloat(value);
+      // If parseFloat returns NaN, return the original string
+      if (isNaN(num)) {
+        return value;
+      }
+      // If it's a valid number and not zero, return the number
       return num;
     }
     return value;
@@ -416,8 +447,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     if (!status) {
       // Return a default badge for "No Status" that's clickable
       return (
-        <Badge 
-          variant="outline" 
+        <Badge
+          variant="outline"
           className="flex items-center gap-1 bg-gray-500/20 text-gray-400 border-gray-500/50 border text-xs cursor-pointer hover:bg-gray-500/30 transition-colors"
           onClick={onClick}
         >
@@ -426,12 +457,28 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
         </Badge>
       );
     }
-    
+
     const configs = {
-      present: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50', label: 'حاضر', icon: UserCheck },
-      absent: { color: 'bg-red-500/20 text-red-300 border-red-500/50', label: 'غائب', icon: UserCheck },
-      late: { color: 'bg-amber-500/20 text-amber-300 border-amber-500/50', label: 'متأخر', icon: Clock },
-      'half-day': { color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50', label: 'نصف يوم', icon: Clock },
+      present: {
+        color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50',
+        label: 'حاضر',
+        icon: UserCheck,
+      },
+      absent: {
+        color: 'bg-red-500/20 text-red-300 border-red-500/50',
+        label: 'غائب',
+        icon: UserCheck,
+      },
+      late: {
+        color: 'bg-amber-500/20 text-amber-300 border-amber-500/50',
+        label: 'متأخر',
+        icon: Clock,
+      },
+      'half-day': {
+        color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50',
+        label: 'نصف يوم',
+        icon: Clock,
+      },
     };
 
     const config = configs[status as keyof typeof configs];
@@ -440,8 +487,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     const Icon = config.icon;
 
     return (
-      <Badge 
-        variant="outline" 
+      <Badge
+        variant="outline"
         className={`flex items-center gap-1 ${config.color} border text-xs ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
         onClick={onClick}
       >
@@ -451,13 +498,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     );
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericValue = name === 'withdrawal'
-      ? convertToNumber(value)
-      : value;
+    const numericValue = name === 'withdrawal' ? convertToNumber(value) : value;
 
     setFormData((prev) => ({ ...prev, [name]: numericValue }));
   };
@@ -484,7 +527,11 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (formData.withdrawal === '' || formData.withdrawal === null || formData.withdrawal === undefined) {
+    if (
+      formData.withdrawal === '' ||
+      formData.withdrawal === null ||
+      formData.withdrawal === undefined
+    ) {
       toast.error('يرجى إدخال مبلغ السحب');
       return;
     }
@@ -506,7 +553,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
             الاسم: formData.name,
             اليوم: formData.day,
             التاريخ: formData.date,
-            السحب: formData.withdrawal === '0' ? '0' : Number(formData.withdrawal),
+            السحب:
+              formData.withdrawal === '0' ? '0' : Number(formData.withdrawal),
           }),
         },
       );
@@ -552,7 +600,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       name: account.name,
       day: account.day,
       date: account.date,
-      withdrawal: account.withdrawal,
+      withdrawal: account.withdrawal === 0 || account.withdrawal === '0' ? '' : account.withdrawal,
     });
     if (account.date) {
       setEditSelectedDate(new Date(account.date));
@@ -597,13 +645,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   };
 
   // Handle edit input change
-  const handleEditInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericValue = name === 'withdrawal'
-      ? convertToNumber(value)
-      : value;
+    const numericValue = name === 'withdrawal' ? convertToNumber(value) : value;
 
     setEditFormData((prev) => ({ ...prev, [name]: numericValue }));
   };
@@ -632,13 +676,20 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (editFormData.withdrawal === '' || editFormData.withdrawal === null || editFormData.withdrawal === undefined) {
+    if (
+      editFormData.withdrawal === '' ||
+      editFormData.withdrawal === null ||
+      editFormData.withdrawal === undefined
+    ) {
       toast.error('يرجى إدخال مبلغ السحب');
       return;
     }
 
     // Allow 0 as a valid withdrawal amount
-    if (editFormData.withdrawal !== '0' && toNumber(editFormData.withdrawal) <= 0) {
+    if (
+      editFormData.withdrawal !== '0' &&
+      toNumber(editFormData.withdrawal) <= 0
+    ) {
       toast.error('يرجى إدخال مبلغ سحب صحيح');
       return;
     }
@@ -648,7 +699,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${editingAccount._id}`,
+        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${editingAccount.name}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -656,7 +707,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
             الاسم: editFormData.name,
             اليوم: editFormData.day,
             التاريخ: editFormData.date,
-            السحب: editFormData.withdrawal === '0' ? '0' : Number(editFormData.withdrawal),
+            السحب:
+              editFormData.withdrawal === '0'
+                ? '0'
+                : Number(editFormData.withdrawal),
           }),
         },
       );
@@ -677,6 +731,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       if (error instanceof Error && error.message === 'No access token found') {
         return;
       }
+      console.log('Error updating account:', error);
       toast.error('فشل في تحديث السجل');
     } finally {
       setIsSubmitting(false);
@@ -698,7 +753,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
   // Get Arabic day name from English value
   const getArabicDay = (englishDay: string) => {
-    const dayOption = daysOptions.find(day => day.value === englishDay);
+    const dayOption = daysOptions.find((day) => day.value === englishDay);
     return dayOption ? dayOption.label : englishDay;
   };
 
@@ -710,24 +765,39 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   };
 
   // Apply filters to accounts
-  const accountsToDisplay = accounts.filter(account => {
+  const accountsToDisplay = accounts.filter((account) => {
     // Date filtering
-    if ((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString()) {
+    if (
+      (selectedMonth && selectedMonth !== 'all') ||
+      selectedYear !== new Date().getFullYear().toString()
+    ) {
       const accountDate = new Date(account.date);
-      const accountMonth = (accountDate.getMonth() + 1).toString().padStart(2, '0');
+      const accountMonth = (accountDate.getMonth() + 1)
+        .toString()
+        .padStart(2, '0');
       const accountYear = accountDate.getFullYear().toString();
 
-      if (selectedMonth && selectedMonth !== 'all' && accountMonth !== selectedMonth) {
+      if (
+        selectedMonth &&
+        selectedMonth !== 'all' &&
+        accountMonth !== selectedMonth
+      ) {
         return false;
       }
 
-      if (selectedYear !== new Date().getFullYear().toString() && accountYear !== selectedYear) {
+      if (
+        selectedYear !== new Date().getFullYear().toString() &&
+        accountYear !== selectedYear
+      ) {
         return false;
       }
     }
 
     // Name filtering
-    if (selectedName && !account.name.toLowerCase().includes(selectedName.toLowerCase())) {
+    if (
+      selectedName &&
+      !account.name.toLowerCase().includes(selectedName.toLowerCase())
+    ) {
       return false;
     }
 
@@ -735,8 +805,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   });
 
   // Filter accounts based on search query AND filters
-  const filteredAccounts = accountsToDisplay.filter(account =>
-    account.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAccounts = accountsToDisplay.filter((account) =>
+    account.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -840,7 +910,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                   {formatCurrency(
                     accounts.length > 0
                       ? accounts.reduce(
-                          (total, account) => total + toNumber(account.withdrawal),
+                          (total, account) =>
+                            total + toNumber(account.withdrawal),
                           0,
                         ) / accounts.length
                       : 0,
@@ -909,7 +980,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                       <Clock className="w-4 h-4" />
                       <span>اليوم</span>
                     </Label>
-                    <Select value={formData.day} onValueChange={handleDayChange}>
+                    <Select
+                      value={formData.day}
+                      onValueChange={handleDayChange}
+                    >
                       <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white focus:ring-emerald-500 focus:border-emerald-500 text-right">
                         <SelectValue placeholder="اختر اليوم" />
                       </SelectTrigger>
@@ -982,27 +1056,34 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                           initialFocus
                           className="bg-gray-800 text-white border-gray-600 rounded-md p-3"
                           classNames={{
-                            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                            month: "space-y-4",
-                            caption: "flex justify-center pt-1 relative items-center text-white",
-                            caption_label: "text-sm font-medium text-white",
-                            nav: "space-x-1 flex items-center",
-                            nav_button: "h-7 w-7 bg-transparent p-0 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md cursor-pointer",
-                            nav_button_previous: "absolute left-1",
-                            nav_button_next: "absolute right-1",
-                            table: "w-full border-collapse space-y-1",
-                            head_row: "flex",
-                            head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
-                            row: "flex w-full mt-2",
-                            cell: "text-center text-sm relative [&>button]:w-9 [&>button]:h-9 [&>button]:p-0",
-                            day: "w-9 h-9 p-0 font-normal text-gray-300 bg-transparent border-0 cursor-pointer rounded-md hover:bg-gray-700 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500",
-                            day_range_end: "day-range-end",
-                            day_selected: "bg-emerald-600 text-white hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white rounded-md",
-                            day_today: "bg-gray-700 text-white rounded-md",
-                            day_outside: "text-gray-600 opacity-50",
-                            day_disabled: "text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent",
-                            day_range_middle: "aria-selected:bg-emerald-500/30 aria-selected:text-white",
-                            day_hidden: "invisible",
+                            months:
+                              'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+                            month: 'space-y-4',
+                            caption:
+                              'flex justify-center pt-1 relative items-center text-white',
+                            caption_label: 'text-sm font-medium text-white',
+                            nav: 'space-x-1 flex items-center',
+                            nav_button:
+                              'h-7 w-7 bg-transparent p-0 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md cursor-pointer',
+                            nav_button_previous: 'absolute left-1',
+                            nav_button_next: 'absolute right-1',
+                            table: 'w-full border-collapse space-y-1',
+                            head_row: 'flex',
+                            head_cell:
+                              'text-gray-400 rounded-md w-9 font-normal text-[0.8rem]',
+                            row: 'flex w-full mt-2',
+                            cell: 'text-center text-sm relative [&>button]:w-9 [&>button]:h-9 [&>button]:p-0',
+                            day: 'w-9 h-9 p-0 font-normal text-gray-300 bg-transparent border-0 cursor-pointer rounded-md hover:bg-gray-700 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500',
+                            day_range_end: 'day-range-end',
+                            day_selected:
+                              'bg-emerald-600 text-white hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white rounded-md',
+                            day_today: 'bg-gray-700 text-white rounded-md',
+                            day_outside: 'text-gray-600 opacity-50',
+                            day_disabled:
+                              'text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent',
+                            day_range_middle:
+                              'aria-selected:bg-emerald-500/30 aria-selected:text-white',
+                            day_hidden: 'invisible',
                           }}
                         />
                       </PopoverContent>
@@ -1163,10 +1244,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                     className="bg-gray-700/50 border-gray-600/50 text-gray-300 hover:bg-gray-600/50 flex items-center gap-2 w-full"
                   >
                     <Filter className="w-4 h-4" />
-                    {showFilters ? 'تصفيه البيانات' : 'إظهار كيفيه تصفيه البيانات'}
+                    {showFilters
+                      ? 'تصفيه البيانات'
+                      : 'إظهار كيفيه تصفيه البيانات'}
                   </Button>
-                  
-                  {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+
+                  {((selectedMonth && selectedMonth !== 'all') ||
+                    selectedYear !== new Date().getFullYear().toString() ||
+                    selectedName) && (
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                       <Button
                         onClick={clearFilters}
@@ -1191,7 +1276,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                   >
                     {/* Name Filter */}
                     <div className="space-y-2">
-                      <Label className="text-gray-300 text-right block">البحث بالاسم</Label>
+                      <Label className="text-gray-300 text-right block">
+                        البحث بالاسم
+                      </Label>
                       <Input
                         type="text"
                         placeholder="اسم العامل..."
@@ -1203,8 +1290,13 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
                     {/* Month Filter */}
                     <div className="space-y-2">
-                      <Label className="text-gray-300 text-right block">الشهر</Label>
-                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                      <Label className="text-gray-300 text-right block">
+                        الشهر
+                      </Label>
+                      <Select
+                        value={selectedMonth}
+                        onValueChange={setSelectedMonth}
+                      >
                         <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
                           <SelectValue placeholder="اختر الشهر" />
                         </SelectTrigger>
@@ -1221,8 +1313,13 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
                     {/* Year Filter */}
                     <div className="space-y-2">
-                      <Label className="text-gray-300 text-right block">السنة</Label>
-                      <Select value={selectedYear} onValueChange={setSelectedYear}>
+                      <Label className="text-gray-300 text-right block">
+                        السنة
+                      </Label>
+                      <Select
+                        value={selectedYear}
+                        onValueChange={setSelectedYear}
+                      >
                         <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
                           <SelectValue placeholder="اختر السنة" />
                         </SelectTrigger>
@@ -1285,7 +1382,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                           colSpan={isAdminRole() ? 5 : 4}
                           className="text-center py-8 text-gray-400"
                         >
-                          {searchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات متاحة'}
+                          {searchQuery
+                            ? 'لا توجد نتائج للبحث'
+                            : 'لا توجد سجلات متاحة'}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -1312,7 +1411,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
-                            {getAttendanceStatusBadge(account.attendanceStatus, () => handleMarkAttendance(account))}
+                            {getAttendanceStatusBadge(
+                              account.attendanceStatus,
+                              () => handleMarkAttendance(account),
+                            )}
                           </TableCell>
                           {isAdminRole() && (
                             <TableCell className="text-right">
@@ -1354,7 +1456,9 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
               </div>
 
               {/* Total Display when Filtered - Under Table */}
-              {((selectedMonth && selectedMonth !== 'all') || selectedYear !== new Date().getFullYear().toString() || selectedName) && (
+              {((selectedMonth && selectedMonth !== 'all') ||
+                selectedYear !== new Date().getFullYear().toString() ||
+                selectedName) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1362,19 +1466,28 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                   className="mt-4 mx-4 mb-4 p-4 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 rounded-lg"
                 >
                   <div className="text-center mb-3">
-                    <h3 className="text-emerald-300 text-lg font-semibold">الإجمالي للبيانات المفلترة</h3>
+                    <h3 className="text-emerald-300 text-lg font-semibold">
+                      الإجمالي للبيانات المفلترة
+                    </h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-emerald-300 text-sm">إجمالي السجلات</div>
-                      <div className="text-white text-lg font-bold">{filteredAccounts.length}</div>
+                      <div className="text-emerald-300 text-sm">
+                        إجمالي السجلات
+                      </div>
+                      <div className="text-white text-lg font-bold">
+                        {filteredAccounts.length}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-emerald-300 text-sm">إجمالي السحوبات</div>
+                      <div className="text-emerald-300 text-sm">
+                        إجمالي السحوبات
+                      </div>
                       <div className="text-emerald-400 text-lg font-bold">
                         {formatCurrency(
                           filteredAccounts.reduce(
-                            (total, account) => total + toNumber(account.withdrawal || 0),
+                            (total, account) =>
+                              total + toNumber(account.withdrawal || 0),
                             0,
                           ),
                         )}
@@ -1386,7 +1499,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                         {formatCurrency(
                           filteredAccounts.length > 0
                             ? filteredAccounts.reduce(
-                                (total, account) => total + toNumber(account.withdrawal || 0),
+                                (total, account) =>
+                                  total + toNumber(account.withdrawal || 0),
                                 0,
                               ) / filteredAccounts.length
                             : 0,
@@ -1439,7 +1553,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                 <Label htmlFor="edit-day" className="text-gray-300 text-right">
                   اليوم
                 </Label>
-                <Select value={editFormData.day} onValueChange={handleEditDayChange}>
+                <Select
+                  value={editFormData.day}
+                  onValueChange={handleEditDayChange}
+                >
                   <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
                     <SelectValue placeholder="اختر اليوم" />
                   </SelectTrigger>
@@ -1506,27 +1623,34 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                       initialFocus
                       className="bg-gray-800 text-white border-gray-600 rounded-md p-3"
                       classNames={{
-                        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                        month: "space-y-4",
-                        caption: "flex justify-center pt-1 relative items-center text-white",
-                        caption_label: "text-sm font-medium text-white",
-                        nav: "space-x-1 flex items-center",
-                        nav_button: "h-7 w-7 bg-transparent p-0 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md cursor-pointer",
-                        nav_button_previous: "absolute left-1",
-                        nav_button_next: "absolute right-1",
-                        table: "w-full border-collapse space-y-1",
-                        head_row: "flex",
-                        head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
-                        row: "flex w-full mt-2",
-                        cell: "text-center text-sm relative [&>button]:w-9 [&>button]:h-9 [&>button]:p-0",
-                        day: "w-9 h-9 p-0 font-normal text-gray-300 bg-transparent border-0 cursor-pointer rounded-md hover:bg-gray-700 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500",
-                        day_range_end: "day-range-end",
-                        day_selected: "bg-emerald-600 text-white hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white rounded-md",
-                        day_today: "bg-gray-700 text-white rounded-md",
-                        day_outside: "text-gray-600 opacity-50",
-                        day_disabled: "text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent",
-                        day_range_middle: "aria-selected:bg-emerald-500/30 aria-selected:text-white",
-                        day_hidden: "invisible",
+                        months:
+                          'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+                        month: 'space-y-4',
+                        caption:
+                          'flex justify-center pt-1 relative items-center text-white',
+                        caption_label: 'text-sm font-medium text-white',
+                        nav: 'space-x-1 flex items-center',
+                        nav_button:
+                          'h-7 w-7 bg-transparent p-0 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md cursor-pointer',
+                        nav_button_previous: 'absolute left-1',
+                        nav_button_next: 'absolute right-1',
+                        table: 'w-full border-collapse space-y-1',
+                        head_row: 'flex',
+                        head_cell:
+                          'text-gray-400 rounded-md w-9 font-normal text-[0.8rem]',
+                        row: 'flex w-full mt-2',
+                        cell: 'text-center text-sm relative [&>button]:w-9 [&>button]:h-9 [&>button]:p-0',
+                        day: 'w-9 h-9 p-0 font-normal text-gray-300 bg-transparent border-0 cursor-pointer rounded-md hover:bg-gray-700 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500',
+                        day_range_end: 'day-range-end',
+                        day_selected:
+                          'bg-emerald-600 text-white hover:bg-emerald-600 hover:text-white focus:bg-emerald-600 focus:text-white rounded-md',
+                        day_today: 'bg-gray-700 text-white rounded-md',
+                        day_outside: 'text-gray-600 opacity-50',
+                        day_disabled:
+                          'text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent',
+                        day_range_middle:
+                          'aria-selected:bg-emerald-500/30 aria-selected:text-white',
+                        day_hidden: 'invisible',
                       }}
                     />
                   </PopoverContent>
@@ -1632,7 +1756,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       </AlertDialog>
 
       {/* Attendance Dialog */}
-      <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
+      <Dialog
+        open={showAttendanceDialog}
+        onOpenChange={setShowAttendanceDialog}
+      >
         <DialogContent className="max-w-md bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-green-500/20">
           <DialogHeader className="border-b border-green-500/20 pb-4">
             <DialogTitle className="text-green-400 text-right flex items-center justify-center gap-2">
@@ -1647,30 +1774,49 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
           <form onSubmit={handleAttendanceSubmit} className="space-y-4">
             {/* Status */}
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-gray-300 text-right block">
+              <Label
+                htmlFor="status"
+                className="text-gray-300 text-right block"
+              >
                 حالة الحضور
               </Label>
               <Select
                 value={attendanceFormData.status}
-                onValueChange={(value: 'present' | 'absent' | 'late' | 'half-day') =>
-                  setAttendanceFormData({ ...attendanceFormData, status: value })
+                onValueChange={(
+                  value: 'present' | 'absent' | 'late' | 'half-day',
+                ) =>
+                  setAttendanceFormData({
+                    ...attendanceFormData,
+                    status: value,
+                  })
                 }
               >
                 <SelectTrigger className="bg-gray-700/50 border-gray-600/50 text-white text-right">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600">
-                  <SelectItem value="present" className="text-right">حاضر</SelectItem>
-                  <SelectItem value="late" className="text-right">متأخر</SelectItem>
-                  <SelectItem value="half-day" className="text-right">نصف يوم</SelectItem>
-                  <SelectItem value="absent" className="text-right">غائب</SelectItem>
+                  <SelectItem value="present" className="text-right">
+                    حاضر
+                  </SelectItem>
+                  <SelectItem value="late" className="text-right">
+                    متأخر
+                  </SelectItem>
+                  <SelectItem value="half-day" className="text-right">
+                    نصف يوم
+                  </SelectItem>
+                  <SelectItem value="absent" className="text-right">
+                    غائب
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Check In Time */}
             <div className="space-y-2">
-              <Label htmlFor="checkInTime" className="text-gray-300 text-right block">
+              <Label
+                htmlFor="checkInTime"
+                className="text-gray-300 text-right block"
+              >
                 وقت الحضور
               </Label>
               <Input
@@ -1678,7 +1824,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                 type="time"
                 value={attendanceFormData.checkInTime}
                 onChange={(e) =>
-                  setAttendanceFormData({ ...attendanceFormData, checkInTime: e.target.value })
+                  setAttendanceFormData({
+                    ...attendanceFormData,
+                    checkInTime: e.target.value,
+                  })
                 }
                 className="bg-gray-700/50 border-gray-600/50 text-white text-right"
               />
@@ -1686,7 +1835,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
             {/* Check Out Time */}
             <div className="space-y-2">
-              <Label htmlFor="checkOutTime" className="text-gray-300 text-right block">
+              <Label
+                htmlFor="checkOutTime"
+                className="text-gray-300 text-right block"
+              >
                 وقت الانصراف
               </Label>
               <Input
@@ -1694,7 +1846,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                 type="time"
                 value={attendanceFormData.checkOutTime}
                 onChange={(e) =>
-                  setAttendanceFormData({ ...attendanceFormData, checkOutTime: e.target.value })
+                  setAttendanceFormData({
+                    ...attendanceFormData,
+                    checkOutTime: e.target.value,
+                  })
                 }
                 className="bg-gray-700/50 border-gray-600/50 text-white text-right"
               />
@@ -1710,7 +1865,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
                 type="text"
                 value={attendanceFormData.notes}
                 onChange={(e) =>
-                  setAttendanceFormData({ ...attendanceFormData, notes: e.target.value })
+                  setAttendanceFormData({
+                    ...attendanceFormData,
+                    notes: e.target.value,
+                  })
                 }
                 className="bg-gray-700/50 border-gray-600/50 text-white text-right"
                 placeholder="أضف ملاحظات (اختياري)"
