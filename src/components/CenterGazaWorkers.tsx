@@ -584,7 +584,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       }
 
       const url = editingWorker
-        ? `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${editingWorker._id}`
+        ? `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${editingWorker.name}`
         : 'https://backend-omar-puce.vercel.app/api/worker-center-gaza-account';
 
       const method = editingWorker ? 'PUT' : 'POST';
