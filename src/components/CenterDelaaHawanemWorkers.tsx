@@ -553,11 +553,12 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingWorker || !editingWorker.name) return;
+    if (!editingWorker || (!editingWorker._id && !editingWorker.id)) return;
 
     try {
+      const workerId = editingWorker._id || editingWorker.id;
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(editingWorker.name)}`,
+        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${workerId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -581,12 +582,13 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   const handleDelete = async () => {
-    if (!deleteWorker?.name) return;
+    if (!deleteWorker?._id && !deleteWorker?.id) return;
 
     try {
       const headers = getAuthHeaders();
+      const workerId = deleteWorker._id || deleteWorker.id;
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${encodeURIComponent(deleteWorker.name)}`,
+        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${workerId}`,
         {
           method: 'DELETE',
           headers,
