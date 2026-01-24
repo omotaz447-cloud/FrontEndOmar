@@ -58,8 +58,7 @@ const SignIn: React.FC = () => {
       }
 
       const data = await res.json();
-      console.log('Response data:', data);
-
+console.log("ammar",res)
       if (!res.ok) {
         // Handle different error status codes
         if (res.status === 401) {

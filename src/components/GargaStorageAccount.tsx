@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';//zeby
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -903,6 +903,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
                 onClick={() => setDeleteAccount(null)}
                 className="border-gray-600 text-gray-300 hover:bg-gray-700"
               >
+              
                 إلغاء
               </AlertDialogCancel>
             </AlertDialogFooter>
