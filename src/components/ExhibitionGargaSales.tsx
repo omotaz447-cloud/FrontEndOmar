@@ -434,12 +434,24 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
         <DialogContent className="w-[98vw] max-w-[98vw] sm:w-[95vw] sm:max-w-6xl lg:max-w-7xl h-[98vh] max-h-[98vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 p-0 flex flex-col">
           {/* Fixed Header */}
           <DialogHeader className="px-3 sm:px-6 pt-3 sm:pt-4 pb-3 sm:pb-4 border-b border-gray-700/50 flex-shrink-0">
-            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-white text-center">
-              <div className="flex items-center justify-center space-x-2 sm:space-x-3 space-x-reverse">
-                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-emerald-400" />
-                <span>مبيعات جرجا مول العرب</span>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-white text-center w-full">
+                <div className="flex items-center justify-center space-x-2 sm:space-x-3 space-x-reverse">
+                  <Building2 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-emerald-400" />
+                  <span>مبيعات جرجا مول العرب</span>
+                </div>
+              </DialogTitle>
+              <div className="ml-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                >
+                  رجوع
+                </Button>
               </div>
-            </DialogTitle>
+            </div>
           </DialogHeader>
 
           {/* Scrollable Content */}
@@ -1038,7 +1050,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteSale} onOpenChange={() => setDeleteSale(null)}>
+      <AlertDialog open={!!deleteSale} onOpenChange={(open) => !open && setDeleteSale(null)}>
         <AlertDialogContent className="bg-gray-900 border-gray-700 w-[90vw] max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-base sm:text-lg">

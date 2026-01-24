@@ -27,6 +27,22 @@ const Navigation: React.FC = () => {
   return (
     <Card className="fixed top-4 left-4 z-50 w-64">
       <CardContent className="p-4">
+        <div className="flex justify-between items-center mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              try {
+                if (window.history.length > 1) navigate(-1);
+              } catch (e) {
+                navigate('/home');
+              }
+            }}
+            className="text-sm"
+          >
+            رجوع
+          </Button>
+        </div>
         <h3 className="font-semibold text-center mb-4 text-foreground">
           التنقل السريع
         </h3>

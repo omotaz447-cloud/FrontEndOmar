@@ -504,63 +504,112 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      
+      if (!token) {
+        toast.error('الجلسة منتهية - يرجى تسجيل الدخول');
+        setLoading(false);
+        return;
+      }
+
       // Convert day name to number before sending
       const dayNumber = convertDayToNumber(formData.day);
-      
+
       // Convert string values to numbers or keep "0" as string
       const convertToNumber = (value: string | number): number | string => {
         if (typeof value === 'number') return value;
         if (value === '' || value === null || value === undefined) return 0;
-        // Keep explicit "0" input as string
-        if (value === '0') return "0";
+        if (value === '0') return '0';
         const parsed = parseFloat(value);
         return isNaN(parsed) ? 0 : parsed;
       };
-      
+
       const submitData = {
         الاسم: formData.name,
         name: formData.name,
-        اليوم: dayNumber, // Send the number instead of day name
-        day: dayNumber,   // Send the number instead of day name
+        اليوم: dayNumber,
+        day: dayNumber,
         التاريخ: format(date, 'yyyy-MM-dd'),
         date: format(date, 'yyyy-MM-dd'),
         السحب: convertToNumber(formData.withdrawal),
         withdrawal: convertToNumber(formData.withdrawal),
       };
 
-      console.log('Submitting worker account data:', submitData); // Debug log
+      const editId = (editingAccount as any)?._id || (editingAccount as any)?.id;
+      const editName = (editingAccount as any)?.name;
+      // Try name-based endpoint first (backend often expects name), fallback to id
+      const baseUrl = 'https://backend-omar-x.vercel.app/api/worker-center-seima-account';
+      const url = editingAccount
+        ? editName
+          ? `${baseUrl}/${encodeURIComponent(editName)}`
+          : `${baseUrl}/${encodeURIComponent(editId)}`
+        : baseUrl;
 
-      const url = editingAccount 
-        ? `https://backend-omar-x.vercel.app/api/worker-center-seima-account/${editingAccount._id}`
-        : 'https://backend-omar-x.vercel.app/api/worker-center-seima-account';
-      
       const method = editingAccount ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      console.log('Saving worker account to URL:', url, 'method:', method, 'payload:', submitData);
+      let response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(submitData),
       });
 
-      const responseData = await response.json();
-      console.log('Worker account response data:', responseData); // Debug log
+      let responseData: any = {};
+      try { responseData = await response.json(); } catch (e) {
+        try {
+          const text = await response.text();
+          responseData = { _raw: text };
+        } catch (e2) {
+          responseData = { _raw: '<no-body>' };
+        }
+      }
+
+      // If update returned 404, try PATCH as a fallback, then try POST with id in body
+      if (response.status === 404 && editingAccount) {
+        console.warn('PUT returned 404, trying PATCH fallback for', editId);
+        const patchResp = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submitData),
+        });
+        try { responseData = await patchResp.json(); } catch (e) {}
+        response = patchResp;
+        if (!response.ok && response.status === 404) {
+          console.warn('PATCH also returned 404, trying POST fallback with id in body');
+          // Add id to payload and try POST to base endpoint
+          const postPayload = { ...submitData, _id: editId };
+          const postResp = await fetch('https://backend-omar-x.vercel.app/api/worker-center-seima-account', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postPayload),
+          });
+          try { responseData = await postResp.json(); } catch (e) {}
+          response = postResp;
+        }
+      }
 
       if (!response.ok) {
-        console.error('Server error:', responseData);
-        throw new Error(responseData.message || 'فشل في حفظ البيانات');
+        console.error('Server error saving worker account:', {
+          url: response.url,
+          status: response.status,
+          statusText: response.statusText,
+          body: responseData,
+        });
+        const message = responseData?.message || responseData?._raw || responseData?.error || `فشل في حفظ البيانات (رمز ${response.status})`;
+        toast.error(message);
+        return;
       }
 
       toast.success(editingAccount ? 'تم التحديث بنجاح' : 'تم الإنشاء بنجاح');
       resetForm();
-      
-      // Add a small delay before fetching to ensure server has processed the request
-      setTimeout(() => {
-        fetchAccounts();
-      }, 100);
+      setTimeout(() => fetchAccounts(), 150);
     } catch (error) {
       console.error('Error saving worker account:', error);
       toast.error('فشل في حفظ البيانات');
@@ -586,15 +635,63 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-x.vercel.app/api/worker-center-seima-account/${encodeURIComponent(deleteAccountName)}`, {
+      if (!token) {
+        toast.error('الجلسة منتهية - يرجى تسجيل الدخول');
+        setLoading(false);
+        return;
+      }
+
+      // First, try deleting by the provided identifier (likely an _id)
+      const tryId = encodeURIComponent(deleteAccountName);
+      let url = `https://backend-omar-x.vercel.app/api/worker-center-seima-account/${tryId}`;
+      let response = await fetch(url, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
+      let responseData: any = {};
+      try { responseData = await response.json(); } catch (e) {}
+
+      // If not found (404), attempt fallback: delete by account name
+      if (response.status === 404) {
+        console.warn('Delete by id returned 404, attempting delete by name as fallback');
+        // Try to resolve a display name from local accounts if possible
+        const account = accounts.find(a => a._id === deleteAccountName || (a as any).id === deleteAccountName);
+        const nameForDelete = account ? account.name : deleteAccountName;
+        const tryName = encodeURIComponent(nameForDelete);
+        const fallbackUrl = `https://backend-omar-x.vercel.app/api/worker-center-seima-account/${tryName}`;
+        try {
+          const fallbackResp = await fetch(fallbackUrl, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          try { responseData = await fallbackResp.json(); } catch (e) {}
+
+          if (fallbackResp.ok) {
+            toast.success('تم الحذف بنجاح');
+            setDeleteAccountName(null);
+            fetchAccounts();
+            return;
+          }
+          // if fallback also failed, fall through to error handling below
+          response = fallbackResp;
+        } catch (errFallback) {
+          console.error('Fallback delete by name failed:', errFallback);
+          // continue to show original error
+        }
+      }
+
       if (!response.ok) {
-        throw new Error('فشل في حذف البيانات');
+        console.error('Server error deleting worker account:', response.status, responseData);
+        const message = responseData?.message || `فشل في حذف البيانات (رمز ${response.status})`;
+        toast.error(message);
+        return;
       }
 
       toast.success('تم الحذف بنجاح');
@@ -647,9 +744,15 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.div
-                className="p-2 rounded-xl bg-gradient-to-l from-blue-500/20 to-cyan-500/20"
+                className="p-2 rounded-xl bg-gradient-to-l from-blue-500/20 to-cyan-500/20 cursor-pointer"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                onClick={() => setShowForm(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') setShowForm(true);
+                }}
               >
                 <Users className="w-6 h-6 text-blue-400" />
               </motion.div>
@@ -1065,7 +1168,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setDeleteAccountName(account.name)}
+                                  onClick={() => setDeleteAccountName(account._id || (account as any).id)}
                                   className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -1316,12 +1419,12 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountName} onOpenChange={() => setDeleteAccountName(null)}>
-          <AlertDialogContent className="bg-gray-900 border-gray-700 max-h-[90vh] overflow-hidden flex flex-col">
+        <AlertDialog open={!!deleteAccountName} onOpenChange={(open) => !open && setDeleteAccountName(null)}>
+                <AlertDialogContent className="bg-gray-900 border-gray-700 max-h-[90vh] overflow-hidden flex flex-col">
             <AlertDialogHeader className="flex-shrink-0">
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
-                هل أنت متأكد من حذف سجل العامل "{deleteAccountName}"؟ لا يمكن التراجع عن هذا الإجراء.
+                هل أنت متأكد من حذف سجل العامل "{accounts.find(a => a._id === deleteAccountName)?.name || deleteAccountName}"؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex-1 overflow-y-auto min-h-0">

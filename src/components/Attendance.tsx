@@ -1159,7 +1159,7 @@ const Attendance: React.FC<AttendanceProps> = ({ isOpen, onClose }) => {
         {/* Delete Confirmation Dialog */}
         <Dialog
           open={!!deleteRecordId}
-          onOpenChange={() => setDeleteRecordId(null)}
+          onOpenChange={(open) => !open && setDeleteRecordId(null)}
         >
           <DialogContent className="max-w-md bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700">
             <DialogHeader>

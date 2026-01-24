@@ -100,21 +100,33 @@ const RepublicExhibitionAccounts: React.FC<RepublicExhibitionAccountsProps> = ({
 
           {/* Header */}
           <DialogHeader className="relative z-10 p-6 border-b border-gray-700/50">
-            <div className="flex items-center space-x-4 space-x-reverse text-right">
-              <motion.div
-                className="p-3 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Building2 className="w-6 h-6 text-white" />
-              </motion.div>
-              <div>
-                <DialogTitle className="text-2xl font-bold text-white text-right">
-                  البلينا معرض الجمهوريه الدولي
-                </DialogTitle>
-                <DialogDescription className="text-gray-400 text-right">
-                  إدارة حسابات المعرض والفروع
-                </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 space-x-reverse text-right">
+                <motion.div
+                  className="p-3 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Building2 className="w-6 h-6 text-white" />
+                </motion.div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold text-white text-right">
+                    البلينا معرض الجمهوريه الدولي
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-400 text-right">
+                    إدارة حسابات المعرض والفروع
+                  </DialogDescription>
+                </div>
+              </div>
+              <div className="ml-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                >
+                  رجوع
+                </Button>
               </div>
             </div>
           </DialogHeader>

@@ -1699,7 +1699,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
         {/* Professional Delete Confirmation Dialog */}
         <AlertDialog
           open={!!deleteWorker}
-          onOpenChange={() => setDeleteWorker(null)}
+          onOpenChange={(open) => !open && setDeleteWorker(null)}
         >
           <AlertDialogContent className="bg-slate-900/95 border-slate-700 w-[90vw] max-w-md backdrop-blur-xl">
             <AlertDialogHeader>
