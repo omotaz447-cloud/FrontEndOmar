@@ -1381,7 +1381,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteWorkerName} onOpenChange={() => setDeleteWorkerName(null)}>
+        <AlertDialog open={!!deleteWorkerName} onOpenChange={(open) => !open && setDeleteWorkerName(null)}>
           <AlertDialogContent className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>

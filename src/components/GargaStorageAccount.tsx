@@ -423,12 +423,24 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-7xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white text-center mb-4">
-            <div className="flex items-center justify-center space-x-3 space-x-reverse">
-              <Package className="w-8 h-8 text-blue-400" />
-              <span>حسابات بايكه ومخازن جرجا</span>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-white text-center mb-4 w-full">
+              <div className="flex items-center justify-center space-x-3 space-x-reverse">
+                <Package className="w-8 h-8 text-blue-400" />
+                <span>حسابات بايكه ومخازن جرجا</span>
+              </div>
+            </DialogTitle>
+            <div className="ml-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              >
+                رجوع
+              </Button>
             </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
         <motion.div
@@ -880,7 +892,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={!!deleteAccount}
-          onOpenChange={() => setDeleteAccount(null)}
+          onOpenChange={(open) => !open && setDeleteAccount(null)}
         >
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>

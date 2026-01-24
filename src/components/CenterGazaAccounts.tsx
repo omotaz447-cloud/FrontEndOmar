@@ -790,7 +790,7 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
@@ -1361,7 +1361,7 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
@@ -1931,7 +1931,7 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
@@ -2438,7 +2438,7 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
@@ -2944,7 +2944,7 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
@@ -3514,7 +3514,7 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>

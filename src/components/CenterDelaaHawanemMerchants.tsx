@@ -2014,7 +2014,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={!!deleteMerchant}
-          onOpenChange={() => setDeleteMerchant(null)}
+          onOpenChange={(open) => !open && setDeleteMerchant(null)}
         >
           <AlertDialogContent className="bg-slate-900/95 border-slate-700 w-[90vw] max-w-md backdrop-blur-xl">
             <AlertDialogHeader>

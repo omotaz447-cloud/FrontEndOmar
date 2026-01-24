@@ -1295,7 +1295,7 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccountId} onOpenChange={() => setDeleteAccountId(null)}>
+        <AlertDialog open={!!deleteAccountId} onOpenChange={(open) => !open && setDeleteAccountId(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700 max-h-[90vh] overflow-hidden flex flex-col">
             <AlertDialogHeader className="flex-shrink-0">
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>

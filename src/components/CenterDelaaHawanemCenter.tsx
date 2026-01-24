@@ -1110,7 +1110,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={!!deleteAccountId}
-          onOpenChange={() => setDeleteAccountId(null)}
+          onOpenChange={(open) => !open && setDeleteAccountId(null)}
         >
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>

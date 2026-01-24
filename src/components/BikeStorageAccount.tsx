@@ -456,21 +456,33 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
 
         {/* Header */}
         <DialogHeader className="relative z-10 p-6 border-b border-gray-700/50">
-          <div className="flex items-center space-x-4 space-x-reverse text-right">
-            <motion.div
-              className="p-3 bg-gradient-to-r from-green-600 to-emerald-700 rounded-xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Store className="w-6 h-6 text-white" />
-            </motion.div>
-            <div>
-              <DialogTitle className="text-2xl font-bold text-white text-right">
-                حسابات بايكه ومخازن البلينا
-              </DialogTitle>
-              <DialogDescription className="text-gray-400 text-right">
-                إدارة حسابات المعرض والمخازن
-              </DialogDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 space-x-reverse text-right">
+              <motion.div
+                className="p-3 bg-gradient-to-r from-green-600 to-emerald-700 rounded-xl"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Store className="w-6 h-6 text-white" />
+              </motion.div>
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white text-right">
+                  حسابات بايكه ومخازن البلينا
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 text-right">
+                  إدارة حسابات المعرض والمخازن
+                </DialogDescription>
+              </div>
+            </div>
+            <div className="ml-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              >
+                رجوع
+              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -957,23 +969,35 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50 p-0">
             {/* Header */}
             <DialogHeader className="relative z-10 p-6 border-b border-gray-700/50">
-              <div className="flex items-center space-x-4 space-x-reverse text-right">
-                <motion.div
-                  className="p-3 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-xl"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Edit className="w-6 h-6 text-white" />
-                </motion.div>
-                <div>
-                  <DialogTitle className="text-2xl font-bold text-white text-right">
-                    تعديل السجل
-                  </DialogTitle>
-                  <DialogDescription className="text-gray-400 text-right">
-                    قم بتعديل بيانات السجل المحدد
-                  </DialogDescription>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 space-x-reverse text-right">
+                    <motion.div
+                      className="p-3 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-xl"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Edit className="w-6 h-6 text-white" />
+                    </motion.div>
+                    <div>
+                      <DialogTitle className="text-2xl font-bold text-white text-right">
+                        تعديل السجل
+                      </DialogTitle>
+                      <DialogDescription className="text-gray-400 text-right">
+                        قم بتعديل بيانات السجل المحدد
+                      </DialogDescription>
+                    </div>
+                  </div>
+                  <div className="ml-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={cancelEdit}
+                      className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                    >
+                      إلغاء
+                    </Button>
+                  </div>
                 </div>
-              </div>
             </DialogHeader>
 
             {/* Content */}
@@ -1233,7 +1257,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
           <AlertDialogContent className="bg-gray-800 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white text-right">

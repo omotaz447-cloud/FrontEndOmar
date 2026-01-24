@@ -457,21 +457,33 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
 
         {/* Header */}
         <DialogHeader className="relative z-10 p-6 border-b border-gray-700/50">
-          <div className="flex items-center space-x-4 space-x-reverse text-right">
-            <motion.div
-              className="p-3 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <User className="w-6 h-6 text-white" />
-            </motion.div>
-            <div>
-              <DialogTitle className="text-2xl font-bold text-white text-right">
-                حسابات محمود موهوب البلينا
-              </DialogTitle>
-              <DialogDescription className="text-gray-400 text-right">
-                إدارة حسابات محمود موهوب
-              </DialogDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 space-x-reverse text-right">
+              <motion.div
+                className="p-3 bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <User className="w-6 h-6 text-white" />
+              </motion.div>
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white text-right">
+                  حسابات محمود موهوب البلينا
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 text-right">
+                  إدارة حسابات محمود موهوب
+                </DialogDescription>
+              </div>
+            </div>
+            <div className="ml-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              >
+                رجوع
+              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -933,12 +945,26 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black border-gray-700/50">
           <DialogHeader className="border-b border-gray-700/50 pb-4">
-            <DialogTitle className="text-white text-right text-xl">
-              تعديل سجل محمود محب
-            </DialogTitle>
-            <DialogDescription className="text-gray-400 text-right">
-              تعديل البيانات المالية لتاريخ {editingAccount?.date}
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-white text-right text-xl">
+                  تعديل سجل محمود محب
+                </DialogTitle>
+                <DialogDescription className="text-gray-400 text-right">
+                  تعديل البيانات المالية لتاريخ {editingAccount?.date}
+                </DialogDescription>
+              </div>
+              <div className="ml-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                >
+                  رجوع
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
           
           <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
@@ -1103,7 +1129,7 @@ const MahmoudAccount: React.FC<MahmoudAccountProps> = ({
       {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={!!deleteAccount}
-        onOpenChange={() => setDeleteAccount(null)}
+        onOpenChange={(open) => !open && setDeleteAccount(null)}
       >
         <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
           <AlertDialogHeader>

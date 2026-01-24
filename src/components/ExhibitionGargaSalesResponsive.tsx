@@ -728,7 +728,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
           </div>
 
           {/* Delete Confirmation Dialog */}
-          <AlertDialog open={!!deleteSale} onOpenChange={() => setDeleteSale(null)}>
+          <AlertDialog open={!!deleteSale} onOpenChange={(open) => !open && setDeleteSale(null)}>
             <AlertDialogContent className="bg-gray-900 border-gray-700 w-[90vw] max-w-md">
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-white text-base sm:text-lg">تأكيد الحذف</AlertDialogTitle>

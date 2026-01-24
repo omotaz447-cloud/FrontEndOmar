@@ -379,12 +379,24 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-7xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white text-center mb-4">
-            <div className="flex items-center justify-center space-x-3 space-x-reverse">
-              <User className="w-8 h-8 text-purple-400" />
-              <span>حسابات وحيد سعيد</span>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-white text-center mb-4 w-full">
+              <div className="flex items-center justify-center space-x-3 space-x-reverse">
+                <User className="w-8 h-8 text-purple-400" />
+                <span>حسابات وحيد سعيد</span>
+              </div>
+            </DialogTitle>
+            <div className="ml-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                className="bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              >
+                رجوع
+              </Button>
             </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
         <motion.div
@@ -768,7 +780,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
         </motion.div>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteAccount} onOpenChange={() => setDeleteAccount(null)}>
+        <AlertDialog open={!!deleteAccount} onOpenChange={(open) => !open && setDeleteAccount(null)}>
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>

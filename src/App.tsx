@@ -6,10 +6,12 @@ import About from './pages/About';
 import NotFound from './pages/NotFound';
 import RTLDemo from './pages/RTLDemo';
 import ShadCNDemo from './pages/ShadCNDemo';
+import BackButton from '@/components/BackButton';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <BackButton />
       <Routes>
         <Route path="/" element={<SignIn />} />
         <Route path="/dashboard" element={<Dashboard />} />

@@ -1227,7 +1227,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
         {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={!!deleteMerchantId}
-          onOpenChange={() => setDeleteMerchantId(null)}
+          onOpenChange={(open) => !open && setDeleteMerchantId(null)}
         >
           <AlertDialogContent className="bg-gray-900 border-gray-700">
             <AlertDialogHeader>
