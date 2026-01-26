@@ -274,7 +274,7 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -330,8 +330,8 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -807,7 +807,7 @@ const CenterGazaAccountSection: React.FC<SectionComponentProps> = ({ isOpen, onC
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -876,7 +876,7 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -930,8 +930,8 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -1378,7 +1378,7 @@ const MahmoudCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onC
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1446,7 +1446,7 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -1500,8 +1500,8 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -1948,7 +1948,7 @@ const WaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, onCl
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -2014,7 +2014,7 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -2067,8 +2067,8 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -2455,7 +2455,7 @@ const BasemWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -2520,7 +2520,7 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -2573,8 +2573,8 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -2961,7 +2961,7 @@ const MinaWaheedCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen, 
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,
@@ -3029,7 +3029,7 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -3083,8 +3083,8 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
       };
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${endpoint}`;
+        ? `${API_BASE_URL}${endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${endpoint}`;
 
       const response = await fetch(url, {
         method: editingAccount ? 'PUT' : 'POST',
@@ -3531,7 +3531,7 @@ const BikeStorageCenterGazaSection: React.FC<SectionComponentProps> = ({ isOpen,
                   if (!deleteAccountId) return;
                   try {
                     const token = Cookies.get('accessToken');
-                    const response = await fetch(`https://backend-omar-puce.vercel.app${endpoint}/${deleteAccountId}`, {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}/${deleteAccountId}`, {
                       method: 'DELETE',
                       headers: {
                         'Authorization': `Bearer ${token}`,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -134,9 +135,9 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      console.log('Fetching sales from:', 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales'); // Debug log
+      console.log('...', `${API_BASE_URL}/api/center-delaa-hawanem-sales`); // Debug log
 
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales', {
+      const response = await fetch(`${API_BASE_URL}/api/center-delaa-hawanem-sales`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -224,8 +225,8 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
       console.log('Submitting sales data:', submitData); // Debug log
 
       const url = editingSale 
-        ? `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales/${editingSale._id}`
-        : 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales';
+        ? `${API_BASE_URL}/api/center-delaa-hawanem-sales/${editingSale._id}`
+        : `${API_BASE_URL}/api/center-delaa-hawanem-sales`;
       
       const method = editingSale ? 'PUT' : 'POST';
 
@@ -283,7 +284,7 @@ const CenterDelaaHawanemSales: React.FC<CenterDelaaHawanemSalesProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-sales/${deleteSaleId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/center-delaa-hawanem-sales/${deleteSaleId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

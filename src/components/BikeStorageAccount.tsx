@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface BikeStorageAccountData {
   _id?: string;
@@ -136,7 +137,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/bike-storage-account',
+        `${API_BASE_URL}/api/bike-storage-account`,
         {
           headers: getAuthHeaders(),
         }
@@ -208,7 +209,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/bike-storage-account',
+        `${API_BASE_URL}/api/bike-storage-account`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -259,7 +260,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/bike-storage-account/${id}`,
+        `${API_BASE_URL}/api/bike-storage-account/${id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -345,7 +346,7 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/bike-storage-account/${editingId}`,
+        `${API_BASE_URL}/api/bike-storage-account/${editingId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1297,3 +1298,6 @@ const BikeStorageAccount: React.FC<BikeStorageAccountProps> = ({
 };
 
 export default BikeStorageAccount;
+
+
+

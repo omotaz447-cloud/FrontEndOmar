@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -74,6 +74,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { API_BASE_URL } from '@/utils/api';
 
 interface MerchantRecord {
   _id?: string;
@@ -274,7 +275,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant',
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant`,
         {
           headers: getAuthHeaders(),
         },
@@ -405,7 +406,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant',
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -462,7 +463,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant.name)}`,
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant._id || editingMerchant.name)}`, 
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -498,7 +499,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       const headers = getAuthHeaders();
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant.name)}`,
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant._id || deleteMerchant.name)}`,
         {
           method: 'DELETE',
           headers,
@@ -2224,3 +2225,6 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 };
 
 export default CenterDelaaHawanemMerchants;
+
+
+

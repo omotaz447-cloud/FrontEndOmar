@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -72,6 +72,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 
 interface ExhibitionSalesData {
   _id?: string;
@@ -180,7 +181,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/exhibition-sales',
+        `${API_BASE_URL}/api/exhibition-sales`,
         {
           headers: getAuthHeaders(),
         },
@@ -259,7 +260,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
       };
 
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/exhibition-sales',
+        `${API_BASE_URL}/api/exhibition-sales`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -345,7 +346,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/exhibition-sales/${deleteSales._id}`,
+        `${API_BASE_URL}/api/exhibition-sales/${deleteSales._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -417,7 +418,7 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
       };
 
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/exhibition-sales/${editingSales._id}`,
+        `${API_BASE_URL}/api/exhibition-sales/${editingSales._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1502,3 +1503,6 @@ const ExhibitionSales: React.FC<ExhibitionSalesProps> = ({
 };
 
 export default ExhibitionSales;
+
+
+

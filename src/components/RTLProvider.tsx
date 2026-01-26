@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 
 interface RTLProviderProps {
   children: React.ReactNode;
@@ -21,3 +21,5 @@ const RTLProvider: React.FC<RTLProviderProps> = ({ children }) => {
 };
 
 export default RTLProvider;
+
+

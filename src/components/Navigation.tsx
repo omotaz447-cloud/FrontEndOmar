@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -71,3 +71,5 @@ const Navigation: React.FC = () => {
 };
 
 export default Navigation;
+
+

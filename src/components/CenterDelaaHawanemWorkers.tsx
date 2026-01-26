@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -68,6 +68,7 @@ import {
   UserX,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from '@/utils/api';
 
 interface WorkerRecord {
   _id?: string;
@@ -193,13 +194,50 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
     'السبت',
   ];
 
+  // Convert day number to Arabic name
+  const convertNumberToDay = (dayNumber: string | number): string => {
+    const numberToArabic: { [key: string]: string } = {
+      '0': 'الأحد',
+      '1': 'الاثنين',
+      '2': 'الثلاثاء',
+      '3': 'الأربعاء',
+      '4': 'الخميس',
+      '5': 'الجمعة',
+      '6': 'السبت',
+      // Also handle 1-7 format
+      '7': 'الأحد',
+    };
+    
+    const key = String(dayNumber);
+    // Check if it's already an Arabic day name
+    if (daysOfWeek.includes(key)) {
+      return key;
+    }
+    return numberToArabic[key] || key;
+  };
+
+  // Convert Arabic day name to number
+  const convertDayToNumber = (dayName: string): string => {
+    const arabicToNumber: { [key: string]: string } = {
+      'الأحد': '0',
+      'الاثنين': '1',
+      'الثلاثاء': '2',
+      'الأربعاء': '3',
+      'الخميس': '4',
+      'الجمعة': '5',
+      'السبت': '6',
+    };
+    
+    return arabicToNumber[dayName] || dayName;
+  };
+
   // Fetch workers data
   const fetchWorkers = useCallback(async () => {
     setIsLoading(true);
     try {
       const headers = getAuthHeaders();
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker',
+        `${API_BASE_URL}/api/center-delaa-hawanem-worker`,
         {
           headers,
         },
@@ -511,11 +549,8 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      const url = editingWorker
-        ? `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${editingWorker._id}`
-        : 'https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker';
-
-      const method = editingWorker ? 'PUT' : 'POST';
+      const url = `${API_BASE_URL}/api/center-delaa-hawanem-worker`;
+      const method = 'POST';
       const headers = getAuthHeaders();
 
       const response = await fetch(url, {
@@ -525,9 +560,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       });
 
       if (response.ok) {
-        toast.success(
-          editingWorker ? 'تم تحديث البيانات بنجاح' : 'تم إضافة العامل بنجاح',
-        );
+        toast.success('تم إضافة العامل بنجاح');
         await fetchWorkers();
         resetForm();
       } else {
@@ -543,26 +576,61 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleEdit = (worker: WorkerRecord) => {
     setEditingWorker(worker);
-    setEditFormData({ ...worker });
+    setEditFormData({ 
+      ...worker,
+      day: convertNumberToDay(worker.day) // Convert number to Arabic name
+    });
     setEditDialogOpen(true);
     // Set the selected date for the calendar picker
     if (worker.date) {
       setEditSelectedDate(new Date(worker.date));
     }
+    console.log('Edit mode: worker id =', worker._id || worker.id, 'worker =', worker);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingWorker || (!editingWorker._id && !editingWorker.id)) return;
 
+    // Validate required fields
+    if (
+      !editFormData.name ||
+      !editFormData.day ||
+      !editFormData.date ||
+      editFormData.withdrawal === ''
+    ) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      return;
+    }
+
     try {
       const workerId = editingWorker._id || editingWorker.id;
+      
+      // Convert day from Arabic name to number
+      const convertedDay = convertDayToNumber(editFormData.day);
+      
+      // Ensure withdrawal is a number
+      const dataToSend = {
+        ...editFormData,
+        day: convertedDay,
+        withdrawal: typeof editFormData.withdrawal === 'string' 
+          ? Number(editFormData.withdrawal) 
+          : editFormData.withdrawal,
+      };
+
+      console.log('=== EDIT SUBMIT ===');
+      console.log('editingWorker id:', workerId);
+      console.log('editFormData.day:', editFormData.day);
+      console.log('convertedDay:', convertedDay);
+      console.log('Full editingWorker:', editingWorker);
+      console.log('=== END ===');
+
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${workerId}`,
+        `${API_BASE_URL}/api/center-delaa-hawanem-worker/${workerId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
-          body: JSON.stringify(editFormData),
+          body: JSON.stringify(dataToSend),
         },
       );
 
@@ -588,7 +656,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
       const headers = getAuthHeaders();
       const workerId = deleteWorker._id || deleteWorker.id;
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-delaa-hawanem-worker/${workerId}`,
+        `${API_BASE_URL}/api/center-delaa-hawanem-worker/${workerId}`,
         {
           method: 'DELETE',
           headers,
@@ -993,16 +1061,14 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
                       </div>
                       {/* Submit Button */}
                       <div className="flex justify-end space-x-3 space-x-reverse pt-4 border-t border-slate-600/30">
-                        {editingWorker && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={resetForm}
-                            className="border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white px-6 py-2 h-11 backdrop-blur-sm bg-transparent"
-                          >
-                            إلغاء
-                          </Button>
-                        )}
+                        <Button
+                          type="reset"
+                          variant="outline"
+                          onClick={resetForm}
+                          className="border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white px-6 py-2 h-11 backdrop-blur-sm bg-transparent"
+                        >
+                          مسح
+                        </Button>
                         <Button
                           type="submit"
                           disabled={isSubmitting}
@@ -1013,7 +1079,7 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
                           ) : (
                             <Plus className="w-4 h-4 ml-2" />
                           )}
-                          {editingWorker ? 'تحديث' : 'إضافة'}
+                          إضافة عامل
                         </Button>
                       </div>
                     </form>
@@ -1735,3 +1801,6 @@ const CenterDelaaHawanemWorkers: React.FC<Props> = ({ isOpen, onClose }) => {
 };
 
 export default CenterDelaaHawanemWorkers;
+
+
+

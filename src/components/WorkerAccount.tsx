@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -199,6 +200,39 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     'السبت',
   ];
 
+  // Function to convert Arabic day name to number
+  const convertDayToNumber = (dayName: string): string => {
+    const dayMap: { [key: string]: string } = {
+      'الأحد': '1',
+      'الاثنين': '2',
+      'الثلاثاء': '3',
+      'الأربعاء': '4',
+      'الخميس': '5',
+      'الجمعة': '6',
+      'السبت': '7'
+    };
+    
+    const result = dayMap[dayName] || dayName;
+    console.log(`Converting day: "${dayName}" -> "${result}"`);
+    return result;
+  };
+
+  // Function to convert number back to Arabic day name
+  const convertNumberToDay = (dayNumber: string | number): string => {
+    const numberMap: { [key: string]: string } = {
+      '1': 'الأحد',
+      '2': 'الاثنين',
+      '3': 'الثلاثاء',
+      '4': 'الأربعاء',
+      '5': 'الخميس',
+      '6': 'الجمعة',
+      '7': 'السبت'
+    };
+    
+    const key = String(dayNumber);
+    return numberMap[key] || key;
+  };
+
   // Months in Arabic
   const months = [
     { value: '01', label: 'يناير' },
@@ -356,7 +390,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/worker-account',
+        `${API_BASE_URL}/api/worker-account`,
         {
           headers: getAuthHeaders(),
         },
@@ -515,7 +549,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/worker-account',
+        `${API_BASE_URL}/api/worker-account`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -581,7 +615,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setEditingWorker(worker);
     setEditFormData({
       name: worker.name,
-      day: worker.day,
+      day: convertNumberToDay(worker.day), // Convert number to Arabic name
       date: worker.date,
       withdrawal: worker.withdrawal,
     });
@@ -611,21 +645,29 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    // Convert day name to number for comparison and sending
+    const convertedDay = convertDayToNumber(editFormData.day);
+    
+    // Convert withdrawal to number
+    const withdrawalAmount = typeof editFormData.withdrawal === 'string' 
+      ? Number(editFormData.withdrawal) 
+      : editFormData.withdrawal;
+
     // Create object with only changed fields
     const updatedFields: Partial<WorkerAccountData> = {};
     if (editFormData.name !== editingWorker.name)
       updatedFields.name = editFormData.name;
-    if (editFormData.day !== editingWorker.day)
-      updatedFields.day = editFormData.day;
+    if (convertedDay !== editingWorker.day)
+      updatedFields.day = convertedDay;
     if (editFormData.date !== editingWorker.date)
       updatedFields.date = editFormData.date;
-    if (editFormData.withdrawal !== editingWorker.withdrawal)
-      updatedFields.withdrawal = editFormData.withdrawal;
+    if (withdrawalAmount !== editingWorker.withdrawal)
+      updatedFields.withdrawal = withdrawalAmount;
 
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-account/${encodeURIComponent(editingWorker.name)}`,
+        `${API_BASE_URL}/api/worker-account/${editingWorker._id || editingWorker.id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -663,7 +705,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 
   // Handle delete worker
   const handleDeleteWorker = async () => {
-    if (!deleteWorker?.name) {
+    if (!deleteWorker?._id && !deleteWorker?.id) {
       toast.error('خطأ في تحديد السجل للحذف');
       return;
     }
@@ -671,7 +713,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-account/${encodeURIComponent(deleteWorker.name)}`,
+        `${API_BASE_URL}/api/worker-account/${deleteWorker._id || deleteWorker.id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -2053,3 +2095,6 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 };
 
 export default WorkerAccount;
+
+
+

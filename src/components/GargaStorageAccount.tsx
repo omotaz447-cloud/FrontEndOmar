@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';//zeby
+﻿import React, { useState, useEffect, useCallback } from 'react';//zeby
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface GargaStorageData {
   _id?: string;
@@ -142,7 +143,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/garga-storage',
+        `${API_BASE_URL}/api/garga-storage`,
         {
           headers: getAuthHeaders(),
         },
@@ -207,7 +208,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/garga-storage',
+        `${API_BASE_URL}/api/garga-storage`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -268,7 +269,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/garga-storage/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/garga-storage/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -324,7 +325,7 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/garga-storage/${editingAccount._id}`,
+        `${API_BASE_URL}/api/garga-storage/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1143,3 +1144,6 @@ const GargaStorageAccount: React.FC<GargaStorageAccountProps> = ({
 };
 
 export default GargaStorageAccount;
+
+
+

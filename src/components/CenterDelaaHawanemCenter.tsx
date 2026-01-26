@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +59,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from '@/utils/api';
 
 interface CenterDelaaHawanemCenterProps {
   isOpen: boolean;
@@ -319,11 +320,11 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
 
       console.log(
         'Fetching accounts from:',
-        `https://backend-omar-puce.vercel.app${section.endpoint}`,
+        `${API_BASE_URL}${section.endpoint}`,
       ); // Debug log
 
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app${section.endpoint}`,
+        `${API_BASE_URL}${section.endpoint}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -428,8 +429,8 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
       console.log('Submitting data:', submitData); // Debug log
 
       const url = editingAccount
-        ? `https://backend-omar-puce.vercel.app${section.endpoint}/${editingAccount._id}`
-        : `https://backend-omar-puce.vercel.app${section.endpoint}`;
+        ? `${API_BASE_URL}${section.endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${section.endpoint}`;
 
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -484,7 +485,7 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
     try {
       const token = Cookies.get('accessToken');
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app${section.endpoint}/${deleteAccountId}`,
+        `${API_BASE_URL}${section.endpoint}/${deleteAccountId}`,
         {
           method: 'DELETE',
           headers: {
@@ -1140,3 +1141,6 @@ const CenterDelaaHawanemCenter: React.FC<CenterDelaaHawanemCenterProps> = ({
 };
 
 export default CenterDelaaHawanemCenter;
+
+
+

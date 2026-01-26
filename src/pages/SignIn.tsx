@@ -38,6 +38,15 @@ const SignIn: React.FC = () => {
     }
   }, [navigate]);
 
+  // Debug: Show if we're on SignIn page
+  React.useEffect(() => {
+    console.log('SignIn component mounted');
+    console.log('Current cookies:', {
+      token: Cookies.get('accessToken'),
+      role: Cookies.get('userRole'),
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -171,7 +180,7 @@ console.log("ammar",res)
               </Badge>
             </div>
           </CardHeader>
-          
+
           <CardContent className="pt-6">
             {/* Login Status Alert */}
             <motion.div
@@ -189,114 +198,105 @@ console.log("ammar",res)
             </motion.div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Username field */}
-            <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              <Label
-                htmlFor="username"
-                className="text-gray-300 font-medium block text-right"
+              {/* Username field */}
+              <motion.div
+                className="space-y-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
               >
-                اسم المستخدم
-              </Label>
-              <div className="relative flex flex-row-reverse items-center">
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="ادخل اسم المستخدم"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 pr-10 h-12 rounded-xl focus:border-purple-500 focus:ring-purple-500/20 text-right"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  autoComplete="username"
-                  disabled={loading}
-                />
-                {/* User icon inside input on the right */}
-                <span className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <User className="w-5 h-5" />
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Password field */}
-            <motion.div
-              className="space-y-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.0 }}
-            >
-              <Label
-                htmlFor="password"
-                className="text-gray-300 font-medium block text-right"
-              >
-                كلمة المرور
-              </Label>
-              <div className="relative flex flex-row-reverse items-center">
-                {/* Lock icon on the right */}
-                <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="ادخل كلمة المرور"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 pr-10 h-12 rounded-xl focus:border-purple-500 focus:ring-purple-500/20 text-right"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  disabled={loading}
-                />
-                {/* Eye/EyeOff icon on the left */}
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                <Label
+                  htmlFor="username"
+                  className="text-gray-300 font-medium block text-right"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </motion.div>
+                  اسم المستخدم
+                </Label>
+                <div className="relative flex flex-row-reverse items-center">
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="ادخل اسم المستخدم"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 pr-10 h-12 rounded-xl focus:border-purple-500 focus:ring-purple-500/20 text-right"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    autoComplete="username"
+                    disabled={loading}
+                  />
+                  {/* User icon inside input on the right */}
+                  <span className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <User className="w-5 h-5" />
+                  </span>
+                </div>
+              </motion.div>
 
-            {/* Remember me & Forgot password */}
-            <motion.div
-              className="flex items-center justify-between text-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-            ></motion.div>
-
-            {/* Submit button */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.4 }}
-            >
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
-                size="lg"
-                disabled={loading}
+              {/* Password field */}
+              <motion.div
+                className="space-y-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.0 }}
               >
-                {loading ? (
-                  '...جاري الدخول'
-                ) : (
-                  <motion.span
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                <Label
+                  htmlFor="password"
+                  className="text-gray-300 font-medium block text-right"
+                >
+                  كلمة المرور
+                </Label>
+                <div className="relative flex flex-row-reverse items-center">
+                  {/* Lock icon on the right */}
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="ادخل كلمة المرور"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 pr-10 h-12 rounded-xl focus:border-purple-500 focus:ring-purple-500/20 text-right"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    disabled={loading}
+                  />
+                  {/* Eye/EyeOff icon on the left */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                   >
-                    دخول
-                  </motion.span>
-                )}
-              </Button>
-            </motion.div>
-            {/* Error and success messages are now only shown as toast notifications */}
-          </form>
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Submit button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.4 }}
+              >
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    '...جاري الدخول'
+                  ) : (
+                    <motion.span
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      دخول
+                    </motion.span>
+                  )}
+                </Button>
+              </motion.div>
+            </form>
           </CardContent>
         </Card>
       </motion.div>

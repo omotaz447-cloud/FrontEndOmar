@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +59,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from '@/utils/api';
 
 interface CenterGazaSalesProps {
   isOpen: boolean;
@@ -146,7 +147,7 @@ const CenterGazaSales: React.FC<CenterGazaSalesProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/new-center-gaza-sales', {
+      const response = await fetch(`${API_BASE_URL}/api/new-center-gaza-sales`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -228,8 +229,8 @@ const CenterGazaSales: React.FC<CenterGazaSalesProps> = ({
       };
 
       const url = editingSale
-        ? `https://backend-omar-puce.vercel.app/api/new-center-gaza-sales/${editingSale._id}`
-        : 'https://backend-omar-puce.vercel.app/api/new-center-gaza-sales';
+        ? `${API_BASE_URL}/api/new-center-gaza-sales/${editingSale._id}`
+        : `${API_BASE_URL}/api/new-center-gaza-sales`;
 
       const method = editingSale ? 'PUT' : 'POST';
 
@@ -297,7 +298,7 @@ const CenterGazaSales: React.FC<CenterGazaSalesProps> = ({
     try {
       const token = Cookies.get('accessToken');
       
-      const response = await fetch(`https://backend-omar-puce.vercel.app/api/new-center-gaza-sales/${deleteSaleId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/new-center-gaza-sales/${deleteSaleId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -750,3 +751,5 @@ const CenterGazaSales: React.FC<CenterGazaSalesProps> = ({
 };
 
 export default CenterGazaSales;
+
+

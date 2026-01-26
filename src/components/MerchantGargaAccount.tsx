@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface MerchantGargaAccountData {
   _id?: string;
@@ -178,7 +179,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/merchant-garga-account',
+        `${API_BASE_URL}/api/merchant-garga-account`,
         {
           headers: getAuthHeaders(),
         },
@@ -255,7 +256,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/merchant-garga-account',
+        `${API_BASE_URL}/api/merchant-garga-account`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -332,7 +333,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/merchant-garga-account/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/merchant-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -387,7 +388,7 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/merchant-garga-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/merchant-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1484,3 +1485,6 @@ const MerchantGargaAccount: React.FC<MerchantGargaAccountProps> = ({
 };
 
 export default MerchantGargaAccount;
+
+
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface WorkerGargaAccountData {
   _id?: string;
@@ -168,7 +169,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   });
   const [editSelectedDate, setEditSelectedDate] = useState<Date>();
   const [editCalendarOpen, setEditCalendarOpen] = useState(false);
-  const [deleteAccountName, setDeleteAccountName] = useState<string | null>(
+  const [deleteAccountId, setDeleteAccountId] = useState<string | null>(
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
@@ -356,7 +357,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/worker-garga-account',
+        `${API_BASE_URL}/api/worker-garga-account`,
         {
           headers: getAuthHeaders(),
         },
@@ -440,6 +441,21 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   const toNumber = (value: string | number): number => {
     if (typeof value === 'number') return value;
     return parseFloat(value) || 0;
+  };
+
+  // Convert Arabic day name to number
+  const convertDayToNumber = (dayName: string): string => {
+    const dayMap: { [key: string]: string } = {
+      'السبت': '1',
+      'الاحد': '2',
+      'الاثنين': '3',
+      'الثلاثاء': '4',
+      'الاربعاء': '5',
+      'الخميس': '6',
+      'الجمعه': '7'
+    };
+    
+    return dayMap[dayName] || dayName;
   };
 
   // Function to get attendance status badge
@@ -545,7 +561,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/worker-garga-account',
+        `${API_BASE_URL}/api/worker-garga-account`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -606,21 +622,22 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       setEditSelectedDate(new Date(account.date));
     }
     setEditDialogOpen(true);
+    console.log('Edit mode: account._id =', account._id || account.id, 'account =', account);
   };
 
   // Handle delete account
   const handleDelete = (account: WorkerGargaAccountData) => {
-    setDeleteAccountName(account.name);
+    setDeleteAccountId(account._id || account.id);
   };
 
   // Handle actual delete after confirmation
   const handleDeleteAccount = async () => {
-    if (!deleteAccountName) return;
+    if (!deleteAccountId) return;
 
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${encodeURIComponent(deleteAccountName)}`,
+        `${API_BASE_URL}/api/worker-garga-account/${deleteAccountId}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -630,7 +647,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       if (response.ok) {
         toast.success('تم حذف السجل بنجاح');
         fetchAccounts();
-        setDeleteAccountName(null);
+        setDeleteAccountId(null);
       } else if (response.status === 401) {
         toast.error('غير مخول للوصول - يرجى تسجيل الدخول مرة أخرى');
       } else {
@@ -698,14 +715,26 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Convert day name to number if needed
+      const dayToSend = typeof editFormData.day === 'string' && editFormData.day.length > 1
+        ? convertDayToNumber(editFormData.day)
+        : editFormData.day;
+
+      console.log('=== EDIT SUBMIT ===');
+      console.log('editingAccount._id:', editingAccount._id);
+      console.log('editFormData.day:', editFormData.day);
+      console.log('dayToSend:', dayToSend);
+      console.log('Full editingAccount:', editingAccount);
+      console.log('=== END ===');
+
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/worker-garga-account/${editingAccount.name}`,
+        `${API_BASE_URL}/api/worker-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
             الاسم: editFormData.name,
-            اليوم: editFormData.day,
+            اليوم: dayToSend,
             التاريخ: editFormData.date,
             السحب:
               editFormData.withdrawal === '0'
@@ -1725,8 +1754,8 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
-        open={!!deleteAccountName}
-        onOpenChange={(open) => !open && setDeleteAccountName(null)}
+        open={!!deleteAccountId}
+        onOpenChange={(open) => !open && setDeleteAccountId(null)}
       >
         <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
           <AlertDialogHeader>
@@ -1734,14 +1763,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
               تأكيد الحذف
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300 text-right">
-              هل أنت متأكد من حذف سجل العامل "{deleteAccountName}"؟
+              هل أنت متأكد من حذف سجل العامل "{deleteAccountId}"؟
               <br />
               هذا الإجراء لا يمكن التراجع عنه.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex justify-start space-x-2 space-x-reverse">
             <AlertDialogCancel
-              onClick={() => setDeleteAccountName(null)}
+              onClick={() => setDeleteAccountId(null)}
               className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
             >
               إلغاء
@@ -1913,3 +1942,6 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 };
 
 export default WorkerGargaAccount;
+
+
+

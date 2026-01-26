@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -169,9 +170,9 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      console.log('Fetching worker accounts from:', 'https://backend-omar-x.vercel.app/api/worker-center-seima-account'); // Debug log
+      console.log('...', `${API_BASE_URL}/api/worker-center-seima-account`); // Debug log
 
-      const response = await fetch('https://backend-omar-x.vercel.app/api/worker-center-seima-account', {
+      const response = await fetch(`${API_BASE_URL}/api/worker-center-seima-account`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -536,11 +537,9 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
       const editId = (editingAccount as any)?._id || (editingAccount as any)?.id;
       const editName = (editingAccount as any)?.name;
       // Try name-based endpoint first (backend often expects name), fallback to id
-      const baseUrl = 'https://backend-omar-x.vercel.app/api/worker-center-seima-account';
+      const baseUrl = `${API_BASE_URL}/api/worker-center-seima-account`;
       const url = editingAccount
-        ? editName
-          ? `${baseUrl}/${encodeURIComponent(editName)}`
-          : `${baseUrl}/${encodeURIComponent(editId)}`
+        ? `${baseUrl}/${encodeURIComponent(editId)}`
         : baseUrl;
 
       const method = editingAccount ? 'PUT' : 'POST';
@@ -582,7 +581,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
           console.warn('PATCH also returned 404, trying POST fallback with id in body');
           // Add id to payload and try POST to base endpoint
           const postPayload = { ...submitData, _id: editId };
-          const postResp = await fetch('https://backend-omar-x.vercel.app/api/worker-center-seima-account', {
+          const postResp = await fetch(`${API_BASE_URL}/api/worker-center-seima-account`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,
@@ -643,7 +642,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
 
       // First, try deleting by the provided identifier (likely an _id)
       const tryId = encodeURIComponent(deleteAccountName);
-      let url = `https://backend-omar-x.vercel.app/api/worker-center-seima-account/${tryId}`;
+      let url = `${API_BASE_URL}/api/worker-center-seima-account/${tryId}`;
       let response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -662,7 +661,7 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
         const account = accounts.find(a => a._id === deleteAccountName || (a as any).id === deleteAccountName);
         const nameForDelete = account ? account.name : deleteAccountName;
         const tryName = encodeURIComponent(nameForDelete);
-        const fallbackUrl = `https://backend-omar-x.vercel.app/api/worker-center-seima-account/${tryName}`;
+        const fallbackUrl = `${API_BASE_URL}/api/worker-center-seima-account/${tryName}`;
         try {
           const fallbackResp = await fetch(fallbackUrl, {
             method: 'DELETE',
