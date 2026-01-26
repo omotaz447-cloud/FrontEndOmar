@@ -57,7 +57,7 @@ import {
   Crown,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
-const API_BASE_URL = 'https://backend-omar-puce.vercel.app/api';
+import { API_BASE_URL } from '@/utils/api';
 
 
 interface CenterGazaAccountsProps {
