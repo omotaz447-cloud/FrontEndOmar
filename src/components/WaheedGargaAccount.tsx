@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 import { CalendarIcon, User, DollarSign, TrendingUp, Gift, Edit, Trash2, RefreshCw, Save, TrendingDown, Wallet, PiggyBank, Activity, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface WaheedGargaData {
   _id?: string;
@@ -118,7 +119,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
   const fetchAccounts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/waheed-garga-account', {
+      const response = await fetch(`${API_BASE_URL}/api/waheed-garga-account`, {
         headers: getAuthHeaders(),
       });
       if (response.ok) {
@@ -174,7 +175,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/waheed-garga-account', {
+      const response = await fetch(`${API_BASE_URL}/api/waheed-garga-account`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -249,7 +250,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/waheed-garga-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/waheed-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -298,7 +299,7 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/waheed-garga-account/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/waheed-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -986,3 +987,6 @@ const WaheedGargaAccount: React.FC<WaheedGargaAccountProps> = ({
 };
 
 export default WaheedGargaAccount;
+
+
+

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -239,7 +240,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      const url = `https://backend-omar-x.vercel.app${selectedSection.endpoint}`;
+      const url = `${API_BASE_URL}${selectedSection.endpoint}`;
       console.log('Fetching accounts from:', url);
 
       const response = await fetch(url, {
@@ -373,8 +374,8 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
       console.log('Submitting account data:', submitData);
 
       const url = editingAccount 
-        ? `https://backend-omar-x.vercel.app${selectedSection.endpoint}/${editingAccount._id}`
-        : `https://backend-omar-x.vercel.app${selectedSection.endpoint}`;
+        ? `${API_BASE_URL}${selectedSection.endpoint}/${editingAccount._id}`
+        : `${API_BASE_URL}${selectedSection.endpoint}`;
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -437,7 +438,7 @@ const CenterSeimaAccounts: React.FC<CenterSeimaAccountsProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-x.vercel.app${selectedSection.endpoint}/${deleteAccountId}`, {
+      const response = await fetch(`${API_BASE_URL}${selectedSection.endpoint}/${deleteAccountId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

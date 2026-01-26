@@ -10,18 +10,20 @@ import BackButton from '@/components/BackButton';
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <BackButton />
-      <Routes>
-        <Route path="/" element={<SignIn />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/rtl-demo" element={<RTLDemo />} />
-        <Route path="/shadcn-demo" element={<ShadCNDemo />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', backgroundColor: '#ffffff' }}>
+      <BrowserRouter>
+        <BackButton />
+        <Routes>
+          <Route path="/" element={<SignIn />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/rtl-demo" element={<RTLDemo />} />
+          <Route path="/shadcn-demo" element={<ShadCNDemo />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 };
 

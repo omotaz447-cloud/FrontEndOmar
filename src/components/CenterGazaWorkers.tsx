@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -118,7 +119,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
     withdrawal: '',
   });
   const [editingWorker, setEditingWorker] = useState<WorkerData | null>(null);
-  const [deleteWorkerName, setDeleteWorkerName] = useState<string | null>(null);
+  const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [date, setDate] = useState<Date>();
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -411,9 +412,10 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       }
 
       console.log('Fetching workers with token:', !!token);
-      console.log('API endpoint:', 'https://backend-omar-puce.vercel.app/api/worker-center-gaza-account');
+      console.log('API endpoint:', `${API_BASE_URL}/api/worker-center-gaza-account`);
+      console.log('API_BASE_URL value:', API_BASE_URL);
 
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/worker-center-gaza-account', {
+      const response = await fetch(`${API_BASE_URL}/api/worker-center-gaza-account`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -557,7 +559,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       
       const submitData = {
         "الاسم": formData.name,
-        "اليوم": convertedDay,
+        "اليوم": parseInt(convertedDay, 10),  // Parse string to integer
         "التاريخ": format(date, 'yyyy-MM-dd'),
         "السحب": convertToNumber(formData.withdrawal),
       };
@@ -584,17 +586,20 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       }
 
       const url = editingWorker
-        ? `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${editingWorker.name}`
-        : 'https://backend-omar-puce.vercel.app/api/worker-center-gaza-account';
+        ? `${API_BASE_URL}/api/worker-center-gaza-account/${editingWorker._id}`
+        : `${API_BASE_URL}/api/worker-center-gaza-account`;
 
       const method = editingWorker ? 'PUT' : 'POST';
 
-      console.log('Original day:', formData.day);
-      console.log('Converted day:', convertDayToNumber(formData.day));
-      console.log('Sending data to API:', submitData);
-      console.log('API URL:', url);
+      console.log('=== SUBMIT DEBUG START ===');
+      console.log('editingWorker:', editingWorker);
+      console.log('editingWorker._id type:', typeof editingWorker?._id, 'value:', editingWorker?._id);
+      console.log('editingWorker.id type:', typeof editingWorker?.id, 'value:', editingWorker?.id);
+      console.log('Is editing:', !!editingWorker);
       console.log('Method:', method);
-      console.log('Token exists:', !!token);
+      console.log('Final URL:', url);
+      console.log('Payload:', JSON.stringify(submitData, null, 2));
+      console.log('=== SUBMIT DEBUG END ===');
 
       const response = await fetch(url, {
         method,
@@ -606,18 +611,22 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       });
 
       console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Response statusText:', response.statusText);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('API Error Details:', {
+        const errorText = await response.text();
+        console.error('API Error Response:', {
           status: response.status,
           statusText: response.statusText,
-          errorData,
+          body: errorText,
           url,
           method,
           sentData: submitData
         });
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {}
         throw new Error(errorData.message || `HTTP ${response.status}: فشل في حفظ البيانات`);
       }
 
@@ -639,28 +648,37 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       // Refresh data
       fetchWorkers();
     } catch (error) {
-      console.error('Error saving worker:', error);
+      console.error('FULL Error object:', error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
       console.error('Form data:', formData);
       console.error('Date:', date);
-      toast.error('فشل في حفظ البيانات');
+      
+      const errorMsg = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+      console.error('Display error:', errorMsg);
+      toast.error(errorMsg || 'فشل في حفظ البيانات');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (worker: WorkerData) => {
-    setEditingWorker(worker);
-    setFormData({
-      name: worker.name,
-      day: convertNumberToDay(worker.day),
-      withdrawal: worker.withdrawal.toString(),
-    });
-    setDate(new Date(worker.date));
-    setShowForm(true);
-  };
+const handleEdit = (worker: WorkerData) => {
+  if (!worker._id) {
+    toast.error('لا يمكن تعديل هذا السجل');
+    return;
+  }
+
+  setEditingWorker(worker);
+  setFormData({
+    name: worker.name,
+    day: convertNumberToDay(worker.day),
+    withdrawal: worker.withdrawal.toString(),
+  });
+  setDate(new Date(worker.date));
+  setShowForm(true);
+};
 
   const handleDelete = async () => {
-    if (!deleteWorkerName) return;
+    if (!deleteWorkerId) return;
 
     setLoading(true);
     try {
@@ -672,10 +690,9 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         return;
       }
 
-      const deleteUrl = `https://backend-omar-puce.vercel.app/api/worker-center-gaza-account/${encodeURIComponent(deleteWorkerName)}`;
+      const deleteUrl = `${API_BASE_URL}/api/worker-center-gaza-account/${deleteWorkerId}`;
       console.log('Delete URL:', deleteUrl);
-      console.log('Delete worker name:', deleteWorkerName);
-      console.log('Encoded worker name:', encodeURIComponent(deleteWorkerName));
+      console.log('Delete worker id:', deleteWorkerId);
       
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -706,7 +723,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
           statusText: response.statusText,
           errorData,
           deleteUrl,
-          workerName: deleteWorkerName,
+          workerId: deleteWorkerId,
           responseText
         });
         throw new Error(errorData.message || `فشل في حذف البيانات - HTTP ${response.status}: ${response.statusText}`);
@@ -722,7 +739,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       console.log('Delete success response:', responseData);
 
       toast.success('تم حذف العامل بنجاح');
-      setDeleteWorkerName(null);
+      setDeleteWorkerId(null);
       fetchWorkers();
     } catch (error) {
       console.error('Error deleting worker:', error);
@@ -1082,7 +1099,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                           )}
                           {permissions.canDelete && (
                             <Button
-                              onClick={() => setDeleteWorkerName(worker.name)}
+                              onClick={() => setDeleteWorkerId(worker._id)}
                               size="sm"
                               variant="destructive"
                             >
@@ -1314,6 +1331,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                     <CalendarComponent
                       mode="single"
                       selected={date}
+                      
                       onSelect={(selectedDate) => {
                         setDate(selectedDate);
                         setIsDateOpen(false);
@@ -1381,12 +1399,12 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteWorkerName} onOpenChange={(open) => !open && setDeleteWorkerName(null)}>
+        <AlertDialog open={!!deleteWorkerId} onOpenChange={(open) => !open && setDeleteWorkerId(null)}>
           <AlertDialogContent className="max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 bg-gray-900 border-gray-700">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">تأكيد الحذف</AlertDialogTitle>
               <AlertDialogDescription className="text-gray-300">
-                هل أنت متأكد من حذف العامل "{deleteWorkerName}"؟ لا يمكن التراجع عن هذا الإجراء.
+                هل أنت متأكد من حذف هذا العامل؟ لا يمكن التراجع عن هذا الإجراء.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -1419,3 +1437,5 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
 };
 
 export default CenterGazaWorkers;
+
+

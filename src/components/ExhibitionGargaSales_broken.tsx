@@ -1,4 +1,5 @@
-// import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '@/utils/api';
+﻿// import React, { useState, useEffect, useCallback } from 'react';
 // import { motion } from 'framer-motion';
 // import Cookies from 'js-cookie';
 // import { Button } from '@/components/ui/button';
@@ -129,7 +130,7 @@
 //   const fetchSales = useCallback(async () => {
 //     setIsLoading(true);
 //     try {
-//       const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
+//       const response = await fetch(`${API_BASE_URL}/api/exhibition-garga-sales`, {
 //         headers: getAuthHeaders(),
 //       });
 //       if (response.ok) {
@@ -187,7 +188,7 @@
 //     setIsSubmitting(true);
 
 //     try {
-//       const response = await fetch('https://backend-omar-puce.vercel.app/api/exhibition-garga-sales', {
+//       const response = await fetch(`${API_BASE_URL}/api/exhibition-garga-sales`, {
 //         method: 'POST',
 //         headers: getAuthHeaders(),
 //         body: JSON.stringify({
@@ -252,7 +253,7 @@
 //     setIsDeleting(true);
 //     try {
 //       const response = await fetch(
-//         `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${deleteSale._id}`,
+//         `${API_BASE_URL}/api/exhibition-garga-sales/${deleteSale._id}`,
 //         {
 //           method: 'DELETE',
 //           headers: getAuthHeaders(),
@@ -303,7 +304,7 @@
 //     setIsSubmitting(true);
 //     try {
 //       const response = await fetch(
-//         `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${editingSale._id}`,
+//         `${API_BASE_URL}/api/exhibition-garga-sales/${editingSale._id}`,
 //         {
 //           method: 'PUT',
 //           headers: getAuthHeaders(),
@@ -1033,3 +1034,6 @@
 // };
 
 // export default ExhibitionGargaSales;
+
+
+

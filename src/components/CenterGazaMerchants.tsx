@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,7 @@ import {
 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 
 interface CenterGazaMerchantsProps {
   isOpen: boolean;
@@ -460,7 +461,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
       }
 
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/center-gaza-sales',
+        `${API_BASE_URL}/api/center-gaza-sales`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -541,8 +542,8 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
       };
 
       const url = editingMerchant
-        ? `https://backend-omar-puce.vercel.app/api/center-gaza-sales/${editingMerchant._id}`
-        : 'https://backend-omar-puce.vercel.app/api/center-gaza-sales';
+        ? `${API_BASE_URL}/api/center-gaza-sales/${editingMerchant._id}`
+        : `${API_BASE_URL}/api/center-gaza-sales`;
 
       const method = editingMerchant ? 'PUT' : 'POST';
 
@@ -607,7 +608,7 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
       const token = Cookies.get('accessToken');
 
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/center-gaza-sales/${deleteMerchantId}`,
+        `${API_BASE_URL}/api/center-gaza-sales/${deleteMerchantId}`,
         {
           method: 'DELETE',
           headers: {
@@ -1440,3 +1441,6 @@ const CenterGazaMerchants: React.FC<CenterGazaMerchantsProps> = ({
 };
 
 export default CenterGazaMerchants;
+
+
+

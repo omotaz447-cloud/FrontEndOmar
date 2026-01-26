@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { API_BASE_URL } from '@/utils/api';
 
 interface NewCenterGazaSalesProps {
   isOpen: boolean;
@@ -147,7 +148,7 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      const response = await fetch('https://backend-omar-puce.vercel.app/api/new-center-gaza-sales', {
+      const response = await fetch(`${API_BASE_URL}/api/new-center-gaza-sales`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -229,8 +230,8 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
       };
 
       const url = editingSale
-        ? `https://backend-omar-puce.vercel.app/api/new-center-gaza-sales/${editingSale._id}`
-        : 'https://backend-omar-puce.vercel.app/api/new-center-gaza-sales';
+        ? `${API_BASE_URL}/api/new-center-gaza-sales/${editingSale._id}`
+        : `${API_BASE_URL}/api/new-center-gaza-sales`;
 
       const method = editingSale ? 'PUT' : 'POST';
 
@@ -298,7 +299,7 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
     try {
       const token = Cookies.get('accessToken');
       
-      const response = await fetch(`https://backend-omar-puce.vercel.app/api/new-center-gaza-sales/${deleteSaleId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/new-center-gaza-sales/${deleteSaleId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -761,3 +762,6 @@ const NewCenterGazaSales: React.FC<NewCenterGazaSalesProps> = ({
 };
 
 export default NewCenterGazaSales;
+
+
+

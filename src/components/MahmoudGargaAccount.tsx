@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface MahmoudGargaAccountData {
   _id?: string;
@@ -142,7 +143,7 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/mahmoud-garga-account',
+        `${API_BASE_URL}/api/mahmoud-garga-account`,
         {
           headers: getAuthHeaders(),
         }
@@ -217,8 +218,8 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const url = editingAccount 
-        ? `https://backend-omar-puce.vercel.app/api/mahmoud-garga-account/${editingAccount._id}`
-        : 'https://backend-omar-puce.vercel.app/api/mahmoud-garga-account';
+        ? `${API_BASE_URL}/api/mahmoud-garga-account/${editingAccount._id}`
+        : `${API_BASE_URL}/api/mahmoud-garga-account`;
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -296,7 +297,7 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/mahmoud-garga-account/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/mahmoud-garga-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -361,7 +362,7 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/mahmoud-garga-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/mahmoud-garga-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1235,3 +1236,6 @@ const MahmoudGargaAccount: React.FC<MahmoudGargaAccountProps> = ({
 };
 
 export default MahmoudGargaAccount;
+
+
+

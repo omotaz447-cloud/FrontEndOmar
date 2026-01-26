@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -68,6 +68,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface ExhibitionGargaSalesData {
   _id?: string;
@@ -154,7 +155,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/exhibition-garga-sales',
+        `${API_BASE_URL}/api/exhibition-garga-sales`,
         {
           headers: getAuthHeaders(),
         },
@@ -231,7 +232,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
       };
 
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/exhibition-garga-sales',
+        `${API_BASE_URL}/api/exhibition-garga-sales`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -296,7 +297,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${deleteSale._id}`,
+        `${API_BASE_URL}/api/exhibition-garga-sales/${deleteSale._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -361,7 +362,7 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
       };
 
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/exhibition-garga-sales/${editingSale._id}`,
+        `${API_BASE_URL}/api/exhibition-garga-sales/${editingSale._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1405,3 +1406,6 @@ const ExhibitionGargaSales: React.FC<ExhibitionGargaSalesProps> = ({
 };
 
 export default ExhibitionGargaSales;
+
+
+

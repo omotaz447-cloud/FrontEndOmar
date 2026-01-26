@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { API_BASE_URL } from '@/utils/api';
 
 interface WaheedAccountData {
   _id?: string;
@@ -139,7 +140,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/waheed-account',
+        `${API_BASE_URL}/api/waheed-account`,
         {
           headers: getAuthHeaders(),
         }
@@ -214,8 +215,8 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsSubmitting(true);
     try {
       const url = editingAccount 
-        ? `https://backend-omar-puce.vercel.app/api/waheed-account/${editingAccount._id}`
-        : 'https://backend-omar-puce.vercel.app/api/waheed-account';
+        ? `${API_BASE_URL}/api/waheed-account/${editingAccount._id}`
+        : `${API_BASE_URL}/api/waheed-account`;
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -293,7 +294,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/waheed-account/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/waheed-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -358,7 +359,7 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/waheed-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/waheed-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -1175,3 +1176,6 @@ const WaheedAccount: React.FC<WaheedAccountProps> = ({
 };
 
 export default WaheedAccount;
+
+
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -76,6 +76,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 
 interface MerchantAccountData {
   _id?: string;
@@ -360,7 +361,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsLoading(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/merchant-account',
+        `${API_BASE_URL}/api/merchant-account`,
         {
           headers: getAuthHeaders(),
         },
@@ -534,7 +535,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        'https://backend-omar-puce.vercel.app/api/merchant-account',
+        `${API_BASE_URL}/api/merchant-account`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -611,7 +612,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/merchant-account/${deleteAccount._id}`,
+        `${API_BASE_URL}/api/merchant-account/${deleteAccount._id}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),
@@ -666,7 +667,7 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `https://backend-omar-puce.vercel.app/api/merchant-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/merchant-account/${editingAccount._id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -2012,3 +2013,6 @@ const MerchantAccount: React.FC<MerchantAccountProps> = ({
 };
 
 export default MerchantAccount;
+
+
+

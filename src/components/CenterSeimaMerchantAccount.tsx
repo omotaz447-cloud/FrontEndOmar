@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
+import { API_BASE_URL } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -400,9 +401,9 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
         throw new Error('لم يتم العثور على رمز التفويض');
       }
 
-      console.log('Fetching merchant accounts from:', 'https://backend-omar-x.vercel.app/api/center-seima-merchant'); // Debug log
+      console.log('...', `${API_BASE_URL}/api/center-seima-merchant`); // Debug log
 
-      const response = await fetch('https://backend-omar-x.vercel.app/api/center-seima-merchant', {
+      const response = await fetch(`${API_BASE_URL}/api/center-seima-merchant`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -494,8 +495,8 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
       console.log('Submitting merchant account data:', submitData); // Debug log
 
       const url = editingAccount 
-        ? `https://backend-omar-x.vercel.app/api/center-seima-merchant/${editingAccount._id}`
-        : 'https://backend-omar-x.vercel.app/api/center-seima-merchant';
+        ? `${API_BASE_URL}/api/center-seima-merchant/${editingAccount._id}`
+        : `${API_BASE_URL}/api/center-seima-merchant`;
       
       const method = editingAccount ? 'PUT' : 'POST';
 
@@ -550,7 +551,7 @@ const CenterSeimaMerchantAccount: React.FC<CenterSeimaMerchantAccountProps> = ({
     setLoading(true);
     try {
       const token = Cookies.get('accessToken');
-      const response = await fetch(`https://backend-omar-x.vercel.app/api/center-seima-merchant/${deleteAccountId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/center-seima-merchant/${deleteAccountId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
