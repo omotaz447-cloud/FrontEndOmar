@@ -1314,6 +1314,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
                     <CalendarComponent
                       mode="single"
                       selected={date}
+                      
                       onSelect={(selectedDate) => {
                         setDate(selectedDate);
                         setIsDateOpen(false);
