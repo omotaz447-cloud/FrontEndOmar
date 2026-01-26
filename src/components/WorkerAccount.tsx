@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { API_BASE_URL } from '@/utils/api';
@@ -648,10 +648,10 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     // Convert day name to number for comparison and sending
     const convertedDay = convertDayToNumber(editFormData.day);
     
-    // Convert withdrawal to number
+    // Convert withdrawal to string for comparison (since WorkerAccountData.withdrawal is string)
     const withdrawalAmount = typeof editFormData.withdrawal === 'string' 
-      ? Number(editFormData.withdrawal) 
-      : editFormData.withdrawal;
+      ? editFormData.withdrawal 
+      : String(editFormData.withdrawal);
 
     // Create object with only changed fields
     const updatedFields: Partial<WorkerAccountData> = {};
@@ -666,8 +666,9 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 
     setIsSubmitting(true);
     try {
+      const workerId = editingWorker.id || (editingWorker as any)._id;
       const response = await fetch(
-        `${API_BASE_URL}/api/worker-account/${editingWorker._id || editingWorker.id}`,
+        `${API_BASE_URL}/api/worker-account/${workerId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -705,7 +706,8 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
 
   // Handle delete worker
   const handleDeleteWorker = async () => {
-    if (!deleteWorker?._id && !deleteWorker?.id) {
+    const workerId = deleteWorker?.id || (deleteWorker as any)?._id;
+    if (!workerId) {
       toast.error('خطأ في تحديد السجل للحذف');
       return;
     }
@@ -713,7 +715,7 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
     setIsDeleting(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/worker-account/${deleteWorker._id || deleteWorker.id}`,
+        `${API_BASE_URL}/api/worker-account/${workerId}`,
         {
           method: 'DELETE',
           headers: getAuthHeaders(),

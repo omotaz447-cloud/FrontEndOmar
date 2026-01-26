@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
 import { API_BASE_URL } from '@/utils/api';
@@ -594,7 +594,6 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       console.log('=== SUBMIT DEBUG START ===');
       console.log('editingWorker:', editingWorker);
       console.log('editingWorker._id type:', typeof editingWorker?._id, 'value:', editingWorker?._id);
-      console.log('editingWorker.id type:', typeof editingWorker?.id, 'value:', editingWorker?.id);
       console.log('Is editing:', !!editingWorker);
       console.log('Method:', method);
       console.log('Final URL:', url);
@@ -623,7 +622,7 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
           method,
           sentData: submitData
         });
-        let errorData = {};
+        let errorData: { message?: string } = {};
         try {
           errorData = JSON.parse(errorText);
         } catch {}

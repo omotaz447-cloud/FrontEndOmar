@@ -535,7 +535,6 @@ const WorkerCenterSeimaAccount: React.FC<WorkerCenterSeimaAccountProps> = ({
       };
 
       const editId = (editingAccount as any)?._id || (editingAccount as any)?.id;
-      const editName = (editingAccount as any)?.name;
       // Try name-based endpoint first (backend often expects name), fallback to id
       const baseUrl = `${API_BASE_URL}/api/worker-center-seima-account`;
       const url = editingAccount
