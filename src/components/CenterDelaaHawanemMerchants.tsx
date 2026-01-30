@@ -463,7 +463,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant._id || editingMerchant.name)}`, 
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(editingMerchant.name)}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
