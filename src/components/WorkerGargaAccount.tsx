@@ -74,6 +74,7 @@ import { ar } from 'date-fns/locale';
 import { API_BASE_URL } from '@/utils/api';
 
 interface WorkerGargaAccountData {
+  
   _id?: string;
   name: string;
   day: string;
@@ -610,7 +611,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   };
 
   // Handle edit account
-  const handleEdit = (account: WorkerGargaAccountData) => {
+  const handleEdit = (account: any) => {
     setEditingAccount(account);
     setEditFormData({
       name: account.name,
@@ -626,7 +627,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
   };
 
   // Handle delete account
-  const handleDelete = (account: WorkerGargaAccountData) => {
+  const handleDelete = (account: any) => {
     setDeleteAccountId(account._id || account.id);
   };
 

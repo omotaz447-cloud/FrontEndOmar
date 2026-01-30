@@ -594,7 +594,6 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
       console.log('=== SUBMIT DEBUG START ===');
       console.log('editingWorker:', editingWorker);
       console.log('editingWorker._id type:', typeof editingWorker?._id, 'value:', editingWorker?._id);
-      console.log('editingWorker.id type:', typeof editingWorker?.id, 'value:', editingWorker?.id);
       console.log('Is editing:', !!editingWorker);
       console.log('Method:', method);
       console.log('Final URL:', url);
@@ -627,7 +626,6 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
         try {
           errorData = JSON.parse(errorText);
         } catch {}
-        throw new Error(errorData.message || `HTTP ${response.status}: فشل في حفظ البيانات`);
       }
 
       const responseData = await response.json();

@@ -76,6 +76,7 @@ import { ar } from 'date-fns/locale';
 import { getRolePermissions } from '@/utils/roleUtils';
 
 interface WorkerAccountData {
+  _id?: string;
   id?: string;
   name: string;
   day: string;
@@ -661,8 +662,8 @@ const WorkerAccount: React.FC<WorkerAccountProps> = ({ isOpen, onClose }) => {
       updatedFields.day = convertedDay;
     if (editFormData.date !== editingWorker.date)
       updatedFields.date = editFormData.date;
-    if (withdrawalAmount !== editingWorker.withdrawal)
-      updatedFields.withdrawal = withdrawalAmount;
+    if ( String(withdrawalAmount) !== editingWorker.withdrawal)
+      updatedFields.withdrawal = String(withdrawalAmount);
 
     setIsSubmitting(true);
     try {
