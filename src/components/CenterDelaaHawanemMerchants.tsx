@@ -499,7 +499,7 @@ const CenterDelaaHawanemMerchants: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       const headers = getAuthHeaders();
       const response = await fetch(
-        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant._id || deleteMerchant.name)}`,
+        `${API_BASE_URL}/api/center-delaa-hawanem-merchant/${encodeURIComponent(deleteMerchant.name)}`,
         {
           method: 'DELETE',
           headers,
