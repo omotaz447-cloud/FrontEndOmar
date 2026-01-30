@@ -622,10 +622,8 @@ const CenterGazaWorkers: React.FC<CenterGazaWorkersProps> = ({
           method,
           sentData: submitData
         });
-        let errorData = {};
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {}
+        let errorData: { message?: string } = {};
+        console.error('Response text for error parsing:', errorData);
       }
 
       const responseData = await response.json();
