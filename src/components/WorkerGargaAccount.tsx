@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
@@ -623,7 +623,7 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       setEditSelectedDate(new Date(account.date));
     }
     setEditDialogOpen(true);
-    console.log('Edit mode: account._id =', account._id || account.id, 'account =', account);
+    console.log('Edit mode: account._id =', account._id || (account as any).id, 'account =', account);
   };
 
   // Handle delete account
@@ -712,7 +712,10 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
       return;
     }
 
-    if (!editingAccount?._id) return;
+    if (!editingAccount) return;
+    
+    const accountId = editingAccount._id || (editingAccount as any).id;
+    if (!accountId) return;
 
     setIsSubmitting(true);
     try {
@@ -723,13 +726,14 @@ const WorkerGargaAccount: React.FC<WorkerGargaAccountProps> = ({
 
       console.log('=== EDIT SUBMIT ===');
       console.log('editingAccount._id:', editingAccount._id);
+      console.log('accountId:', accountId);
       console.log('editFormData.day:', editFormData.day);
       console.log('dayToSend:', dayToSend);
       console.log('Full editingAccount:', editingAccount);
       console.log('=== END ===');
 
       const response = await fetch(
-        `${API_BASE_URL}/api/worker-garga-account/${editingAccount._id}`,
+        `${API_BASE_URL}/api/worker-garga-account/${accountId}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),

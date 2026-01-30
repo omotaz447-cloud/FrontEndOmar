@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getRolePermissions } from '@/utils/roleUtils';
 import { API_BASE_URL } from '@/utils/api';
